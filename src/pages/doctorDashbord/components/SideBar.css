@@ -1,0 +1,31 @@
+.sidebar{
+    background-color: rgba(128, 128, 128, 0.341) ;
+    min-width:230px ;
+    max-width:250px ;
+    height: 100vh;
+}
+.sidebar-list{
+    
+    list-style: none;
+    padding: 20px;
+    padding-top: 20px;
+    margin: 0;
+}
+.sidebar-item {
+    padding: 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+.sidebar-item:hover{
+    cursor: pointer;
+    background-color: aqua;
+}
+h2{
+    margin: 20px;
+}
+.logo-title{
+    display: flex;
+    align-items: center;
+}

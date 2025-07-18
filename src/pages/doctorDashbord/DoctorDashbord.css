@@ -1,0 +1,15 @@
+.doctor-dashboard {
+    display: grid;
+    grid-template-columns: 2fr 10fr;  
+}
+
+.sidebar {
+    grid-column: 1; 
+}
+
+.dashboard-contant {
+    grid-column: 2;
+}
+
+
+
