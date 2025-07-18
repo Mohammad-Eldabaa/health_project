@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { addPatient } from "../../supaBase/booking";
 
 export const Schema = Yup.object({
   fullName: Yup.string()
@@ -7,6 +8,10 @@ export const Schema = Yup.object({
   address: Yup.string()
     .required("العنوان مطلوب")
     .min(3, "برجاء دخال اسم المحافظة على الأقل"),
+  nationalId: Yup.string()
+    .required("رقم الهوية الوطنية مطلوب")
+    .min(14, "رقم الهوية الوطنية يجب أن يكون 14 رقمًا")
+    .max(14, "رقم الهوية الوطنية يجب أن يكون 14 رقمًا"),
   age: Yup.number()
     .required("العمر مطلوب")
     .min(1, "برجاء دخال عر صحيح")
@@ -22,6 +27,7 @@ export const Schema = Yup.object({
 export const formData = {
   fullName: "",
   address: "",
+  nationalId: "",
   age: "",
   phoneNumber: "",
   bookingDate: "",
@@ -31,5 +37,5 @@ export const formData = {
 
 export const handleSubmit = (values) => {
   console.log("Booking submitted:", values);
-  alert("تم تقديم طلب الحجز بنجاح! سنتواصل معك قريباً لتأكيد الموعد.");
+  addPatient(values);
 };

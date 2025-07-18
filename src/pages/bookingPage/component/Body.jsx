@@ -9,6 +9,7 @@ import { AddressInput } from "./AddressInput.jsx";
 import { NameInput } from "./NameInput.jsx";
 import { FormHeader } from "./FormHeader.jsx";
 import { Formik, Form } from "formik";
+import { NationalId } from "./National_ID.jsx";
 
 export function Body({ formData, handleSubmit, Schema }) {
   return (
@@ -23,6 +24,7 @@ export function Body({ formData, handleSubmit, Schema }) {
           <div className="row g-4">
             <NameInput />
             <AddressInput />
+            <NationalId />
             <AgeInput />
             <PhoneInput />
             <BookingDataInput />
