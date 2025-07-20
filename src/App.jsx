@@ -1,13 +1,17 @@
 import "./App.css";
+import {  } from 'react'
+import './App.css'
+import ClinicBookingPage from './pages/bookingPage'
 
 function App() {
+ 
+ClinicBookingPage()
   return (
-    <>
-      {/* <h1 class="text-3xl text-sky-200 bg-red-300 font-bold underline">
-        Hello world!
-      </h1> */}
-    </>
-  );
+    <div >
+          <ClinicBookingPage/>
+          
+    </div>
+  )
 }
 
 export default App;
