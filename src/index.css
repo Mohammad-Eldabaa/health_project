@@ -1,4 +1,28 @@
+@import "tailwindcss";
 
+
+:root {
+  --color-primary: #00BCD4;
+  --color-primary-dark: #0097A7;
+  --color-primary-light: #B2EBF2;
+  --color-accent: #009688;
+  --color-text-primary: #212121;
+  --color-text-secondary: #757575;
+  --color-text-white: #FFFFFF;
+  --color-divider: #BDBDBD;
+  --main-font: "Tajawal", sans-serif;
+  --logo-font: "Pangolin", cursive;
+  direction: rtl;
+  text-align: right;
+  padding: 0px;
+  margin: 0;
+}
+
+* {
+  font-family: var(--main-font);
+  box-sizing: border-box;
+
+}
 
 h1 {
   font-size: 3.2em;
@@ -16,9 +40,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -29,21 +55,12 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
-}
-:root{
-  direction: rtl;
-  text-align: right;
-  padding: 0px;
-  margin: 0;
-  font-family:Tajawal, system-ui, Avenir, Helvetica, Arial, sans-serif;
-
-}
-body{
-margin: 0;
 }

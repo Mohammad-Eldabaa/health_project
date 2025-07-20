@@ -7,17 +7,7 @@
     background-color: #fff; 
 }
 
-.search-input {
-    display: flex;
-    background-color: rgba(128, 128, 128, 0.15);
-    border: none;
-    border-radius: 20px;
-    height: 40px;
-    color: black;
-    min-width: 200px;
-    padding: 0px 15px;
-    font-size: 16px;
-}
+
 
 .settings-icon,
 .notifications-icon {

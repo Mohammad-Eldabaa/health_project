@@ -1,0 +1,164 @@
+
+button {
+    margin: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.patients-container {
+    padding: 20px;
+    direction: rtl;
+}
+
+.patients-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.search-inputt {
+    margin-bottom: 20px;
+}
+
+.patients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.patients-table th{
+        padding: 12px 15px;
+    text-align: right;
+
+
+} 
+.patients-table td {
+    padding: 12px 15px;
+    text-align: right;
+    border-top: 1px solid #e0e0e0;
+}
+
+.patients-table-header {
+    background-color: #ffffff;
+    font-weight: bold;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.stable {
+    background-color: #e6f7e6;
+    color: #2e7d32;
+}
+
+.status-badge.moderate {
+    background-color: #fff8e1;
+    color: #ff8f00;
+}
+
+.status-badge.critical {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: background-color 0.3s;
+}
+
+.action-btn.view { color: #1976d2; }
+.action-btn.edit { color: #ff9800; }
+.action-btn.delete { color: #f44336; }
+.action-btn.hospital { color: #4caf50; }
+
+.action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile Cards Styles */
+.patients-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.patient-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.patient-id {
+    font-weight: bold;
+    color: #555;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.patient-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.info-value {
+    color: #333;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+
+@media (max-width: 767px) {
+    .patients-table {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .patients-cards {
+        display: none;
+    }
+}

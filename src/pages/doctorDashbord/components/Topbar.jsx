@@ -1,26 +1,16 @@
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { useState } from "react";
 import "./TopBar.css"
+import SearchBar from "./SearchBar";
 
 function Topbar() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-        // console.log("Searching for:", e.target.value);
-    };
+
     return (
         <div className="topbar">
-            <input
-                className="search-input"
-                type="text"
-                placeholder="ابحث هنا ...."
-                value={searchTerm}
-                onChange={handleSearchChange}
-            />
+            <SearchBar placeholder="ابحث هنا ...." />
             <div className="topbar-icons">
                 <NotificationsIcon fontSize="large" className="notifications-icon" />
-                <SettingsApplicationsIcon fontSize="large"  className="settings-icon" />
+                <SettingsApplicationsIcon fontSize="large" className="settings-icon" />
                 <span className="user-info">
                     <img
                         src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
