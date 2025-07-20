@@ -1,14 +1,13 @@
-import React from 'react'
-import Register from './pages/Auth/Register/Register.jsx'
-import './App.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/Auth/Login/Login'
+import React from "react";
+import Register from "./pages/Auth/Register/Register.jsx";
+import "./App.css";
+import { BrowserRouter } from "react-router-dom";
+import Login from "./pages/Auth/Login/Login";
+import RoutesPages from "./routes/Routes.jsx";
 export default function App() {
-  let routes = createBrowserRouter([
-    { index: true, element: <Login /> },
-    { path: '/register', element: <Register /> },])
-
   return (
-    <RouterProvider router={routes}></RouterProvider>
-  )
+    <BrowserRouter>
+      <RoutesPages></RoutesPages>
+    </BrowserRouter>
+  );
 }
