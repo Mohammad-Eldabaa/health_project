@@ -26,57 +26,63 @@ const NursingDashboard = () => {
   };
 
   return (
-    <div className="container-fluid min-vh-100 p-0">
+    <div className="container-fluid min-vh-100 p-0" dir="rtl">
       <div className="row g-0">
-        {/* Sidebar */}
-        <div className="col-md-3 col-lg-2 d-md-block text-white sidebar collapse" style={{backgroundColor: '#0097A7'}}>
+        {/* الشريط الجانبي */}
+        <div
+          className="col-md-3 col-lg-2 d-md-block text-white sidebar collapse"
+          style={{ backgroundColor: "#0097A7" }}
+        >
           <div className="position-sticky pt-3">
             <h2 className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white px-3">
               <i className="bi bi-hospital me-2"></i>
-              <span className="fs-4">Nursing Panel</span>
+              <span className="fs-4">لوحة التمريض</span>
             </h2>
             <hr />
             <ul className="nav nav-pills flex-column mb-auto">
               <li className="nav-item">
                 <a href="#" className="nav-link active" aria-current="page">
                   <i className="bi bi-speedometer2 me-2"></i>
-                  Dashboard
+                  لوحة التحكم
                 </a>
               </li>
               <li>
                 <a href="#" className="nav-link text-white">
                   <i className="bi bi-calendar-plus me-2"></i>
-                  Add Appointment
+                  إضافة موعد
                 </a>
               </li>
               <li>
                 <a href="#" className="nav-link text-white">
                   <i className="bi bi-calendar-week me-2"></i>
-                  Schedule
+                  الجدول
                 </a>
               </li>
               <li>
                 <a href="#" className="nav-link text-white">
                   <i className="bi bi-people me-2"></i>
-                  Patients
+                  المرضى
                 </a>
               </li>
               <li>
                 <a href="#" className="nav-link text-white">
                   <i className="bi bi-box-arrow-right me-2"></i>
-                  Logout
+                  تسجيل الخروج
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Main Content */}
-        <main className="col-md-9 col-lg-10 ms-sm-auto px-md-4" style={{backgroundColor: '#B2EBF2'}}>
+        {/* المحتوى الرئيسي */}
+        <main
+          className="col-md-9 col-lg-10 ms-sm-auto px-md-4"
+          style={{ backgroundColor: "#B2EBF2" }}
+        >
           <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 className="h2">
               <i className="bi bi-speedometer2 me-2"></i>
-              Secretary Dashboard
+              لوحة سكرتارية
             </h1>
             <div className="btn-toolbar mb-2 mb-md-0">
               <div className="btn-group me-2">
@@ -84,24 +90,24 @@ const NursingDashboard = () => {
                   type="button"
                   className="btn btn-sm btn-outline-secondary"
                 >
-                  <i className="bi bi-calendar-week me-1"></i>Today
+                  <i className="bi bi-calendar-week me-1"></i>اليوم
                 </button>
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-secondary"
                 >
-                  <i className="bi bi-calendar-range me-1"></i>Week
+                  <i className="bi bi-calendar-range me-1"></i>الأسبوع
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Add Appointment Form */}
+          {/* نموذج إضافة موعد */}
           <div className="card mb-4">
             <div className="card-header bg-white">
               <h5 className="card-title mb-0">
                 <i className="bi bi-calendar-plus me-2"></i>
-                Add Appointment
+                إضافة موعد
               </h5>
             </div>
             <div className="card-body">
@@ -109,7 +115,7 @@ const NursingDashboard = () => {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label htmlFor="patientName" className="form-label">
-                      Patient Name
+                      اسم المريض
                     </label>
                     <input
                       type="text"
@@ -123,7 +129,7 @@ const NursingDashboard = () => {
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="doctor" className="form-label">
-                      Doctor
+                      الطبيب
                     </label>
                     <select
                       className="form-select"
@@ -133,16 +139,16 @@ const NursingDashboard = () => {
                       onChange={handleChange}
                       required
                     >
-                      <option value="">Select Doctor</option>
-                      <option value="Dr. Smith">Dr. Smith</option>
-                      <option value="Dr. Johnson">Dr. Johnson</option>
-                      <option value="Dr. Williams">Dr. Williams</option>
-                      <option value="Dr. Brown">Dr. Brown</option>
+                      <option value="">اختر طبيبًا</option>
+                      <option value="Dr. Fadl">د. فضل</option>
+                      <option value="Dr. Youssef">د. يوسف</option>
+                      <option value="Dr. Ramdan">د. رمضان</option>
+                      <option value="Dr. Brown">د. براون</option>
                     </select>
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="date" className="form-label">
-                      Date
+                      التاريخ
                     </label>
                     <input
                       type="date"
@@ -156,7 +162,7 @@ const NursingDashboard = () => {
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="time" className="form-label">
-                      Time
+                      الوقت
                     </label>
                     <input
                       type="time"
@@ -170,7 +176,7 @@ const NursingDashboard = () => {
                   </div>
                   <div className="col-12">
                     <label htmlFor="notes" className="form-label">
-                      Notes
+                      ملاحظات
                     </label>
                     <textarea
                       className="form-control"
@@ -182,9 +188,13 @@ const NursingDashboard = () => {
                     ></textarea>
                   </div>
                   <div className="col-12">
-                    <button type="submit" className="btn" style={{backgroundColor: '#0097A7'}}>
+                    <button
+                      type="submit"
+                      className="btn text-white"
+                      style={{ backgroundColor: "#0097A7" }}
+                    >
                       <i className="bi bi-save me-1"></i>
-                      Add Appointment
+                      إضافة الموعد
                     </button>
                   </div>
                 </div>
@@ -192,31 +202,31 @@ const NursingDashboard = () => {
             </div>
           </div>
 
-          {/* Appointments List */}
+          {/* قائمة المواعيد */}
           <div className="card">
             <div className="card-header bg-white">
               <h5 className="card-title mb-0">
                 <i className="bi bi-calendar-check me-2"></i>
-                Scheduled Appointments
+                المواعيد المجدولة
               </h5>
             </div>
             <div className="card-body">
               {appointments.length === 0 ? (
                 <div className="alert alert-info" role="alert">
                   <i className="bi bi-info-circle me-2"></i>
-                  No appointments scheduled yet.
+                  لا توجد مواعيد مجدولة بعد.
                 </div>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover">
                     <thead className="table-light">
                       <tr>
-                        <th scope="col">Patient</th>
-                        <th scope="col">Doctor</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Time</th>
-                        <th scope="col">Notes</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col">المريض</th>
+                        <th scope="col">الطبيب</th>
+                        <th scope="col">التاريخ</th>
+                        <th scope="col">الوقت</th>
+                        <th scope="col">الملاحظات</th>
+                        <th scope="col">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -232,11 +242,15 @@ const NursingDashboard = () => {
                               {appt.doctor}
                             </span>
                           </td>
-                          <td>{new Date(appt.date).toLocaleDateString()}</td>
+                          <td>
+                            {new Date(appt.date).toLocaleDateString("ar-EG")}
+                          </td>
                           <td>{appt.time}</td>
                           <td>
                             {appt.notes || (
-                              <span className="text-muted">No notes</span>
+                              <span className="text-muted">
+                                لا توجد ملاحظات
+                              </span>
                             )}
                           </td>
                           <td>
@@ -245,7 +259,7 @@ const NursingDashboard = () => {
                               className="btn btn-sm btn-outline-danger"
                             >
                               <i className="bi bi-x-circle me-1"></i>
-                              Cancel
+                              إلغاء
                             </button>
                           </td>
                         </tr>
