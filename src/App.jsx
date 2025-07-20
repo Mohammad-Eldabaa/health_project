@@ -1,17 +1,14 @@
-import "./App.css";
-import {  } from 'react'
+import React from 'react'
+import Register from './pages/Auth/Register/Register.jsx'
 import './App.css'
-import ClinicBookingPage from './pages/bookingPage'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import Login from './pages/Auth/Login/Login'
+export default function App() {
+  let routes = createBrowserRouter([
+    { index: true, element: <Login /> },
+    { path: '/register', element: <Register /> },])
 
-function App() {
- 
-ClinicBookingPage()
   return (
-    <div >
-          <ClinicBookingPage/>
-          
-    </div>
+    <RouterProvider router={routes}></RouterProvider>
   )
 }
-
-export default App;
