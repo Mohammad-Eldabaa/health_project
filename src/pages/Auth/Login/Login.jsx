@@ -5,8 +5,8 @@ import "./login.css";
 import pitttttt from "../../../assets/pitttttt.png";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { NavLink } from "react-bootstrap";
-import { logInAndRegisterSchema } from "../../../forms/schema";
+import { NavLink } from "react-router-dom";
+import { loginSchema } from "../../../forms/schema";
 
 export default function Login() {
   const formik = useFormik({
@@ -14,7 +14,7 @@ export default function Login() {
       email: "",
       password: "",
     },
-    validationSchema: logInAndRegisterSchema,
+    validationSchema: loginSchema,
     onSubmit: (values) => {
       console.log("Login Data:", values);
     },
@@ -33,10 +33,10 @@ export default function Login() {
           <div className="overlay-content">
             <h2 className="main-title mb-5 text-center">تسجيل الدخول</h2>
 
-            <div className="form-container  mx-auto">
+            <div className="form-container mx-auto">
               <Form onSubmit={formik.handleSubmit}>
                 <Form.Group className="mb-4">
-                  <Form.Label> البريد الإلكتروني </Form.Label>
+                  <Form.Label>البريد الإلكتروني</Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -85,7 +85,7 @@ export default function Login() {
                 <div className="text-center mt-3">
                   <span>ليس لديك حساب؟ </span>
                   <NavLink
-                    href="/register"
+                    to="/register"
                     className="text-primary"
                     style={{ textDecoration: "underline", cursor: "pointer" }}
                   >
