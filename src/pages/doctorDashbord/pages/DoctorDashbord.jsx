@@ -1,0 +1,39 @@
+
+import { Routes, Route } from "react-router-dom";
+import SideBar from "../components/SideBar";
+import Topbar from "../components/Topbar";
+import "./DoctorDashbord.css"
+
+import Home from "./Home";
+// import Profile from "./Profile";
+// import Appointments from "./Appointments";
+import Patients from "./Patients";
+import Records from "./Records";
+import Prescription from "./Prescription";
+// import Tests from "./Tests";
+// import Statistics from "./Statistics";
+// import Settings from "./Settings";
+
+function DoctorDashboard() {
+  return (
+    <div className="doctor-dashboard">
+      <SideBar />
+      <div className="content">
+        <Topbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* <Route path="/profile" element={<Profile />} />
+          <Route path="/appointments" element={<Appointments />} /> */}
+          <Route path="/patients" element={<Patients />} />
+          <Route path="/records" element={<Records />} />
+          <Route path="/prescription" element={<Prescription />} />
+          {/* <Route path="/tests" element={<Tests />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/settings" element={<Settings />} /> */}
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
+export default DoctorDashboard;
