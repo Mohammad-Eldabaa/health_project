@@ -5,7 +5,7 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <Login />,
-    path: "/",
+    path: "/login",
   },
   {
     id: v4(),
@@ -15,6 +15,6 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <BookingPage />,
-    path: "/bookingPage",
+    path: "/",
   },
 ];

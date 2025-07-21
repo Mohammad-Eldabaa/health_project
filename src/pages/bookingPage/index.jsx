@@ -1,15 +1,14 @@
 import React from "react";
 import { Body } from "./component/Body";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { BookingPageHeader } from "./component/BookingPageHeader.jsx";
 import { FooterInfo } from "./component/FooterInfo.jsx";
 import { Schema, formData, handleSubmit } from "./schema.js";
 
 export default function ClinicBookingPageArabic() {
   return (
-    <div style={{ backgroundColor: "#B2EBF2", minHeight: "100vh" }} dir="rtl">
-      <BookingPageHeader />
-      <div className="container py-5 w-75">
+    <div className="min-h-screen bg-cyan-100" dir="rtl">
+      {/* <BookingPageHeader /> */}
+      <div className="container mx-auto py-10 px-4 md:w-3/4 ">
         <Body formData={formData} handleSubmit={handleSubmit} Schema={Schema} />
         <FooterInfo />
       </div>

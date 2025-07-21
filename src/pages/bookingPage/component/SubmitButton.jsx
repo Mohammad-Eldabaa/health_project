@@ -1,20 +1,15 @@
-import React, { useState } from "react";
-export function SubmitButton() {
-  const [hover, setHover] = useState(false);
+import React from "react";
 
+export function SubmitButton() {
   return (
-    <button
-      type="submit"
-      className="btn btn-lg px-5 py-2 text-white fw-bold"
-      style={{
-        backgroundColor: hover ? "#007C91" : "#0097A7",
-        transform: hover ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      احجز الموعد
-    </button>
+    <div className="mt-8 flex justify-center ">
+      <button
+        type="submit"
+        style={{ backgroundColor: "#0097A7", padding: " 12px 16px" }}
+        className="px-8 py-4 rounded-lg text-white font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+      >
+        احجز الموعد
+      </button>
+    </div>
   );
 }

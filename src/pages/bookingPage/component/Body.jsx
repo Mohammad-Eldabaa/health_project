@@ -9,11 +9,10 @@ import { AddressInput } from "./AddressInput.jsx";
 import { NameInput } from "./NameInput.jsx";
 import { FormHeader } from "./FormHeader.jsx";
 import { Formik, Form } from "formik";
-import { NationalId } from "./National_ID.jsx";
 
 export function Body({ formData, handleSubmit, Schema }) {
   return (
-    <div className="bg-white rounded-4 shadow p-4">
+    <div className="bg-white rounded-2xl shadow-lg p-6">
       <FormHeader />
       <Formik
         initialValues={formData}
@@ -21,19 +20,19 @@ export function Body({ formData, handleSubmit, Schema }) {
         validationSchema={Schema}
       >
         <Form>
-          <div className="row g-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <NameInput />
             <AddressInput />
-            {/* <NationalId /> */}
             <AgeInput />
             <PhoneInput />
             <BookingDataInput />
             <VisitTypeInput />
-
+          </div>
+          <div className="mt-5">
             <NotesInput />
           </div>
 
-          <div className="mt-5 text-center">
+          <div className="mt-8 flex justify-center">
             <SubmitButton />
           </div>
         </Form>

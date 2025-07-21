@@ -1,17 +1,13 @@
+import { BookMarked } from "lucide-react";
 import React from "react";
 
 export function FormHeader() {
   return (
-    <div
-      className="px-4 py-4"
-      style={{
-        backgroundColor: "#00BCD4",
-        borderRadius: "0.5rem",
-        marginBottom: "2rem",
-      }}
-    >
-      <h2 className="h4 fw-semibold text-white mb-2">معلومات المريض</h2>
-      <p className="text-white-50">يرجى ملء بياناتك لحجز موعد</p>
+    <div className="px-8 py-6 bg-cyan-500 rounded-2xl shadow-md mb-10 text-center">
+      <h2 className="text-3xl font-bold text-white mb-2 leading-snug">
+        حجز موعد جديد
+      </h2>
+      <p className="text-white/90 text-lg">يرجى ملء بياناتك لحجز موعد</p>
     </div>
   );
 }

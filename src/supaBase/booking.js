@@ -10,6 +10,7 @@ export const addPatient = async (patientData) => {
 
   if (error) {
     console.error("Error adding patient:", error);
+    window.location.href = "/login";
   } else {
     alert("تم تقديم طلب الحجز بنجاح! سنتواصل معك قريباً لتأكيد الموعد.");
   }
