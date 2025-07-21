@@ -208,9 +208,9 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                     ✖ إغلاق
                 </button>
 
-                <div className="flex flex-col lg:flex-row gap-6 mt-6 h-[70vh] overflow-hidden">
+                <div className="flex flex-col lg:flex-row gap-6 mt-6 h-[80vh] overflow-y-auto">
                     {/* Right Side  */}
-                    <div className="w-full lg:w-2/5 bg-white rounded-lg shadow-md p-4 border border-gray-200 overflow-y-auto">
+                    <div className="w-full lg:w-2/5 bg-white rounded-lg shadow-md p-4 border border-gray-200 overflow-y-auto min-h-80">
                         <h2 className="text-xl font-bold mb-4 " style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
                         <div className="bg-gray-100 p-2 rounded-lg mb-4">
@@ -246,7 +246,8 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                     </div>
 
                     {/* Left Side */}
-                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-6 border border-gray-200 overflow-y-auto min-h-full
+">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold " style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>
                             <div className="text-gray-600">
@@ -265,7 +266,7 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                             />
                         </div>
 
-                        <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
+                        <div className="border border-gray-200 rounded-lg overflow-hidden mb-6 ">
                             <div className=" p-3 grid grid-cols-12 gap-1 font-medium text-blue-800"
                                 style={{ backgroundColor: "var(--color-primary-light)", color: "var(--color-text-primary)" }}>
                                 <span className="col-span-5">الدواء</span>
