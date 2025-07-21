@@ -1,8 +1,7 @@
-
 import { Routes, Route } from "react-router-dom";
 import SideBar from "../components/SideBar";
 import Topbar from "../components/Topbar";
-import "./DoctorDashbord.css"
+import "./DoctorDashbord.css";
 
 import Home from "./Home";
 // import Profile from "./Profile";
