@@ -6,3 +6,5 @@ export const Register = lazy(() =>
 );
 export const BookingPage = lazy(() => import("../pages/bookingPage/index.jsx"));
 export const DoctorProfile = lazy(() => import("../pages/DoctorProfile/Profile.jsx"));
+export const FirstAid = lazy(() => import("../pages/FirstAid/FirstAid.jsx"));
+export const FirstAidDetails = lazy(() => import("../pages/FirstAid/FirstAidDetails.jsx"));
