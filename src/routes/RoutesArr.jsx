@@ -1,11 +1,11 @@
 import { v4 } from "uuid";
-import { BookingPage, Login, Register } from "./lazy";
+import { BookingPage, DoctorProfile, Login, Register } from "./lazy";
 
 export const RoutesArray = [
   {
     id: v4(),
     element: <Login />,
-    path: "/",
+    path: "/Login",
   },
   {
     id: v4(),
@@ -16,5 +16,10 @@ export const RoutesArray = [
     id: v4(),
     element: <BookingPage />,
     path: "/bookingPage",
+  },
+  {
+    id: v4(),
+    element: <DoctorProfile />,
+    path: "/",
   },
 ];
