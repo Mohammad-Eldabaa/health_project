@@ -30,7 +30,7 @@ export const formData = {
   notes: "",
 };
 
-export const handleSubmit = (values) => {
+export const handleSubmit = (values, { resetForm }) => {
   console.log("Booking submitted:", values);
-  addPatient(values);
+  addPatient(values, resetForm);
 };

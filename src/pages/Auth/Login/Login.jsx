@@ -5,12 +5,13 @@ import "./login.css";
 import pitttttt from "../../../assets/pitttttt.png";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { loginSchema } from "../../../forms/schema";
 import useAuthStore from "../../../store/auth";
 
 export default function Login() {
   const { login } = useAuthStore();
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -20,7 +21,9 @@ export default function Login() {
     validationSchema: loginSchema,
     onSubmit: (values) => {
       console.log("Login Data:", values);
-      login(values.email, values.password);
+      login(values, () => {
+        navigate("/");
+      });
     },
   });
 

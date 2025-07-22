@@ -9,37 +9,10 @@ import { NavLink } from "react-bootstrap";
 import { useFormik } from "formik";
 import { logInAndRegisterSchema } from "../../../forms/schema/index.js";
 import "./register.css";
-export default function Register() {
-  const state = [
-    "البحيرة",
-    "الإسكندرية",
-    "الغربية",
-    "الإسماعيلية",
-    "الأقصر",
-    "البحر الأحمر",
-    "الجيزة",
-    "الدقهلية",
-    "السويس",
-    "الشرقية",
-    "الفيوم",
-    "القاهرة",
-    "القليوبية",
-    "المنوفية",
-    "المنيا",
-    "الوادي الجديد",
-    "بني سويف",
-    "بورسعيد",
-    "أسيوط",
-    "جنوب سيناء",
-    "دمياط",
-    "سوهاج",
-    "شمال سيناء",
-    "قنا",
-    "كفر الشيخ",
-    "مطروح",
-    "أسوان",
-  ];
+import useAuthStore from "../../../store/auth.js";
 
+export default function Register() {
+  const { register } = useAuthStore();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -47,18 +20,18 @@ export default function Register() {
       password: "",
       confirmPassword: "",
       address: "",
-      city: "",
-      state: "",
+      phone: "",
     },
     validationSchema: logInAndRegisterSchema,
     onSubmit: (values) => {
       console.log("Register Data:", values);
+      register(values);
     },
   });
 
   return (
     <div className="container-fluid register-container">
-      <div className="row min-vh-100 ">
+      <div className="row min-vh-100">
         <div
           className="col-12 col-md-8 position-relative p-0 d-flex align-items-center justify-content-center"
           style={{ maxHeight: "100vh" }}
@@ -156,43 +129,22 @@ export default function Register() {
                   </Form.Control.Feedback>
                 </Form.Group>
 
-                <Row className="mb-2">
-                  <Form.Group as={Col}>
-                    <Form.Label>المحافظة</Form.Label>
-                    <Form.Select
-                      name="state"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.state}
-                      isInvalid={formik.touched.state && !!formik.errors.state}
-                    >
-                      <option>اختر المحافظة</option>
-                      {state.map((gov, index) => (
-                        <option key={index} value={gov}>
-                          {gov}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    <Form.Control.Feedback type="invalid">
-                      {formik.errors.state}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-
-                  <Form.Group as={Col}>
-                    <Form.Label>المدينة</Form.Label>
-                    <Form.Control
-                      name="city"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.city}
-                      isInvalid={formik.touched.city && !!formik.errors.city}
-                      placeholder="ادخل مدينتك"
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {formik.errors.city}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
+                {/* Phone field replaces city & state */}
+                <Form.Group className="mb-2">
+                  <Form.Label>رقم الهاتف</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="phone"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.phone}
+                    placeholder="ادخل رقم الهاتف"
+                    isInvalid={formik.touched.phone && !!formik.errors.phone}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {formik.errors.phone}
+                  </Form.Control.Feedback>
+                </Form.Group>
 
                 <div className="text-center mt-2">
                   <Button variant="primary" type="submit">
