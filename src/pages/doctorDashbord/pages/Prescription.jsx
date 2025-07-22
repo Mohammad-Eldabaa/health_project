@@ -2,7 +2,6 @@ import { useState } from 'react';
 import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
-// تعريف الخط العربي
 pdfMake.vfs = {
     ...pdfFonts.default.vfs,
     'Amiri-Regular': 'https://cdn.jsdelivr.net/gh/opentypejs/amiri-font/Amiri-Regular.ttf',

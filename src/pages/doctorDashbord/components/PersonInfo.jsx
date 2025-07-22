@@ -1,8 +1,8 @@
 export default function Prescription() {
     return (
-        <div className="bg-gray-100 rounded-3xl p-5 flex  gap-5 justify-between">
+        <div className="bg-gray-100 rounded-3xl p-5 flex  md:flex-row gap-5 justify-between items-center md:items-start">
 
-            <table className="table-auto border-collapse w-100 border-gray-300">
+            <table className="table-auto border-collapse w-full md:w-auto border-gray-300">
                 <tbody>
                     <tr>
                         <td>الاسم</td>

@@ -30,7 +30,7 @@ const Patients = () => {
                             <th>رقم </th>
                             <th>الإسم</th>
                             <th>العمر</th>
-                            <th>الجنس</th>
+                            <th>النوع</th>
                             <th>رقم الهاتف</th>
                             <th>العنوان</th>
                             <th>آخر زيارة</th>
@@ -85,7 +85,7 @@ const Patients = () => {
                                     <span className="info-value">{patient.age}</span>
                                 </div>
                                 <div className="patient-info">
-                                    <span className="info-label">الجنس:</span>
+                                    <span className="info-label">النوع:</span>
                                     <span className="info-value">{patient.gender}</span>
                                 </div>
                                 <div className="patient-info">

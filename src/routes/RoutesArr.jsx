@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { BookingPage, Login, Register, FirstAid, FirstAidDetails } from "./lazy";
+import { BookingPage, Login, Register, FirstAid, FirstAidDetails ,DoctorDashboard } from "./lazy";
 
 export const RoutesArray = [
   {
@@ -20,11 +20,16 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <FirstAid />,
-    path: "/",
+    path: "/FirstAid",
   },
   {
     id: v4(),
     element: <FirstAidDetails />,
-    path: "/firstaiddetails",
+    path: "/FirstAidDetails",
+  },
+  {
+    id: v4(),
+    element: <DoctorDashboard />,
+    path: "/DoctorDashboard/*",
   },
 ];
