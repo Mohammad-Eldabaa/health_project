@@ -1,17 +1,102 @@
 
 import Style from './Home.module.css'
 import { TypeAnimation } from 'react-type-animation';
-import { motion } from 'framer-motion';
+import { motion , AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from "react";
 import { FaStethoscope,FaPhone,FaVideo, FaFileMedicalAlt, FaBell, FaEnvelope, FaWhatsapp, FaClock, FaMapMarkerAlt ,
-   FaClinicMedical, FaHeartbeat, FaLungs, FaBrain, FaXRay,  FaUserMd, FaCalendarAlt,FaShieldAlt, FaStar, FaMobileAlt } from 'react-icons/fa';
+   FaClinicMedical, FaHeartbeat, FaLungs, FaBrain, FaXRay,FaQuoteLeft,  FaChevronLeft, FaChevronRight ,  FaUserMd, FaCalendarAlt,FaShieldAlt, FaStar, FaMobileAlt } from 'react-icons/fa';
 
-// import { FaPhone, FaEnvelope, FaWhatsapp, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
-// import {   FaShieldAlt, FaStar, } from 'react-icons/fa';
+
 
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 
 export default function Home() {
+
+  // our team section code 
+   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+  const testimonials = [
+    {
+      name: "محمد أحمد",
+      role: "مريض سابق",
+      rating: 5,
+      comment: "الدكتور أحمد من أفضل الأطباء الذين تعاملت معهم، شرح وافي ودقيق للحالة وقدم خطة علاج ممتازة.",
+      image: "/src/assets/img/doctor-ahmed.jpg"
+    },
+    {
+      name: "سارة خالد",
+      role: "مريضة",
+      rating: 4,
+      comment: "الرعاية المقدمة ممتازة والطبيب محترف جداً في التشخيص والمتابعة، أنصح الجميع به.",
+      image: "/src/assets/img/doctor-sara.jpg"
+    },
+    {
+      name: "علي محمود",
+      role: "مرافق مريض",
+      rating: 5,
+      comment: "العيادة نظيفة والمواعيد دقيقة، الدكتور متابع لكل التفاصيل ويعطي وقت كافي لكل مريض.",
+      image: "/src/assets/img/doctor-lmya.jpg"
+    },
+    {
+      name: "يوسف عبدالله",
+      role: "مريضة",
+      rating: 5,
+      comment: "تجربة ممتازة من جميع النواحي، الخدمة الذكية في الحجز سهلت علي الكثير.",
+      image: "/src/assets/img//doctor-yousef.jpg"
+    }
+  ];
+
+  // Auto-play functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+  };
+
+  const goToSlide = (index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 }
+      }
+    },
+    exit: (direction) => ({
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 }
+      }
+    })
+  };
+
+  // end our team section code
+
 
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -27,36 +112,36 @@ export default function Home() {
 
 
 
-  const doctors = [
-    {
-      name: "د. أحمد عبد العزيز",
-      specialty: "استشاري الباطنة والقلب",
-      image: "/src/assets/img/doctor-ahmed.jpg",
-      bio: "خبرة 15 عاماً في تشخيص وعلاج أمراض القلب والجهاز الهضمي، حاصل على البورد الأمريكي في الطب الباطني.",
-      profileLink: "/doctors/ahmed-abdulaziz"
-    },
-    {
-      name: "د. سارة خالد",
-      specialty: "استشارية طب الأطفال",
-      image: "/src/assets/img/doctor-sara.jpg",
-      bio: "متخصصة في حديثي الولادة والرعاية الصحية للأطفال، حاصلة على شهادة الزمالة البريطانية في طب الأطفال.",
-      profileLink: "/doctors/sara-khaled"
-    },
-    {
-      name: "د. يوسف هشام",
-      specialty: "جراح تجميل الأسنان",
-      image: "/src/assets/img/doctor-yousef.jpg",
-      bio: "خبير في زراعة وتجميل الأسنان باستخدام أحدث التقنيات العالمية، عضو الجمعية الأمريكية لجراحي الأسنان.",
-      profileLink: "/doctors/youssef-abdullah"
-    },
-    {
-      name: "د. لمى فاروق",
-      specialty: "استشارية الجلدية",
-      image: "/src/assets/img/doctor-lmya.jpg",
-      bio: "متخصصة في علاج الأمراض الجلدية والليزر والتجميل غير الجراحي، حاصلة على الماجستير من جامعة هارفارد.",
-      profileLink: "/doctors/lama-farouk"
-    }
-  ];
+  // const doctors = [
+  //   {
+  //     name: "د. أحمد عبد العزيز",
+  //     specialty: "استشاري الباطنة والقلب",
+  //     image: "/src/assets/img/doctor-ahmed.jpg",
+  //     bio: "خبرة 15 عاماً في تشخيص وعلاج أمراض القلب والجهاز الهضمي، حاصل على البورد الأمريكي في الطب الباطني.",
+  //     profileLink: "/doctors/ahmed-abdulaziz"
+  //   },
+  //   {
+  //     name: "د. سارة خالد",
+  //     specialty: "استشارية طب الأطفال",
+  //     image: "/src/assets/img/doctor-sara.jpg",
+  //     bio: "متخصصة في حديثي الولادة والرعاية الصحية للأطفال، حاصلة على شهادة الزمالة البريطانية في طب الأطفال.",
+  //     profileLink: "/doctors/sara-khaled"
+  //   },
+  //   {
+  //     name: "د. يوسف هشام",
+  //     specialty: "جراح تجميل الأسنان",
+  //     image: "/src/assets/img/doctor-yousef.jpg",
+  //     bio: "خبير في زراعة وتجميل الأسنان باستخدام أحدث التقنيات العالمية، عضو الجمعية الأمريكية لجراحي الأسنان.",
+  //     profileLink: "/doctors/youssef-abdullah"
+  //   },
+  //   {
+  //     name: "د. لمى فاروق",
+  //     specialty: "استشارية الجلدية",
+  //     image: "/src/assets/img/doctor-lmya.jpg",
+  //     bio: "متخصصة في علاج الأمراض الجلدية والليزر والتجميل غير الجراحي، حاصلة على الماجستير من جامعة هارفارد.",
+  //     profileLink: "/doctors/lama-farouk"
+  //   }
+  // ];
   const features = [
     {
       icon: <FaClock className="text-3xl" />,
@@ -562,107 +647,115 @@ export default function Home() {
       </div>
     </section>
 
-      <section className="py-20 bg-white   relative w-screen overflow-x-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#B2EBF2] opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
+{/* end of doctor services */}
 
-        <div className="container mx-auto px-4 relative z-10">
-          {/* Section Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+{/* start of our team section ===========================*/}
+
+    <section className="py-20 bg-white relative w-screen overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#B2EBF2] opacity-20 blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0097A7] mb-4">
+            آراء عملائنا
+          </h2>
+          <div className="w-24 h-1 bg-[#00BCD4] mx-auto rounded-full mb-5"></div>
+          <p className="text-[#757575] max-w-2xl mx-auto text-lg">
+            تقييمات المرضى الذين استفادوا من خدمات عيادتنا
+          </p>
+        </motion.div>
+
+        {/* Slider Container */}
+        <div className="relative h-[400px] md:h-[300px]">
+          {/* Navigation Arrows */}
+          <button 
+            onClick={prevSlide}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center text-[#009688] hover:bg-[#E0F7FA] transition -ml-5"
+            aria-label="السابق"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0097A7] mb-4">
-              فريق أطبائنا المتخصصين
-            </h2>
-            <div className="w-24 h-1 bg-[#00BCD4] mx-auto rounded-full mb-5"></div>
-            <p className="text-[#757575] max-w-2xl mx-auto text-lg">
-              يعمل في عيادتنا نخبة من أفضل الأطباء الاستشاريين في مختلف التخصصات الطبية
-            </p>
-          </motion.div>
-
-          {/* Doctors Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {doctors.map((doctor, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-[#E0F7FA]"
-              >
-                {/* Doctor Image */}
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    src={doctor.image}
-                    alt={doctor.name}
-                    className="w-full h-full object-cover  transition-transform duration-500 hover:scale-105"
-                  />
-                  {/* Specialty Badge */}
-                  <div className="absolute bottom-4 left-4 bg-[#009688] text-white px-3 py-1 rounded-full text-sm">
-                    {doctor.specialty}
-                  </div>
-                </div>
-
-                {/* Doctor Info */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-[#212121] mb-1">
-                    {doctor.name}
-                  </h3>
-                  <p className="text-[#0097A7] text-sm mb-4">
-                    {doctor.specialty}
-                  </p>
-                  <p className="text-[#757575] text-sm mb-6 line-clamp-3">
-                    {doctor.bio}
-                  </p>
-
-                  {/* Profile Link */}
-                  <motion.a
-                    whileHover={{ x: 5 }}
-                    href={doctor.profileLink}
-                    className="flex items-center text-[#00BCD4] font-medium text-sm"
-                  >
-                    عرض الملف الشخصي
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                  </motion.a>
-                </div>
-
-                {/* Hover Effect */}
-                <div className="absolute inset-0 border-2 border-[#00BCD4] opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* View All Button */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-center mt-12"
+            <FaChevronLeft />
+          </button>
+          
+          <button 
+            onClick={nextSlide}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center text-[#009688] hover:bg-[#E0F7FA] transition -mr-5"
+            aria-label="التالي"
           >
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="/doctors"
-              className="inline-flex items-center bg-[#009688] text-white px-8 py-3 rounded-lg hover:bg-[#00897B] transition duration-300 shadow-md"
+            <FaChevronRight />
+          </button>
+
+          {/* Animated Slides */}
+          <AnimatePresence custom={direction} initial={false}>
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="absolute inset-0"
             >
-              عرض جميع الأطباء
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-              </svg>
-            </motion.a>
-          </motion.div>
+              <div className="bg-[#E0F7FA] rounded-2xl p-8 md:p-10 shadow-sm flex flex-col md:flex-row items-center gap-8 h-full">
+                {/* Patient Image */}
+                <div className="w-32 h-32 md:w-48 md:h-48 flex-shrink-0">
+                  <img 
+                    src={testimonials[currentIndex].image} 
+                    alt={testimonials[currentIndex].name}
+                    className="w-full h-full object-cover rounded-full border-4 border-white shadow-lg"
+                    loading="lazy"
+                  />
+                </div>
+                
+                {/* Testimonial Content */}
+                <div className="text-center md:text-right flex-1">
+                  <FaQuoteLeft className="text-[#009688] text-2xl mb-4 mx-auto md:mx-0" />
+                  
+                  <p className="text-[#757575] text-lg mb-6 max-w-2xl mx-auto md:mx-0">
+                    {testimonials[currentIndex].comment}
+                  </p>
+                  
+                  <div className="mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar 
+                        key={i} 
+                        className={`inline-block ${i < testimonials[currentIndex].rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+                      />
+                    ))}
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-[#212121]">{testimonials[currentIndex].name}</h3>
+                  <p className="text-[#0097A7]">{testimonials[currentIndex].role}</p>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </section>
+
+        {/* Slider Dots */}
+        <div className="flex justify-center mt-8 gap-2">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${currentIndex === index ? 'bg-[#009688] w-6' : 'bg-[#B2EBF2] hover:bg-[#80DEEA]'}`}
+              aria-label={`انتقل إلى التقييم ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+
+{/* end of our team section */}
+
 
       <section className="py-20 bg-[#E0F7FA] w-screen relative overflow-x-hidden">
         {/* Decorative Elements */}
