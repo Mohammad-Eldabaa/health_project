@@ -9,7 +9,6 @@ function SearchBar(props) {
         setSearchTerm(e.target.value);
     };
 
-    // console.log("Searching for:", searchTerm);
     return (
         <div className="search-bar">
             <SearchIcon className="search-icon" />

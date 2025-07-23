@@ -1,15 +1,11 @@
 .doctor-dashboard {
-    display: grid;
-    grid-template-columns: 2fr 10fr;  
+    display: flex;
 }
 
 .sidebar {
-    grid-column: 1; 
+    width: 240px;
 }
 
-.dashboard-contant {
-    grid-column: 2;
+.content {
+    flex: 1;
 }
-
-
-
