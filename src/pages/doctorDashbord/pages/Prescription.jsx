@@ -2,20 +2,16 @@ import { useState } from 'react';
 import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
-pdfMake.vfs = {
-    ...pdfFonts.default.vfs,
-    'Amiri-Regular': 'https://cdn.jsdelivr.net/gh/opentypejs/amiri-font/Amiri-Regular.ttf',
-    'Amiri-Bold': 'https://cdn.jsdelivr.net/gh/opentypejs/amiri-font/Amiri-Bold.ttf'
-};
-
+pdfMake.vfs = pdfFonts.default.vfs;
 pdfMake.fonts = {
-    Amiri: {
-        normal: 'Amiri-Regular',
-        bold: 'Amiri-Bold',
-        italics: 'Amiri-Regular',
-        bolditalics: 'Amiri-Regular'
+    Roboto: {
+        normal: 'Roboto-Regular.ttf',
+        bold: 'Roboto-Medium.ttf',
+        italics: 'Roboto-Italic.ttf',
+        bolditalics: 'Roboto-MediumItalic.ttf'
     }
 };
+
 
 const medicationCategories = {
     'مسكنات': ['باراسيتامول', 'ايبوبروفين', 'ديكلوفيناك', 'نابروكسين'],
@@ -93,6 +89,11 @@ export default function Prescription({ onClose }) {
     };
 
     const printPrescription = () => {
+        if (!patientName || selectedMeds.length === 0) {
+            alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
+            return;
+        }
+
         const medsContent = selectedMeds.map((med, index) => ([
             { text: `${index + 1}. ${med.name}`, style: 'medText' },
             { text: `الجرعة: ${med.dosage}`, style: 'subText' },
@@ -102,57 +103,58 @@ export default function Prescription({ onClose }) {
 
         const docDefinition = {
             content: [
-                { text: 'روشتة طبية', style: 'header', alignment: 'center' },
-                { text: `اسم المريض: ${patientName}`, style: 'subheader' },
-                { text: `التاريخ: ${today}`, style: 'subheader' },
-                { text: 'التشخيص/الملاحظات:', style: 'subheader' },
-                { text: notes || 'لا توجد ملاحظات', style: 'notesText' },
-                { text: 'الأدوية الموصوفة:', style: 'subheader', margin: [0, 10, 0, 5] },
+                { text: 'Medical Prescription', style: 'header', alignment: 'center' },
+                { text: `Patient Name: ${patientName}`, style: 'subheader' },
+                { text: `Date: ${today}`, style: 'subheader' },
+                { text: 'Diagnosis / Notes:', style: 'subheader' },
+                { text: notes || 'No notes available', style: 'notesText' },
+                { text: 'Prescribed Medications:', style: 'subheader', margin: [0, 10, 0, 5] },
                 ...medsContent
             ],
+
             styles: {
                 header: {
                     fontSize: 18,
                     bold: true,
                     margin: [0, 0, 0, 10],
-                    font: 'Amiri'
+                    font: 'Roboto'
                 },
                 subheader: {
                     fontSize: 14,
                     bold: true,
                     margin: [0, 5, 0, 3],
-                    font: 'Amiri'
+                    font: 'Roboto'
                 },
                 medText: {
                     fontSize: 12,
                     bold: true,
-                    font: 'Amiri'
+                    font: 'Roboto'
                 },
                 subText: {
                     fontSize: 11,
                     margin: [20, 0, 0, 0],
-                    font: 'Amiri'
+                    font: 'Roboto'
                 },
                 notesText: {
                     fontSize: 12,
                     margin: [0, 0, 0, 10],
-                    font: 'Amiri'
+                    font: 'Roboto'
                 }
             },
             defaultStyle: {
-                font: 'Amiri',
+                font: 'Roboto',
                 alignment: 'right'
             }
         };
 
-        pdfMake.createPdf(docDefinition).open();
+        pdfMake.createPdf(docDefinition).download('prescription.pdf');
     };
 
     return (
         <div className="bg-gray-100 rounded-2xl mx-2 sm:mx-4 lg:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10">
 
 
-            <div className="min-h-screen bg-gray-100 p-6">
+            <div className="min-h-screen bg-gray-100 p-1">
 
                 <div className="flex items-center gap-3 justify-between">
                     <span className="text-base sm:text-lg lg:text-xl mb-5">كتابة الروشتة</span>
@@ -198,7 +200,7 @@ export default function Prescription({ onClose }) {
                     </div>
 
                     {/* Left Side  */}
-                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-6">
+                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-5">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold " style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>
                             <div className="text-gray-600">
@@ -280,7 +282,7 @@ export default function Prescription({ onClose }) {
 
                 {/* Modal*/}
                 {showDosageModal && (
-                    <div className="fixed inset-10 bg-gray bg-opacity-100 flex justify-center items-center z-50">
+                    <div className="fixed inset-0 bg-gray bg-opacity-10 flex justify-center items-center z-50 overflow-auto">
                         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
                             <h3 className="text-xl font-bold mb-4 text-blue-800"
                                 style={{ color: "var(--color-primary)" }}
