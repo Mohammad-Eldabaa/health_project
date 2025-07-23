@@ -8,10 +8,6 @@ export const Schema = Yup.object({
   address: Yup.string()
     .required("العنوان مطلوب")
     .min(3, "برجاء دخال اسم المحافظة على الأقل"),
-  nationalId: Yup.string()
-    .required("رقم الهوية الوطنية مطلوب")
-    .min(14, "رقم الهوية الوطنية يجب أن يكون 14 رقمًا")
-    .max(14, "رقم الهوية الوطنية يجب أن يكون 14 رقمًا"),
   age: Yup.number()
     .required("العمر مطلوب")
     .min(1, "برجاء دخال عر صحيح")
@@ -27,7 +23,6 @@ export const Schema = Yup.object({
 export const formData = {
   fullName: "",
   address: "",
-  nationalId: "",
   age: "",
   phoneNumber: "",
   bookingDate: "",
@@ -35,7 +30,7 @@ export const formData = {
   notes: "",
 };
 
-export const handleSubmit = (values) => {
+export const handleSubmit = (values, { resetForm }) => {
   console.log("Booking submitted:", values);
-  addPatient(values);
+  addPatient(values, resetForm);
 };

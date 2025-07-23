@@ -1,8 +1,12 @@
+<<<<<<< HEAD
+import { useState } from "react";
 
+=======
+>>>>>>> mohammad
 import { Routes, Route } from "react-router-dom";
 import SideBar from "../components/SideBar";
 import Topbar from "../components/Topbar";
-import "./DoctorDashbord.css"
+import "./DoctorDashbord.css";
 
 import Home from "./Home";
 // import Profile from "./Profile";
@@ -14,26 +18,34 @@ import Prescription from "./Prescription";
 // import Statistics from "./Statistics";
 // import Settings from "./Settings";
 
+
+
 function DoctorDashboard() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
     <div className="doctor-dashboard">
-      <SideBar />
+      <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="content">
-        <Topbar />
+        <Topbar toggleSidebar={toggleSidebar} />
         <Routes>
-          <Route path="/" element={<Home />} />
-          {/* <Route path="/profile" element={<Profile />} />
-          <Route path="/appointments" element={<Appointments />} /> */}
-          <Route path="/patients" element={<Patients />} />
-          <Route path="/records" element={<Records />} />
-          <Route path="/prescription" element={<Prescription />} />
-          {/* <Route path="/tests" element={<Tests />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/settings" element={<Settings />} /> */}
+          <Route path="" element={<Home />} />
+          {/* <Route path="profile" element={<Profile />} />
+          <Route path="appointments" element={<Appointments />} /> */}
+          <Route path="patients" element={<Patients />} />
+          <Route path="records" element={<Records />} />
+          <Route path="prescription" element={<Prescription />} />
+          {/* <Route path="tests" element={<Tests />} />
+          <Route path="statistics" element={<Statistics />} />
+          <Route path="settings" element={<Settings />} /> */}
         </Routes>
       </div>
     </div>
   );
 }
 
+
 export default DoctorDashboard;
+

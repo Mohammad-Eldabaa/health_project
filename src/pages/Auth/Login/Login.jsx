@@ -4,8 +4,12 @@ import drr from "../../../assets/drr.jpeg";
 import pitttttt from "../../../assets/pitttttt.png";
 import { NavLink } from "react-router-dom";
 import { loginSchema } from "../../../forms/schema";
+import useAuthStore from "../../../store/auth";
 
 export default function Login() {
+  const { login } = useAuthStore();
+  const navigate = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -14,6 +18,9 @@ export default function Login() {
     validationSchema: loginSchema,
     onSubmit: (values) => {
       console.log("Login Data:", values);
+      login(values, () => {
+        navigate("/");
+      });
     },
   });
 
