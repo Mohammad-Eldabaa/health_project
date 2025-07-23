@@ -1,47 +1,44 @@
-import { v4 } from "uuid";
+import { v4 } from 'uuid';
 import {
-  BookingPage,
   Login,
   Register,
+  BookingPage,
   FirstAid,
   FirstAidDetails,
+  DoctorDashboard,
+  Layout,
   Home,
-} from "./lazy";
+  About,
+  Contact,
+  Services,
+  Booking,
+  Footer,
+  Notfound,
+} from './lazy';
 
 export const RoutesArray = [
+  { id: v4(), element: <Login />, path: '/login' },
+  { id: v4(), element: <Register />, path: '/register' },
+  { id: v4(), element: <BookingPage />, path: '/bookingpage' },
+  { id: v4(), element: <FirstAid />, path: '/firstaid' },
+  { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
+  { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
+
+  // Zezo Route
   {
     id: v4(),
-    element: <Login />,
-    path: "/login",
+    element: <Layout />,
+    path: '/',
+    children: [
+      { id: v4(), element: <Home />, path: '', index: true },
+      { id: v4(), element: <About />, path: 'about' },
+      { id: v4(), element: <Contact />, path: 'contact' },
+      { id: v4(), element: <Services />, path: 'services' },
+      { id: v4(), element: <Booking />, path: 'booking' },
+      { id: v4(), element: <Footer />, path: 'footer' },
+    ],
   },
-  {
-    id: v4(),
-    element: <Register />,
-    path: "/register",
-  },
-  {
-    id: v4(),
-    element: <Home />,
-    path: "/",
-  },
-  {
-    id: v4(),
-    element: <BookingPage />,
-    path: "/bookingpage",
-  },
-  {
-    id: v4(),
-    element: <FirstAid />,
-    path: "/firstaid",
-  },
-  {
-    id: v4(),
-    element: <FirstAidDetails />,
-    path: "/FirstAidDetails",
-  },
-  {
-    id: v4(),
-    element: <DoctorDashboard />,
-    path: "/DoctorDashboard/*",
-  },
+
+  // Catch-all route for 404
+  { id: v4(), element: <Notfound />, path: '*' },
 ];

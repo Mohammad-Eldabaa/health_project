@@ -16,7 +16,7 @@
 .card::before,
 .card::after {
   position: absolute;
-  content: "";
+  content: '';
   width: 20%;
   height: 20%;
   background-color: #b2ebf2;
@@ -44,7 +44,7 @@
 }
 
 .card:hover::after {
-  content: "اعرف المزيد";
+  content: 'اعرف المزيد';
   color: #212121;
   font-size: 20px;
   display: flex;

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import useFirstAidStore from "../../store/firstaid";
+import React, { useEffect, useState } from 'react';
+import useFirstAidStore from '../../store/firstaid';
+import './firstAiddetail.css';
 
 export default function FirstAidDetails() {
-  const [htmlContent, setHtmlContent] = useState("");
+  const [htmlContent, setHtmlContent] = useState('');
   const { getStateById, lastId } = useFirstAidStore();
 
   const handleLoad = async () => {
