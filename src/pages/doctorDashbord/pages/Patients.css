@@ -5,7 +5,6 @@ button {
   gap: 5px;
   padding: 5px 10px;
   border: none;
-  background-color: #f0f0f0;
   border-radius: 20px;
   cursor: pointer;
 }
