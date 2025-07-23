@@ -1,11 +1,18 @@
 import { v4 } from "uuid";
-import { BookingPage, Login, Register, FirstAid, FirstAidDetails ,DoctorDashboard } from "./lazy";
+import {
+  BookingPage,
+  Login,
+  Register,
+  FirstAid,
+  FirstAidDetails,
+  Home,
+} from "./lazy";
 
 export const RoutesArray = [
   {
     id: v4(),
     element: <Login />,
-    path: "/Login",
+    path: "/login",
   },
   {
     id: v4(),
@@ -14,13 +21,18 @@ export const RoutesArray = [
   },
   {
     id: v4(),
+    element: <Home />,
+    path: "/",
+  },
+  {
+    id: v4(),
     element: <BookingPage />,
-    path: "/bookingPage",
+    path: "/bookingpage",
   },
   {
     id: v4(),
     element: <FirstAid />,
-    path: "/FirstAid",
+    path: "/firstaid",
   },
   {
     id: v4(),

@@ -17,9 +17,12 @@ export const logInAndRegisterSchema = yup.object({
     .oneOf([yup.ref("password"), null], "كلمة المرور غير متطابقة")
     .required("تأكيد كلمة المرور مطلوب"),
   address: yup.string().required("العنوان مطلوب"),
-  // phone: yup.string().required('رقم الهاتف مطلوب').matches(/^\d{11}$/, 'رقم الهاتف يجب أن يكون 11 أرقام'),
-  city: yup.string().required("المدينة مطلوبة"),
-  state: yup.string().required("المحافظة مطلوبة"),
+  phone: yup
+    .string()
+    .required("رقم الهاتف مطلوب")
+    .matches(/^\d{11}$/, "رقم الهاتف يجب أن يكون 11 أرقام"),
+  // city: yup.string().required("المدينة مطلوبة"),
+  // state: yup.string().required("المحافظة مطلوبة"),
 });
 
 export const loginSchema = yup.object({
