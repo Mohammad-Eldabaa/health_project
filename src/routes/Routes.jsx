@@ -10,7 +10,7 @@ const renderRoute = route => {
       </Route>
     );
   }
-
+  // console.log(route.index, route.path);
   return <Route key={route.id} path={route.path} element={route.element} index={route.index} />;
 };
 
