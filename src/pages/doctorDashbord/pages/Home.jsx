@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 
 const Home = () => {
-    // const today = new Date().toLocaleDateString("ar-EG");
 
     const navigate = useNavigate();
 
@@ -91,7 +90,6 @@ const Home = () => {
                         </div>
 
 
-                        {/* عرض المواعيد حسب الوقت */}
                         <div className="space-y-4">
                             {appointments.map((appointment) => (
                                 <div
@@ -186,16 +184,6 @@ const Home = () => {
                             </div>
                         </div>
                     </div>
-
-                    <style jsx>{`
-                        .hide-scrollbar::-webkit-scrollbar {
-                        display: none;
-                        }
-                        .hide-scrollbar {
-                        -ms-overflow-style: none;
-                        scrollbar-width: none;
-                        }
-                        `}</style>
 
 
 
