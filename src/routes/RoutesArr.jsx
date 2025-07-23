@@ -22,7 +22,7 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <Home />,
-    path: "/",
+    path: "/home",
   },
   {
     id: v4(),
@@ -32,16 +32,16 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <FirstAid />,
-    path: "/firstaid",
+    path: "/",
   },
   {
     id: v4(),
     element: <FirstAidDetails />,
     path: "/FirstAidDetails",
   },
-  {
-    id: v4(),
-    element: <DoctorDashboard />,
-    path: "/DoctorDashboard/*",
-  },
+  // {
+  //   id: v4(),
+  //   element: <DoctorDashboard />,
+  //   path: "/DoctorDashboard/*",
+  // },
 ];
