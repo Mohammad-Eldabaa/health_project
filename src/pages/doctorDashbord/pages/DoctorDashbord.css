@@ -1,0 +1,11 @@
+.doctor-dashboard {
+    display: flex;
+}
+
+.sidebar {
+    width: 240px;
+}
+
+.content {
+    flex: 1;
+}
