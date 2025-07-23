@@ -14,39 +14,40 @@ pdfMake.fonts = {
 
 
 const medicationCategories = {
-    'مسكنات': ['باراسيتامول', 'ايبوبروفين', 'ديكلوفيناك', 'نابروكسين'],
-    'مضادات حيوية': ['أموكسيسيلين', 'أزيثروميسين', 'سيبروفلوكساسين', 'دوكسيسيكلين'],
-    'أدوية المعدة': ['أوميبرازول', 'رانيتيدين', 'دومبيريدون'],
-    'فيتامينات': ['فيتامين د', 'فيتامين ب12', 'فيتامين سي']
+  'Pain Relievers': ['Paracetamol', 'Ibuprofen', 'Diclofenac', 'Naproxen'],
+  'Antibiotics': ['Amoxicillin', 'Azithromycin', 'Ciprofloxacin', 'Doxycycline'],
+  'Stomach Medications': ['Omeprazole', 'Ranitidine', 'Domperidone'],
+  'Vitamins': ['Vitamin D', 'Vitamin B12', 'Vitamin C']
 };
 
 
 const dosageOptions = [
-    'قرص واحد مرتين يومياً',
-    'قرص واحد ثلاث مرات يومياً',
-    'قرصين كل 8 ساعات',
-    'قرص واحد كل 12 ساعة',
-    '500 مجم كل 8 ساعات',
-    '1 جرام كل 12 ساعة',
-    'حسب الحاجة'
+  'One tablet twice daily',
+  'One tablet three times daily',
+  'Two tablets every 8 hours',
+  'One tablet every 12 hours',
+  '500 mg every 8 hours',
+  '1 gram every 12 hours',
+  'As needed'
 ];
 
 const durationOptions = [
-    '3 أيام',
-    '5 أيام',
-    '7 أيام',
-    '10 أيام',
-    '14 يوم',
-    '21 يوم',
-    'حسب التعليمات'
+  '3 days',
+  '5 days',
+  '7 days',
+  '10 days',
+  '14 days',
+  '21 days',
+  'As directed'
 ];
 
+
 export default function Prescription({ onClose }) {
-    const today = new Date().toLocaleDateString('ar-EG');
+    const today = new Date().toLocaleDateString('en-US');
     const [patientName, setPatientName] = useState('');
     const [notes, setNotes] = useState('');
     const [selectedMeds, setSelectedMeds] = useState([]);
-    const [activeCategory, setActiveCategory] = useState('مسكنات');
+    const [activeCategory, setActiveCategory] = useState('Pain Relievers');
     const [currentMed, setCurrentMed] = useState('');
     const [dosage, setDosage] = useState('');
     const [duration, setDuration] = useState('');
@@ -96,8 +97,8 @@ export default function Prescription({ onClose }) {
 
         const medsContent = selectedMeds.map((med, index) => ([
             { text: `${index + 1}. ${med.name}`, style: 'medText' },
-            { text: `الجرعة: ${med.dosage}`, style: 'subText' },
-            { text: `المدة: ${med.duration}`, style: 'subText' },
+            { text: `Medical dose: ${med.dosage}`, style: 'subText' },
+            { text: `Time: ${med.duration}`, style: 'subText' },
             { text: '\n' }
         ])).flat();
 
@@ -164,7 +165,7 @@ export default function Prescription({ onClose }) {
 
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Right Side */}
-                    <div className="w-full lg:w-2/5 bg-white rounded-lg shadow-md p-4">
+                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4">
                         <h2 className="text-xl font-bold mb-4 " style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
                         <div className="bg-gray-100 p-2 rounded-lg mb-4">

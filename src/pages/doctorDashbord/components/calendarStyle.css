@@ -1,0 +1,13 @@
+.react-calendar {
+  width: 100%;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  font-family: inherit;
+}
+
+.react-calendar__tile--active {
+  background:var(--color-accent) !important; /* Tailwind blue-500 */
+  color: white !important;
+  border-radius: 8px;
+  justify-content: center;
+}
