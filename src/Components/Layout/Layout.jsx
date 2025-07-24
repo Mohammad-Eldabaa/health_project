@@ -9,7 +9,9 @@ export default function Layout() {
     <>
       <Navbar />
       <div className="container w-screen">
-        <Outlet></Outlet>
+        <Outlet>
+            
+        </Outlet>
       </div>
       <Footer />
     </>

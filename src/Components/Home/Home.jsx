@@ -9,6 +9,7 @@ const DoctorServices = React.lazy(() => import('./DoctorServices'));
 const Testimonials = React.lazy(() => import('./Testimonials'));
 const ContactUs = React.lazy(() => import('./ContactUs'));
 const WhyChooseUs = React.lazy(() => import('./WhyChooseUs'));
+const AppDownloadSection = React.lazy(() => import('./AppDownloadSection'));
 
 function Home() {
   return (
@@ -20,6 +21,7 @@ function Home() {
         <Testimonials />
         <ContactUs />
         <WhyChooseUs />
+        <AppDownloadSection />
       </Suspense>
     </>
   );
