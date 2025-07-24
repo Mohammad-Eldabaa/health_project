@@ -1,49 +1,50 @@
-import React from 'react';
-import { useFormik } from 'formik';
-import drr from '../../../assets/drr.jpeg';
-import pitttttt from '../../../assets/pitttttt.png';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { loginSchema } from '../../../forms/schema';
-import useAuthStore from '../../../store/auth';
+import React from "react";
+import { useFormik } from "formik";
+import drr from "../../../assets/drr.jpeg";
+import pitttttt from "../../../assets/pitttttt.png";
+import { NavLink } from "react-router-dom";
+import { loginSchema } from "../../../forms/schema";
 
 export default function Login() {
-  const { login } = useAuthStore();
-  const navigate = useNavigate();
-
   const formik = useFormik({
     initialValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
     validationSchema: loginSchema,
-    onSubmit: values => {
-      console.log('Login Data:', values);
-      login(values, () => {
-        navigate('/');
-      });
+    onSubmit: (values) => {
+      console.log("Login Data:", values);
     },
   });
 
   return (
-    <div className="w-full min-h-screen font-[Cairo] flex flex-col md:flex-row">
-      {/* صورة الدكتور */}
-      <div className="hidden md:block w-1/3 h-screen">
-        <img src={drr} alt="صورة الدكتور" className="w-full h-full object-cover" />
+    <div className="w-full min-h-screen font-[Cairo] flex flex-col md:flex-row bg-gray-100">
+      {/* صورة الدكتور فقط */}
+      <div className="w-full md:w-1/3 h-64 md:h-screen">
+        <img
+          src={drr}
+          alt="صورة الدكتور"
+          className="w-full h-full object-cover object-center"
+        />
       </div>
 
-      {/* الجزء التاني فيه الخلفية والفورم */}
-      <div className="relative w-full md:w-2/3 flex items-center justify-center p-6">
-        {/* الخلفية */}
-        <img src={pitttttt} alt="bg" className="absolute inset-0 w-full h-full object-cover z-0" />
+      {/* الجزء الأيمن مع الفورم على الصورة */}
+      <div className="relative flex-1 flex items-center justify-center p-4 md:p-8">
+        {/* الخلفية (الصورة) */}
+        <img
+          src={pitttttt}
+          alt="background"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
 
-        {/* الفورم - هنا التركيز على مطابقة التنسيقات الأصلية */}
-        <div className="relative z-10 w-full max-w-md  bg-opacity-90 p-8 rounded ">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">تسجيل الدخول</h2>
+        {/* الفورم بدون خلفية بيضاء */}
+        <div className="relative z-10 w-full max-w-md p-6 md:p-8 rounded-lg">
+          <h2 className="text-2xl font-bold text-center text-white mb-6 drop-shadow-md">تسجيل الدخول</h2>
 
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-right">البريد الإلكتروني</label>
+              <label className="block mb-1 font-medium text-white text-right drop-shadow-md">البريد الإلكتروني</label>
               <input
                 type="email"
                 name="email"
@@ -51,20 +52,19 @@ export default function Login() {
                 value={formik.values.email}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-1 text-right ${
-                  formik.touched.email && formik.errors.email
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${formik.touched.email && formik.errors.email
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
               />
               {formik.touched.email && formik.errors.email && (
-                <p className="text-red-500 text-sm mt-1 text-right">{formik.errors.email}</p>
+                <p className="text-red-500 text-sm mt-1 text-right drop-shadow-md">{formik.errors.email}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-right">كلمة المرور</label>
+              <label className="block mb-1 font-medium text-white text-right drop-shadow-md">كلمة المرور</label>
               <input
                 type="password"
                 name="password"
@@ -72,33 +72,43 @@ export default function Login() {
                 value={formik.values.password}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-1 text-right ${
-                  formik.touched.password && formik.errors.password
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${formik.touched.password && formik.errors.password
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
               />
               {formik.touched.password && formik.errors.password && (
-                <p className="text-red-500 text-sm mt-1 text-right">{formik.errors.password}</p>
+                <p className="text-red-500 text-sm mt-1 text-right drop-shadow-md">{formik.errors.password}</p>
               )}
             </div>
 
             {/* Forgot Password */}
             <div className="text-sm text-right">
-              <NavLink to="/forgot-password" className="text-blue-600 hover:text-blue-800 hover:underline">
+              <NavLink
+                to="/forgetpassword"
+                className="text-white hover:text-blue-500 hover:underline drop-shadow-md"
+              >
                 هل نسيت كلمة المرور؟
               </NavLink>
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="w-30 bg-blue-600">
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md 
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                        transition duration-150 ease-in-out font-medium"
+            >
               تسجيل الدخول
             </button>
 
             {/* Create account link */}
             <div className="text-center mt-4 text-sm">
-              <span className="text-gray-600">ليس لديك حساب؟ </span>
-              <NavLink to="/register" className="text-blue-600 hover:text-blue-800 hover:underline">
+              <span className="text-white drop-shadow-md">ليس لديك حساب؟ </span>
+              <NavLink
+                to="/register"
+                className="text-white hover:text-blue-500 hover:underline drop-shadow-md"
+              >
                 إنشاء حساب جديد
               </NavLink>
             </div>
