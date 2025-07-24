@@ -6,6 +6,7 @@ import {
   FirstAid,
   FirstAidDetails,
   Home,
+  MedicalArticles,
 } from "./lazy";
 
 export const RoutesArray = [
@@ -32,12 +33,17 @@ export const RoutesArray = [
   {
     id: v4(),
     element: <FirstAid />,
-    path: "/",
+    path: "/firstaid",
   },
   {
     id: v4(),
     element: <FirstAidDetails />,
     path: "/FirstAidDetails",
+  },
+  {
+    id: v4(),
+    element: <MedicalArticles />,
+    path: "/",
   },
   // {
   //   id: v4(),

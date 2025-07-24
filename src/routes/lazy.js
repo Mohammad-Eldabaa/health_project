@@ -13,3 +13,4 @@ export const DoctorDashboard = lazy(() =>
   import("../pages/doctorDashbord/pages/DoctorDashbord.jsx")
 );
 export const Home = lazy(() => import("../Components/Layout/Layout.jsx"));
+export const MedicalArticles = lazy(() => import("../pages/MedicalArticles/MedicalArticles.jsx"));
