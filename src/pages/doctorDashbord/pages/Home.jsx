@@ -46,8 +46,8 @@ const Home = () => {
 
     return (
         <div className="min-h-screen ">
-            <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3">
-                <span className="text-base sm:text-lg lg:text-xl"> لوحة التحكم</span>
+            <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3 ">
+                <span className="text-base sm:text-lg lg:text-xl "> لوحة التحكم</span>
             </div>
 
             <div className="container mx-auto p-4 ">
@@ -79,7 +79,7 @@ const Home = () => {
                             </h3>
                             <div className="flex space-x-2 space-x-reverse">
                                 <button
-                                    className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition flex items-center gap-2"
+                                    className="bg-accent text-white px-4 py-2 rounded-2xl hover:bg-opacity-90 transition flex items-center gap-2"
                                     onClick={goToPatientFile}
                                     style={{ backgroundColor: "var(--color-accent)" }}
                                 >
@@ -132,19 +132,19 @@ const Home = () => {
                                         </span>
                                     </div>
 
-                                    <div className="flex space-x-2 space-x-reverse mt-4  ">
-                                        <button className="text-sm  text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100 transition flex items-center gap-1"
-                                            style={{ backgroundColor: "var(--color-primary-light)" }}>
+                                    <div className="flex space-x-2 space-x-reverse mt-4">
+                                        <button className="text-sm  text-blue-600 px-3 py-1 rounded-2xl bg-cyan-100 hover:bg-cyan-300 transition flex items-center gap-1 mx-1"
+                                        >
 
                                             الملف الطبي
                                         </button>
-                                        <button className="text-sm  text-gray-600 px-3 py-1 rounded-lg hover:bg-primaryDark transition flex items-center gap-1
-                                        "style={{ backgroundColor: "var(--color-primary-light)" }}>
+                                        <button className="text-sm  text-blue-600 px-3 py-1 rounded-2xl bg-cyan-100 hover:bg-cyan-300 transition flex items-center gap-1 mx-1
+                                        ">
 
                                             بدء الكشف
                                         </button>
-                                        <button className="text-sm  text-gray-600 px-3 py-1 rounded-lg hover:bg-gray-100 transition flex items-center gap-1"
-                                            style={{ backgroundColor: "var(--color-primary-light)" }}>
+                                        <button className="text-sm  text-blue-600 px-3 py-1 rounded-2xl bg-cyan-100 hover:bg-cyan-300 transition flex items-center gap-1 mx-1"
+                                        >
 
                                             تعديل
                                         </button>
@@ -194,7 +194,7 @@ const Home = () => {
                         <div className="bg-gray-100 rounded-xl shadow p-2 mb-6">
                             <CalendarView />
                         </div>
-                        
+
                         <div className="bg-gray-100 rounded-xl shadow p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-xl font-bold text-primary">المريض الحالي</h3>
