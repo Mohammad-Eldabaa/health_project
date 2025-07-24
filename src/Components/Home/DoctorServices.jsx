@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { FaStethoscope, FaHeartbeat, FaLungs, FaBrain, FaClinicMedical, FaXRay, 
   FaMobileAlt, FaCalendarAlt, FaVideo, FaFileMedicalAlt, FaBell } from 'react-icons/fa';
 
@@ -41,7 +42,10 @@ export default function DoctorServices() {
       }
     ]
   };
-
+const navigate = useNavigate();
+  const DoctorProfile = () => {
+    navigate('DoctorProfile');
+  };
   return (
     <section className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full opacity-10">
@@ -88,14 +92,14 @@ export default function DoctorServices() {
                 <p className="text-[#009688] text-lg xl:text-xl mb-4">{doctor.specialty}</p>
                 <p className="text-[#757575] mb-6 xl:mb-8 leading-relaxed">{doctor.bio}</p>
                 <div className="flex justify-center">
-                  <motion.a
+                  <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    href="#"
+                    onClick={DoctorProfile}
                     className="inline-block bg-[#009688] text-white px-8 py-3 rounded-lg hover:bg-[#00897B] transition shadow-md"
                   >
                     عرض الملف الشخصي الكامل
-                  </motion.a>
+                  </motion.button>
                 </div>
               </div>
             </div>

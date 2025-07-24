@@ -7,6 +7,7 @@ import {
   FirstAidDetails,
   DoctorDashboard,
   Layout,
+  DoctorProfile,
   Home,
   About,
   Contact,
@@ -23,6 +24,7 @@ export const RoutesArray = [
   { id: v4(), element: <FirstAid />, path: '/firstaid' },
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
+  { id: v4(), element: <DoctorProfile />, path: '/DoctorProfile' },
 
   // Zezo Route
   {
