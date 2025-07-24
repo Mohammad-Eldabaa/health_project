@@ -10,7 +10,7 @@ export default function Card({ title, id }) {
   return (
     <Link to="/firstaiddetails">
       <div
-        className="card cursor-pointer hover:shadow-lg transition"
+        className="card cursor-pointer hover:shadow-lg transition text-center text-white"
         onClick={() => {
           setLastId(id);
         }}
