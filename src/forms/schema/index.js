@@ -35,3 +35,19 @@ export const loginSchema = yup.object({
     .required("كلمة المرور مطلوبة")
     .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف"),
 });
+export const ForgetPassword = yup.object({
+  email: yup
+    .string()
+    .email("البريد الإلكتروني غير صالح")
+    .required("البريد الإلكتروني مطلوب"),
+});
+export const ResetPassword = yup.object({
+  password: yup
+    .string()
+    .required("كلمة المرور مطلوبة")
+    .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "كلمة المرور غير متطابقة")
+    .required("تأكيد كلمة المرور مطلوب"),
+});

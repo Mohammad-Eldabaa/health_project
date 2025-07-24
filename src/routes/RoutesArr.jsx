@@ -16,16 +16,22 @@ import {
   Footer,
   Notfound,
   MedicalArticles,
+  Profile,
+  Forget,
+  Reset,
 } from './lazy';
 
 export const RoutesArray = [
   { id: v4(), element: <Login />, path: '/login' },
   { id: v4(), element: <Register />, path: '/register' },
+  { id: v4(), element: <Forget />, path: '/forgetpassword' },
+  { id: v4(), element: <Reset />, path: '/resetpassword' },
   { id: v4(), element: <BookingPage />, path: '/bookingpage' },
   { id: v4(), element: <FirstAid />, path: '/firstaid' },
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <DoctorProfile />, path: '/DoctorProfile' },
+  { id: v4(), element: <Profile />, path: '/profile' },
 
   // Zezo Route
   {
