@@ -1,9 +1,7 @@
 import React, { Suspense } from 'react';
-import LoadingSpinner from './LoadingSpinner'; 
+import LoadingSpinner from './LoadingSpinner';
 
-const HeroSection = React.lazy(() => import(
-  /* webpackPrefetch: true */ './HeroSection'
-));
+const HeroSection = React.lazy(() => import(/* webpackPrefetch: true */ './HeroSection'));
 const AboutClinic = React.lazy(() => import('./AboutClinic'));
 const DoctorServices = React.lazy(() => import('./DoctorServices'));
 const Testimonials = React.lazy(() => import('./Testimonials'));

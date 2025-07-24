@@ -4,6 +4,15 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
 pdfMake.vfs = pdfFonts.default.vfs;
+pdfMake.fonts = {
+    Roboto: {
+        normal: 'Roboto-Regular.ttf',
+        bold: 'Roboto-Medium.ttf',
+        italics: 'Roboto-Italic.ttf',
+        bolditalics: 'Roboto-MediumItalic.ttf'
+    }
+};
+
 
 const medicationCategories = {
     'مسكنات': ['باراسيتامول', 'ايبوبروفين', 'ديكلوفيناك', 'نابروكسين'],
@@ -107,10 +116,12 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                 subText: { fontSize: 11, margin: [20, 0, 0, 0] },
                 notesText: { fontSize: 12, margin: [0, 0, 0, 10] }
             },
+
             defaultStyle: {
-                font: 'Helvetica',
+                font: 'Roboto',
                 alignment: 'right'
             }
+
         };
 
         pdfMake.createPdf(docDefinition).open();
@@ -121,7 +132,7 @@ export default function PrescriptionModel({ isOpen, onClose }) {
 
 
             {showDosageModal && (
-                <div className="fixed inset-10 bg-gray bg-opacity-100 flex justify-center items-center z-50">
+                <div className="fixed inset-0 bg-gray bg-opacity-100 flex justify-center items-center z-50 overflow-auto">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
                         <h3 className="text-xl font-bold mb-4 text-blue-800"
                             style={{ color: "var(--color-primary)" }}
@@ -198,7 +209,7 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                 </div>
             )}
 
-            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-5xl relative">
+            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-5xl relative  overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4">نظام صرف الأدوية</h2>
 
                 <button
@@ -208,9 +219,9 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                     ✖ إغلاق
                 </button>
 
-                <div className="flex flex-col lg:flex-row gap-6 mt-6 h-[70vh] overflow-hidden">
+                <div className="flex flex-col lg:flex-row gap-6 mt-6 h-[80vh] ">
                     {/* Right Side  */}
-                    <div className="w-full lg:w-2/5 bg-white rounded-lg shadow-md p-4 border border-gray-200 overflow-y-auto">
+                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4 border border-gray-200 ">
                         <h2 className="text-xl font-bold mb-4 " style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
                         <div className="bg-gray-100 p-2 rounded-lg mb-4">
@@ -246,7 +257,8 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                     </div>
 
                     {/* Left Side */}
-                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4 border border-gray-200 
+">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold " style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>
                             <div className="text-gray-600">
@@ -265,7 +277,7 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                             />
                         </div>
 
-                        <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
+                        <div className="border border-gray-200 rounded-lg overflow-hidden mb-6 ">
                             <div className=" p-3 grid grid-cols-12 gap-1 font-medium text-blue-800"
                                 style={{ backgroundColor: "var(--color-primary-light)", color: "var(--color-text-primary)" }}>
                                 <span className="col-span-5">الدواء</span>
@@ -273,7 +285,7 @@ export default function PrescriptionModel({ isOpen, onClose }) {
                                 <span className="col-span-3">المدة</span>
                                 <span className="col-span-1">إزالة</span>
                             </div>
-                            <div className="max-h-64 overflow-y-auto">
+                            <div className="max-h-64 ">
                                 {selectedMeds.length > 0 ? (
                                     selectedMeds.map((med, index) => (
                                         <div key={index} className="border-b border-gray-200 p-3 grid grid-cols-12 gap-1 items-center hover:bg-gray-50">

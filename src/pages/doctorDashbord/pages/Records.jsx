@@ -11,7 +11,7 @@ export default function Records() {
         <>
             <PrescriptionModel isOpen={isPrescriptionOpen} onClose={() => setIsPrescriptionOpen(false)} />
 
-            <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3">
+            <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3 px-4">
 
                 <div className="flex justify-between items-center mb-3 gap-2">
                     <div className="flex items-center gap-3 justify-between">
@@ -69,14 +69,14 @@ export default function Records() {
             </div>
 
 
-            <div className="bg-gray-100 rounded-2xl mx-2 sm:mx-4 lg:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10">
+            <div className="bg-gray-100 rounded-2xl mx-5 sm:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10 ">
                 <h3 className="text-base sm:text-lg font-semibold m-0">الزيارات السابقة</h3>
 
                 {/* Desktop Table */}
-                <div className="hidden sm:block">
-                    <table className="table-auto border-collapse w-full text-center bg-white rounded-2xl shadow">
-                        <thead className="bg-gray-10">
-                            <tr>
+                <div className="hidden sm:block overflow-auto bg-white rounded-2xl shadow-md ">
+                    <table className="w-full text-right border-collapse">
+                        <thead >
+                            <tr className="bg-white text-sm text-gray-700 text-center">
                                 <th className="p-3 text-gray-700 font-medium border-b border-gray-200">رقم الزيارة</th>
                                 <th className="p-3 text-gray-700 font-medium border-b border-gray-200">الإسم</th>
                                 <th className="p-3 text-gray-700 font-medium border-b border-gray-200">تاريخ الزيارة</th>
@@ -86,7 +86,7 @@ export default function Records() {
                         </thead>
                         <tbody>
                             {Array(5).fill().map((_, index) => (
-                                <tr key={index} className="hover:bg-gray-50 bg-white">
+                                <tr key={index} className="hover:bg-gray-50 bg-white text-center">
                                     <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
                                     <td className="p-3 border-b border-gray-100 text-gray-600">أحمد علي</td>
                                     <td className="p-3 border-b border-gray-100 text-gray-600">2025-07-10</td>
@@ -96,7 +96,7 @@ export default function Records() {
                                         </span>
                                     </td>
                                     <td className="p-3 border-b border-gray-100">
-                                        <button className="text-blue-500 hover:text-blue-700 transition-colors">
+                                        <button className="text-cyan-500 hover:text-cyan-700 transition-colors">
                                             <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
                                         </button>
                                     </td>
@@ -117,7 +117,7 @@ export default function Records() {
                                     <p className="font-bold">الزيارة #{index + 1}</p>
                                     <p className="text-sm">أحمد علي</p>
                                 </div>
-                                <button className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600 transition">
+                                <button className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition">
                                     <VisibilityIcon fontSize="small" />
                                 </button>
                             </div>

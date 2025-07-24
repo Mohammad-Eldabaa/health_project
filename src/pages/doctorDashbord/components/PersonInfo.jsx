@@ -34,7 +34,7 @@ export default function Prescription() {
                     </tr>
                 </tbody>
             </table>
-            <span>
+            <span className="hidden md:inline">
                 <img
                     src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
                     alt="User Avatar"
