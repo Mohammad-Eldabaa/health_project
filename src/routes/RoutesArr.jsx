@@ -15,6 +15,7 @@ import {
   Booking,
   Footer,
   Notfound,
+  MedicalArticles,
 } from './lazy';
 
 export const RoutesArray = [
