@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   height: 300px;
-  background: #00bcd4;
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@
 
 .card:hover::after {
   content: 'اعرف المزيد';
-  color: #212121;
+  color: var(--color-text-primary);
   font-size: 20px;
   display: flex;
   align-items: center;

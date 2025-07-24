@@ -5,6 +5,10 @@ button {
   gap: 5px;
   padding: 5px 10px;
   border: none;
+<<<<<<< HEAD
+=======
+  /* background-color: #f0f0f0; */
+>>>>>>> f6eeffb98d28a60920288e25610f25a481870c6a
   border-radius: 20px;
   cursor: pointer;
 }
