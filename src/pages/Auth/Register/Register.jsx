@@ -37,7 +37,7 @@ export default function Register() {
 
         {/* الفورم بدون خلفية بيضاء */}
         <div className="relative z-10 w-full max-w-md p-6 md:p-8 rounded-lg ">
-          <h2 className="text-3xl font-bold text-center text-white mb-6 drop-shadow-md">انشاء حساب</h2>
+          <h2 className="text-3xl font-bold text-center text-white mb-6 drop-shadow-md">إنشاء حساب</h2>
 
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             {/* الاسم بالكامل */}
