@@ -177,7 +177,7 @@ export default function Register() {
             <div className="text-center mt-4 text-sm">
               <span className="text-white drop-shadow-md">لديك حساب بالفعل؟ </span>
               <NavLink
-                to="/"
+                to="/login"
                 className="text-white hover:text-blue-500 hover:underline font-medium drop-shadow-md"
               >
                 سجل الدخول
