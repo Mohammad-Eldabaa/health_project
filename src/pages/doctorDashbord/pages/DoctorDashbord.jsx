@@ -1,8 +1,4 @@
 import { useState } from "react";
-<<<<<<< HEAD
-
-=======
->>>>>>> yousef
 import { Routes, Route } from "react-router-dom";
 import SideBar from "../components/SideBar";
 import Topbar from "../components/Topbar";
