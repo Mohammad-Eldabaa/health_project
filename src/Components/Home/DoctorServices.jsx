@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FaStethoscope, FaHeartbeat, FaLungs, FaBrain, FaClinicMedical, FaXRay, 
-  FaMobileAlt, FaCalendarAlt, FaVideo, FaFileMedicalAlt, FaBell } from 'react-icons/fa';
+import {
+  FaStethoscope, FaHeartbeat, FaLungs, FaBrain, FaClinicMedical, FaXRay,
+  FaMobileAlt, FaCalendarAlt, FaVideo, FaFileMedicalAlt, FaBell
+} from 'react-icons/fa';
 
 export default function DoctorServices() {
   const doctor = {
@@ -42,9 +44,9 @@ export default function DoctorServices() {
       }
     ]
   };
-const navigate = useNavigate();
-  const DoctorProfile = () => {
-    navigate('DoctorProfile');
+  const navigate = useNavigate();
+  const Profile = () => {
+    navigate('Profile');
   };
   return (
     <section className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
@@ -81,8 +83,8 @@ const navigate = useNavigate();
           >
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-full">
               <div className="h-64 xl:h-72 bg-gradient-to-r from-[#00BCD4] to-[#009688] flex items-center justify-center relative">
-                <img 
-                  src={doctor.image} 
+                <img
+                  src={doctor.image}
                   alt={doctor.name}
                   className="w-48 h-48 xl:w-56 xl:h-56 rounded-full border-4 border-white object-cover shadow-lg"
                 />
@@ -95,7 +97,7 @@ const navigate = useNavigate();
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={DoctorProfile}
+                    onClick={Profile}
                     className="inline-block bg-[#009688] text-white px-8 py-3 rounded-lg hover:bg-[#00897B] transition shadow-md"
                   >
                     عرض الملف الشخصي الكامل
@@ -131,7 +133,7 @@ const navigate = useNavigate();
                     {service.description}
                   </p>
                 </div>
-                
+
                 <div className="px-6 pb-6">
                   <div className="flex items-center justify-center mt-2 pt-4 border-t border-[#B2EBF2]">
                     <div className="w-10 h-10 rounded-full bg-[#E0F7FA] flex items-center justify-center">
@@ -155,7 +157,7 @@ const navigate = useNavigate();
           className="bg-gradient-to-br from-[#0097A7] to-[#009688] shadow-2xl overflow-hidden text-white"
         >
           <div className="p-8 xl:p-10 flex flex-col md:flex-row items-center">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className="md:w-1/3 mb-8 md:mb-0 flex justify-center"
             >
@@ -173,7 +175,7 @@ const navigate = useNavigate();
               >
                 الخدمات الذكية للعيادة
               </motion.h3>
-              
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
                 {[
                   {
@@ -203,7 +205,7 @@ const navigate = useNavigate();
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
-                    whileHover={{ 
+                    whileHover={{
                       y: -5,
                       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)"
                     }}
