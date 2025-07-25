@@ -1,0 +1,244 @@
+{
+    "doctors": [
+        {
+            "id": 1,
+            "name": "أحمد علي",
+            "specialty": "باطنة",
+            "email": "ahmed@example.com",
+            "phone": "01012345678"
+        }
+    ],
+    "patients": [
+        {
+            "id": 1,
+            "name": "أحمد علي",
+            "age": 30,
+            "gender": "ذكر",
+            "phone": "0123456789",
+            "address": "القاهرة",
+            "status": "مستقر",
+            "blood": "A+",
+            "Medical_condition": "سكر",
+            "chronic_diseases": [
+                "ارتفاع ضغط الدم",
+                "سكر"
+            ],
+            "visits": [
+                {
+                    "date": "2025-07-10",
+                    "notes": "صداع مستمر",
+                    "diagnosis": "ارتفاع ضغط الدم",
+                    "prescriptions": [
+                        {
+                            "id": 101,
+                            "name": "بنادول",
+                            "category": "مسكنات",
+                            "dosage": "مرتين يوميًا بعد الأكل"
+                        },
+                        {
+                            "id": 102,
+                            "name": "كونكور",
+                            "category": "ضغط",
+                            "dosage": "مرة واحدة صباحًا"
+                        }
+                    ]
+                },
+                {
+                    "date": "2025-07-10",
+                    "notes": "صداع مستمر",
+                    "diagnosis": "ارتفاع ضغط الدم",
+                    "prescriptions": [
+                        {
+                            "id": 101,
+                            "name": "بنادول",
+                            "category": "مسكنات",
+                            "dosage": "مرتين يوميًا بعد الأكل"
+                        },
+                        {
+                            "id": 102,
+                            "name": "كونكور",
+                            "category": "ضغط",
+                            "dosage": "مرة واحدة صباحًا"
+                        }
+                    ]
+                }
+            ],
+            "tests": [
+                {
+                    "id": 1,
+                    "name": "تحليل دم شامل",
+                    "category": "الدم",
+                    "duration": "24 ساعة",
+                    "urgent": true,
+                    "date": "2025-07-20",
+                    "result": "قيد الانتظار"
+                },
+                {
+                    "id": 2,
+                    "name": "تحليل وظائف الكبد",
+                    "category": "الكبد",
+                    "duration": "48 ساعة",
+                    "urgent": true,
+                    "date": "2025-07-18",
+                    "result": "طبيعي"
+                },
+                {
+                    "id": 3,
+                    "name": "أشعة سينية للصدر",
+                    "category": "الأشعة",
+                    "duration": "فوري",
+                    "urgent": true,
+                    "date": "2025-07-15",
+                    "result": "التهاب خفيف"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "محمد أحمد",
+            "age": 25,
+            "gender": "ذكر",
+            "phone": "0123456788",
+            "address": "الجيزة",
+            "status": "حالة حرجة",
+            "blood": "AB+",
+            "Medical_condition": "ضغط + قلب",
+            "chronic_diseases": [
+                "ارتفاع ضغط الدم",
+                "سكر"
+            ],
+            "visits": [
+                {
+                    "date": "2025-07-09",
+                    "notes": "آلام في المعدة",
+                    "diagnosis": "قرحة معدة",
+                    "prescriptions": [
+                        {
+                            "id": 201,
+                            "name": "أوميبرازول",
+                            "category": "معدة",
+                            "dosage": "قبل الأكل صباحًا ومساءً"
+                        }
+                    ]
+                }
+            ],
+            "tests": [
+                {
+                    "id": 1,
+                    "name": "تحليل دم شامل",
+                    "category": "الدم",
+                    "duration": "24 ساعة",
+                    "urgent": true,
+                    "date": "2025-07-20",
+                    "result": "قيد الانتظار"
+                },
+                {
+                    "id": 2,
+                    "name": "تحليل وظائف الكبد",
+                    "category": "الكبد",
+                    "duration": "48 ساعة",
+                    "urgent": true,
+                    "date": "2025-07-18",
+                    "result": "طبيعي"
+                },
+                {
+                    "id": 3,
+                    "name": "أشعة سينية للصدر",
+                    "category": "الأشعة",
+                    "duration": "فوري",
+                    "urgent": true,
+                    "date": "2025-07-15",
+                    "result": "التهاب خفيف"
+                }
+            ]
+        }
+    ],
+    "appointments": [
+        {
+            "id": 1,
+            "doctorId": 1,
+            "patientId": 101,
+            "date": "2025-07-25T09:00:00",
+            "reason": "متابعة ضغط",
+            "status": "تم"
+        },
+        {
+            "id": 2,
+            "doctorId": 1,
+            "patientId": 102,
+            "date": "2025-07-25T10:30:00",
+            "reason": "كشف عام",
+            "status": "قيد الانتظار"
+        }
+    ],
+    "prescriptions": [
+        {
+            "id": 1,
+            "patientId": 101,
+            "doctorId": 1,
+            "date": "2025-07-25",
+            "notes": "ارتفاع في الضغط",
+            "medications": [
+                {
+                    "id": "med1",
+                    "name": "باراسيتامول",
+                    "dosage": "قرص كل 8 ساعات",
+                    "duration": "5 أيام"
+                },
+                {
+                    "id": "med2",
+                    "name": "كونكور",
+                    "dosage": "نصف قرص يومياً",
+                    "duration": "10 أيام"
+                }
+            ]
+        }
+    ],
+    "medications": [
+        {
+            "id": "med1",
+            "name": "باراسيتامول",
+            "category": "مسكنات"
+        },
+        {
+            "id": "med2",
+            "name": "كونكور",
+            "category": "ضغط دم"
+        },
+        {
+            "id": "med3",
+            "name": "أموكسيسيلين",
+            "category": "مضادات حيوية"
+        }
+    ],
+    "medicalRecords": [
+        {
+            "id": 1,
+            "patientId": 101,
+            "diagnosis": "نزلة برد",
+            "date": "2025-07-10",
+            "notes": "ارتفاع طفيف في الحرارة وسعال بسيط"
+        }
+    ],
+    "tests": [
+        {
+            "id": 1,
+            "patientId": 102,
+            "type": "تحليل دم",
+            "result": "الهيموغلوبين منخفض قليلاً",
+            "date": "2025-07-20"
+        }
+    ],
+    "settings": {
+        "clinicName": "عيادة الحياة",
+        "location": "طنطا، الغربية",
+        "workingHours": {
+            "start": "09:00",
+            "end": "17:00"
+        },
+        "languages": [
+            "ar",
+            "en"
+        ]
+    }
+}

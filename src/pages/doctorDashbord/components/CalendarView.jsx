@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import './calendarStyle.css'; 
 
 
-const CalendarView = () => {
+export const CalendarView = () => {
   const [date, setDate] = useState(new Date());
 
   return (
@@ -24,4 +24,3 @@ const CalendarView = () => {
   );
 };
 
-export default CalendarView;

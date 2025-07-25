@@ -44,7 +44,7 @@ export default function DoctorServices() {
   };
 const navigate = useNavigate();
   const DoctorProfile = () => {
-    navigate('DoctorProfile');
+    navigate('Profile');
   };
   return (
     <section className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
