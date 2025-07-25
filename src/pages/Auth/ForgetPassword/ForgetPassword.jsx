@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import drr from "../../../assets/drr.jpeg";
 import pitttttt from "../../../assets/pitttttt.png";
 import { ForgetPassword, ResetPassword } from "../../../forms/schema";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
     const formik = useFormik({
@@ -14,6 +15,13 @@ export default function Login() {
             console.log("Login Data:", values);
         },
     });
+
+    const navigate = useNavigate();
+    const ResetPassword = () => {
+        // Navigate to the Reset Password page
+        navigate("/resetpassword");
+    }
+
 
     return (
         <div className="w-full min-h-screen font-[Cairo] flex flex-col md:flex-row bg-gray-100">
@@ -60,7 +68,7 @@ export default function Login() {
                             )}
                         </div>
                         {/* Submit Button */}
-                        <button
+                        <button onClick={ResetPassword}
                             type="submit"
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md 
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
