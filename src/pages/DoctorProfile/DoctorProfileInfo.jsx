@@ -39,6 +39,7 @@ const DoctorProfileInfo = ({ editMode, variants = defaultVariants }) => {
 
   useEffect(() => {
     setChnagedProfileData(profile);
+    console.log(image);
   }, [profile]);
 
   const handleImageUpload = e => {

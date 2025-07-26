@@ -37,11 +37,11 @@ export const RoutesArray = [
     path: '/',
     children: [
       { id: v4(), element: <Home />, path: '', index: true },
-      { id: v4(), element: <About />, path: 'about' },
-      { id: v4(), element: <Contact />, path: 'contact' },
-      { id: v4(), element: <Services />, path: 'services' },
-      { id: v4(), element: <Booking />, path: 'booking' },
-      { id: v4(), element: <Footer />, path: 'footer' },
+      // { id: v4(), element: <About />, path: 'about' },
+      // { id: v4(), element: <Contact />, path: 'contact' },
+      // { id: v4(), element: <Services />, path: 'services' },
+      // { id: v4(), element: <Booking />, path: 'booking' },
+      // { id: v4(), element: <Footer />, path: 'footer' },
     ],
   },
 

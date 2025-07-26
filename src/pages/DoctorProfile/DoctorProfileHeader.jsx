@@ -20,6 +20,7 @@ const DoctorProfileHeader = ({ editMode, setEditMode, variants }) => {
           } font-medium transition-all hover:shadow-md`}
           onClick={() => {
             if (editMode) {
+              delete changedProfileData.image;
               updateProfileData(changedProfileData);
             }
             setEditMode(!editMode);

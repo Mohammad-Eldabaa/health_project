@@ -34,6 +34,7 @@ export const useProfileStore = create(
       getDoctorImage: async imagePath => {
         if (!imagePath) return null;
 
+        console.log(imagePath);
         const { data, error } = supabase.storage.from('images').getPublicUrl(imagePath);
 
         if (error) {

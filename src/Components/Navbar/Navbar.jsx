@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import Style from "./Navbar.module.css";
-import logo from "../../assets/img/logo.png";
-import { NavLink } from "react-router-dom";
+import React, { useState } from 'react';
+import logo from '../../assets/img/logo.png';
+import { NavLink } from 'react-router-dom';
+import { Link as ScrollLink } from 'react-scroll';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,52 +12,37 @@ export default function Navbar() {
     <>
       <nav
         className="shadow px-4 z-50 fixed top-0 left-0 w-screen"
-        style={{ backgroundColor: "var(--color-primary-dark)" }}
+        style={{ backgroundColor: 'var(--color-primary-dark)' }}
       >
-        <div className="flex container  flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
+        <div className="flex container flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
           <div className="flex items-center justify-between gap-6 w-full lg:w-auto">
             <h3
               style={{
-                fontFamily: "var(--logo-font)",
+                fontFamily: 'var(--logo-font)',
                 marginTop: 5,
                 marginBottom: 0,
-                color: "var(--color-text-white)",
+                color: 'var(--color-text-white)',
                 letterSpacing: 2,
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 fontSize: 24,
                 paddingLeft: 60,
               }}
             >
               Clinic
-              <img
-                src={logo}
-                width={35}
-                height={35}
-                alt="Logo"
-                style={{
-                  margin: "0 1px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                }}
-                className="mx-2"
-              />
+              <img src={logo} width={35} height={35} alt="Logo" className="mx-2" />
               Smart
             </h3>
 
             <button
-              className={`lg:hidden flex items-center  py-2 text-white transition-all duration-700 transform ${
-                menuOpen ? "rotate-180 scale-110" : "rotate-0 scale-100"
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
+                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
               } hover:scale-105`}
-              onClick={() => setMenuOpen((prev) => !prev)}
+              onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
             >
-              <i
-                className={`fa-solid ${
-                  menuOpen ? "fa-xmark" : "fa-bars"
-                } transition-all duration-400`}
-              ></i>
+              <i className={`fa-solid ${menuOpen ? 'fa-xmark' : 'fa-bars'} transition-all duration-400`}></i>
             </button>
           </div>
 
@@ -68,87 +53,80 @@ export default function Navbar() {
                   <NavLink
                     className={({ isActive }) =>
                       `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute  after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full " : "after:w-0"}`
+                       after:content-[''] after:absolute after:left-0 after:bottom-0 
+                       after:h-[2px] after:bg-white 
+                       after:transition-all after:duration-400 
+                       ${isActive ? 'after:w-full' : 'after:w-0'}`
                     }
-                    to={""}
+                    to="/"
                     onClick={handleNavClick}
                   >
                     الرئسية
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink
-                    to="about"
-                    className={({ isActive }) =>
-                      `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
-                    }
+                  <ScrollLink
+                    href="./home"
+                    to="HAbout"
+                    smooth={true}
+                    duration={100}
+                    offset={-70}
+                    className="relative mx-3 text-lg text-white pb-1 cursor-pointer
+                    after:content-[''] after:absolute after:left-0 after:bottom-0
+                    after:h-[2px] after:bg-white
+                    after:transition-all after:duration-400 hover:after:w-full"
+                    onClick={handleNavClick}
                   >
                     من نحن
-                  </NavLink>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
-                    }
-                    to={"services"}
+                  <ScrollLink
+                    to="HServices"
+                    smooth={true}
+                    duration={100}
+                    offset={-70}
+                    className="relative mx-3 text-lg text-white pb-1 cursor-pointer
+                    after:content-[''] after:absolute after:left-0 after:bottom-0
+                    after:h-[2px] after:bg-white
+                    after:transition-all after:duration-400 hover:after:w-full"
                     onClick={handleNavClick}
                   >
                     الخدمات
-                  </NavLink>
+                  </ScrollLink>
                 </li>
                 <li>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
-                    }
-                    to={"contact"}
+                  <ScrollLink
+                    to="HContact"
+                    smooth={true}
+                    duration={100}
+                    offset={-70}
+                    className="relative mx-3 text-lg text-white pb-1 cursor-pointer
+                    after:content-[''] after:absolute after:left-0 after:bottom-0
+                    after:h-[2px] after:bg-white
+                    after:transition-all after:duration-400 hover:after:w-full"
                     onClick={handleNavClick}
                   >
                     اتصل بنا
-                  </NavLink>
+                  </ScrollLink>
                 </li>
               </ul>
             </div>
             <div>
-              <ul className="flex flex-col  lg:flex-row items-center mb-0">
+              <ul className="flex flex-col lg:flex-row items-center mb-0">
                 <li>
-                  <NavLink
-                    className="mx-3 text-lg text-white"
-                    to={"login"}
-                    onClick={handleNavClick}
-                  >
-                    <i className="fa-solid fa-right-to-bracket"></i> تسجيل
-                    الدخول
+                  <NavLink className="mx-3 text-lg text-white" to={'login'} onClick={handleNavClick}>
+                    <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
                   </NavLink>
                 </li>
                 <li
                   style={{
-                    backgroundColor: "var(--color-primary)",
-                    padding: "3px",
-                    borderRadius: "5px",
+                    backgroundColor: 'var(--color-primary)',
+                    padding: '3px',
+                    borderRadius: '5px',
                   }}
                 >
-                  <NavLink
-                    className="mx-3 text-lg text-white"
-                    to={"bookingpage"}
-                    onClick={handleNavClick}
-                  >
+                  <NavLink className="mx-3 text-lg text-white" to={'bookingpage'} onClick={handleNavClick}>
                     <i className="fa-solid fa-user-plus"></i> حجز موعد
                   </NavLink>
                 </li>
@@ -158,48 +136,18 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Sidebar */}
       <div
         className={`
           fixed top-0 left-0 h-full w-80 z-50 lg:hidden
           transform transition-transform duration-600 ease-in-out
-          ${menuOpen ? "translate-x-0" : "-translate-x-full"}
+          ${menuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
-        style={{ backgroundColor: "var(--color-primary-dark)" }}
+        style={{ backgroundColor: 'var(--color-primary-dark)' }}
       >
         <div className="flex flex-col h-full">
-          <div className="flex justify-end   p-4 border-b border-gray-600">
-            {/* <h3
-              style={{
-                fontFamily: "var(--logo-font)",
-                marginTop: 0,
-                marginBottom: 0,
-                color: "var(--color-text-white)",
-                letterSpacing: 2,
-                display: "flex",
-                alignItems: "center",
-                fontSize: 20,
-              }}
-            >
-              Clinic
-              <img
-                src={logo}
-                width={30}
-                height={30}
-                alt="Logo"
-                style={{
-                  margin: "0 1px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                }}
-                className="mx-2"
-              />
-              Smart
-            </h3> */}
-            <button
-              className="text-white  text-2xl"
-              onClick={() => setMenuOpen(false)}
-              aria-label="Close menu"
-            >
+          <div className="flex justify-end p-4 border-b border-gray-600">
+            <button className="text-white text-2xl" onClick={() => setMenuOpen(false)} aria-label="Close menu">
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -208,43 +156,52 @@ export default function Navbar() {
             <ul className="flex flex-col space-y-4 mb-8">
               <li>
                 <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={""}
+                  to="/"
                   onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    `block text-lg py-3 px-2 rounded transition-colors ml-1 flex items-center ${
+                      isActive ? 'bg-cyan-500 text-white' : 'text-white hover:bg-cyan-400'
+                    }`
+                  }
                 >
-                  <i className="fa-solid fa-home ml-3"></i>
-                  الرئسية
+                  <i className="fa-solid fa-home ml-3"></i> الرئسية
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded  hover:bg-cyan-400  transition-colors"
-                  to={"about"}
+                <ScrollLink
+                  to="HAbout"
+                  smooth={true}
+                  duration={100}
+                  offset={-70}
                   onClick={handleNavClick}
+                  className="block text-lg py-3 px-2 rounded ml-1 flex items-center text-white hover:bg-cyan-400 cursor-pointer"
                 >
-                  <i className="fa-solid fa-info-circle ml-3"></i>
-                  من نحن
-                </NavLink>
+                  <i className="fa-solid fa-info-circle ml-3"></i> من نحن
+                </ScrollLink>
               </li>
               <li>
-                <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"services"}
+                <ScrollLink
+                  to="HServices"
+                  smooth={true}
+                  duration={100}
+                  offset={-70}
                   onClick={handleNavClick}
+                  className="block text-lg py-3 px-2 rounded ml-1 flex items-center text-white hover:bg-cyan-400 cursor-pointer"
                 >
-                  <i className="fa-solid fa-stethoscope ml-3"></i>
-                  الخدمات
-                </NavLink>
+                  <i className="fa-solid fa-stethoscope ml-3"></i> الخدمات
+                </ScrollLink>
               </li>
               <li>
-                <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"contact"}
+                <ScrollLink
+                  to="HContact"
+                  smooth={true}
+                  duration={100}
+                  offset={-70}
                   onClick={handleNavClick}
+                  className="block text-lg py-3 px-2 rounded ml-1 flex items-center text-white hover:bg-cyan-400 cursor-pointer"
                 >
-                  <i className="fa-solid fa-phone ml-3"></i>
-                  اتصل بنا
-                </NavLink>
+                  <i className="fa-solid fa-phone ml-3"></i> اتصل بنا
+                </ScrollLink>
               </li>
             </ul>
 
@@ -252,25 +209,20 @@ export default function Navbar() {
               <ul className="flex flex-col space-y-4">
                 <li>
                   <NavLink
-                    className="block text-lg text-white py-3 px-2 rounded  hover:bg-cyan-400 transition-colors"
-                    to={"login"}
+                    to="login"
                     onClick={handleNavClick}
+                    className="block text-lg py-3 px-2 rounded ml-1 flex items-center text-white hover:bg-cyan-400"
                   >
-                    <i className="fa-solid fa-right-to-bracket ml-3"></i>
-                    تسجيل الدخول
+                    <i className="fa-solid fa-right-to-bracket ml-3"></i> تسجيل الدخول
                   </NavLink>
                 </li>
                 <li>
                   <NavLink
-                    className="block text-lg  hover:bg-cyan-400 text-white py-3 px-2 rounded transition-colors"
-                    to={"booking"}
+                    to="booking"
                     onClick={handleNavClick}
-                    style={{
-                      borderRadius: "8px",
-                    }}
+                    className="block text-lg py-3 px-2 rounded ml-1 flex items-center text-white hover:bg-cyan-400"
                   >
-                    <i className="fa-solid fa-user-plus ml-3"></i>
-                    حجز موعد
+                    <i className="fa-solid fa-user-plus ml-3"></i> حجز موعد
                   </NavLink>
                 </li>
               </ul>

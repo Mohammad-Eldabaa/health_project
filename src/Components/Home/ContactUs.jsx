@@ -3,7 +3,7 @@ import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaWhatsapp } from 'react-icons/fa'
 
 export default function ContactUs() {
   return (
-    <section className="py-20 bg-[#E0F7FA] w-screen relative overflow-x-hidden">
+    <section id="HContact" className="py-20 bg-[#E0F7FA] w-screen relative overflow-x-hidden">
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#00BCD4] opacity-10 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
 
@@ -15,9 +15,7 @@ export default function ContactUs() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0097A7] mb-4">
-            تواصل معنا
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0097A7] mb-4">تواصل معنا</h2>
           <div className="w-24 h-1 bg-[#00BCD4] mx-auto rounded-full mb-5"></div>
           <p className="text-[#757575] max-w-2xl mx-auto text-lg">
             نحن هنا لمساعدتك في أي وقت، زورنا أو تواصل معنا عبر أي من وسائل الاتصال التالية
@@ -39,9 +37,7 @@ export default function ContactUs() {
 
             <div className="mb-8">
               <h4 className="font-bold text-[#0097A7] mb-3">عنوان العيادة:</h4>
-              <p className="text-[#757575]">
-                شارع الملك كليان امبابي كفرالزيات الغربيه
-              </p>
+              <p className="text-[#757575]">شارع الملك كليان امبابي كفرالزيات الغربيه</p>
             </div>
 
             <div className="space-y-6">
