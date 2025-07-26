@@ -55,7 +55,7 @@ export default function DoctorServices() {
   };
   const navigate = useNavigate();
   const Profile = () => {
-    navigate('Profile');
+    navigate('../Profile');
   };
   return (
     <section id="HServices" className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">

@@ -4,6 +4,7 @@ import { BookingPageHeader } from './component/BookingPageHeader.jsx';
 import { FooterInfo } from './component/FooterInfo.jsx';
 import { Schema, formData, handleSubmit } from './schema.js';
 import Navbar from '../../Components/Navbar/Navbar.jsx';
+import Footer from '../../Components/Footer/Footer.jsx';
 
 export default function ClinicBookingPageArabic() {
   return (
@@ -12,8 +13,9 @@ export default function ClinicBookingPageArabic() {
       <Navbar />
       <div className="container mx-auto py-10 px-4 md:w-3/4 ">
         <Body formData={formData} handleSubmit={handleSubmit} Schema={Schema} />
-        <FooterInfo />
+        {/* <FooterInfo /> */}
       </div>
+      <Footer />
     </div>
   );
 }
