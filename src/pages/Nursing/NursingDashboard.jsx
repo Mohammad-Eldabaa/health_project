@@ -1,59 +1,58 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { NavLink } from "react-router-dom";
-import NursingAppointmentList from "./NursingAppointmentList";
-import NursingSidebar from "./NursingSidebar";
-import NursingDashboardCharts from "./NursingDashboardCharts";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import NursingAppointmentList from './NursingAppointmentList';
+import NursingSidebar from './NursingSidebar';
+import NursingDashboardCharts from './NursingDashboardCharts';
 
 const NursingDashboard = () => {
   return (
-    <div className="container-fluid p-0" dir="rtl">
-      <div className="d-flex">
+    <div className="w-full p-0" dir="rtl">
+      <div className="flex">
         {/* Sidebar */}
         <NursingSidebar />
 
         {/* Main Content */}
-        <main
-          className="flex-grow-1 px-md-4"
-          style={{ backgroundColor: "#B2EBF2" }}
-        >
-          <nav className="navbar navbar-expand-md navbar-light bg-light d-md-none">
+        <main className="flex-grow px-4 bg-cyan-100 min-h-screen">
+          {/* Mobile Navbar */}
+          <nav className="md:hidden flex items-center justify-between bg-white p-3 shadow">
             <button
-              className="navbar-toggler"
+              className="text-gray-700 focus:outline-none"
               type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#sidebarMenu"
-              aria-controls="sidebarMenu"
-              aria-expanded="false"
               aria-label="Toggle navigation"
+              onClick={() => {
+                const el = document.getElementById('sidebarMenu');
+                if (el) el.classList.toggle('hidden');
+              }}
             >
-              <span className="navbar-toggler-icon"></span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
           </nav>
 
-          <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 className="h2">
-              <i className="bi bi-speedometer2 me-2"></i>
+          {/* Header */}
+          <div className="flex justify-between items-center pt-4 pb-3 mb-4 border-b border-gray-300 flex-wrap gap-2">
+            <h1 className="text-2xl font-semibold flex items-center gap-2">
+              <i className="bi bi-speedometer2"></i>
               لوحة سكرتارية
             </h1>
-            <div className="btn-toolbar mb-2 mb-md-0">
-              <div className="btn-group me-2">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-secondary"
-                >
-                  <i className="bi bi-calendar-week me-1"></i>اليوم
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-secondary"
-                >
-                  <i className="bi bi-calendar-range me-1"></i>الأسبوع
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="text-sm border border-gray-400 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                <i className="bi bi-calendar-week mr-1"></i> اليوم
+              </button>
+              <button
+                type="button"
+                className="text-sm border border-gray-400 text-gray-700 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                <i className="bi bi-calendar-range mr-1"></i> الأسبوع
+              </button>
             </div>
           </div>
 
+          {/* Dashboard Charts */}
           <NursingDashboardCharts />
         </main>
       </div>

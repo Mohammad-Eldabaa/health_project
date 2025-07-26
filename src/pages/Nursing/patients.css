@@ -10,12 +10,14 @@ button {
     cursor: pointer;
 }
 
-.patients-container {
+.patients-container,
+.appointments-container {
     padding: 20px;
     direction: rtl;
 }
 
-.patients-title {
+.patients-title,
+.appointments-title {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 20px;
@@ -26,25 +28,27 @@ button {
     margin-bottom: 20px;
 }
 
-.patients-table {
+.patients-table,
+.appointments-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.patients-table th {
+.patients-table th,
+.appointments-table th {
     padding: 12px 15px;
     text-align: right;
-
-
 }
 
-.patients-table td {
+.patients-table td,
+.appointments-table td {
     padding: 12px 15px;
     text-align: right;
     border-top: 1px solid #e0e0e0;
 }
 
-.patients-table-header {
+.patients-table-header,
+.appointments-table-header {
     background-color: #ffffff;
     font-weight: bold;
 }
@@ -109,13 +113,15 @@ button {
 }
 
 /* Mobile Cards Styles */
-.patients-cards {
+.patients-cards,
+.appointments-cards {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.patient-card {
+.patient-card,
+.appointment-card {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -129,7 +135,8 @@ button {
     margin-bottom: 12px;
 }
 
-.patient-id {
+.patient-id,
+.appointment-id {
     font-weight: bold;
     color: #555;
 }
@@ -141,7 +148,8 @@ button {
     margin-bottom: 12px;
 }
 
-.patient-info {
+.patient-info,
+.appointment-info {
     display: flex;
     justify-content: space-between;
 }
@@ -162,20 +170,33 @@ button {
     border-top: 1px solid #eee;
 }
 
-
 @media (max-width: 767px) {
-    .patients-table {
+
+    .patients-table,
+    .appointments-table {
         display: none;
+    }
+
+    #sidebarMenu {
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    #sidebarMenu.show {
+        transform: translateX(0);
     }
 }
 
 @media (min-width: 768px) {
-    .patients-cards {
+
+    .patients-cards,
+    .appointments-cards {
         display: none;
     }
 }
 
-.patients-container button {
+.patients-container button,
+.appointments-container button {
     margin: 5px;
     display: inline-flex;
     align-items: center;
