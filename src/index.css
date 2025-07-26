@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
-
 :root {
   --color-primary: #00bcd4;
   --color-primary-dark: #0097a7;
@@ -21,4 +20,8 @@
 * {
   font-family: var(--main-font);
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }

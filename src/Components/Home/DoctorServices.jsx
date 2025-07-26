@@ -1,55 +1,64 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaStethoscope, FaHeartbeat, FaLungs, FaBrain, FaClinicMedical, FaXRay,
-  FaMobileAlt, FaCalendarAlt, FaVideo, FaFileMedicalAlt, FaBell
+  FaStethoscope,
+  FaHeartbeat,
+  FaLungs,
+  FaBrain,
+  FaClinicMedical,
+  FaXRay,
+  FaMobileAlt,
+  FaCalendarAlt,
+  FaVideo,
+  FaFileMedicalAlt,
+  FaBell,
 } from 'react-icons/fa';
 
 export default function DoctorServices() {
   const doctor = {
-    name: "د. أحمد عبد العزيز",
-    specialty: "استشاري باطنة وأمراض قلب",
-    image: "/src/assets/img/doctor-ahmed.jpg",
-    bio: "طبيب استشاري بأمراض الباطنة والقلب، حاصل على البورد الأمريكي في الطب الباطني والزمالة البريطانية في أمراض القلب. يتمتع بخبرة تزيد عن 15 عاماً في تشخيص وعلاج الحالات الحرجة والمزمنة.",
+    name: 'د. أحمد عبد العزيز',
+    specialty: 'استشاري باطنة وأمراض قلب',
+    image: '/src/assets/img/doctor-ahmed.jpg',
+    bio: 'طبيب استشاري بأمراض الباطنة والقلب، حاصل على البورد الأمريكي في الطب الباطني والزمالة البريطانية في أمراض القلب. يتمتع بخبرة تزيد عن 15 عاماً في تشخيص وعلاج الحالات الحرجة والمزمنة.',
     services: [
       {
-        title: "الكشف الطبي العام",
+        title: 'الكشف الطبي العام',
         icon: <FaStethoscope className="text-3xl" />,
-        description: "فحص شامل وتشخيص دقيق للحالات العامة مع وضع خطة علاجية متكاملة"
+        description: 'فحص شامل وتشخيص دقيق للحالات العامة مع وضع خطة علاجية متكاملة',
       },
       {
-        title: "أمراض القلب",
+        title: 'أمراض القلب',
         icon: <FaHeartbeat className="text-3xl" />,
-        description: "تشخيص وعلاج أمراض القلب والشرايين وارتفاع ضغط الدم"
+        description: 'تشخيص وعلاج أمراض القلب والشرايين وارتفاع ضغط الدم',
       },
       {
-        title: "أمراض الصدر",
+        title: 'أمراض الصدر',
         icon: <FaLungs className="text-3xl" />,
-        description: "علاج أمراض الجهاز التنفسي والرئتين والربو الشعبي"
+        description: 'علاج أمراض الجهاز التنفسي والرئتين والربو الشعبي',
       },
       {
-        title: "الضغط والسكري",
+        title: 'الضغط والسكري',
         icon: <FaClinicMedical className="text-3xl" />,
-        description: "متابعة وعلاج حالات الضغط والسكري والدهون بالدم"
+        description: 'متابعة وعلاج حالات الضغط والسكري والدهون بالدم',
       },
       {
-        title: "الفحوصات الدورية",
+        title: 'الفحوصات الدورية',
         icon: <FaXRay className="text-3xl" />,
-        description: "برامج فحص دوري شامل للكبار مع تحليل النتائج"
+        description: 'برامج فحص دوري شامل للكبار مع تحليل النتائج',
       },
       {
-        title: "الاستشارات الطبية",
+        title: 'الاستشارات الطبية',
         icon: <FaBrain className="text-3xl" />,
-        description: "استشارات طبية متخصصة عن بعد لمتابعة الحالات"
-      }
-    ]
+        description: 'استشارات طبية متخصصة عن بعد لمتابعة الحالات',
+      },
+    ],
   };
   const navigate = useNavigate();
   const Profile = () => {
     navigate('Profile');
   };
   return (
-    <section className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
+    <section id="HServices" className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full opacity-10">
         <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-[#00BCD4] blur-3xl"></div>
         <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-[#009688] blur-3xl"></div>
@@ -63,9 +72,7 @@ export default function DoctorServices() {
           transition={{ duration: 0.8 }}
           className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-[#0097A7] mb-2">
-            خدمات {doctor.name}
-          </h2>
+          <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-[#0097A7] mb-2">خدمات {doctor.name}</h2>
           <p className="text-xl xl:text-2xl text-[#009688] mb-4">{doctor.specialty}</p>
           <div className="w-24 h-1 bg-[#00BCD4] mx-auto mb-6"></div>
           <p className="text-[#757575] max-w-4xl mx-auto text-lg xl:text-xl leading-relaxed">
@@ -126,19 +133,20 @@ export default function DoctorServices() {
                     {service.icon}
                   </motion.div>
 
-                  <h3 className="text-xl xl:text-2xl font-bold text-[#212121] mb-3 text-center">
-                    {service.title}
-                  </h3>
-                  <p className="text-[#757575] mb-4 text-center xl:text-lg leading-relaxed">
-                    {service.description}
-                  </p>
+                  <h3 className="text-xl xl:text-2xl font-bold text-[#212121] mb-3 text-center">{service.title}</h3>
+                  <p className="text-[#757575] mb-4 text-center xl:text-lg leading-relaxed">{service.description}</p>
                 </div>
 
                 <div className="px-6 pb-6">
                   <div className="flex items-center justify-center mt-2 pt-4 border-t border-[#B2EBF2]">
                     <div className="w-10 h-10 rounded-full bg-[#E0F7FA] flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#009688]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        ></path>
                       </svg>
                     </div>
                     <span className="text-sm xl:text-base text-[#0097A7] mr-3">حجز إلكتروني</span>
@@ -157,10 +165,7 @@ export default function DoctorServices() {
           className="bg-gradient-to-br from-[#0097A7] to-[#009688] shadow-2xl overflow-hidden text-white"
         >
           <div className="p-8 xl:p-10 flex flex-col md:flex-row items-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="md:w-1/3 mb-8 md:mb-0 flex justify-center"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="md:w-1/3 mb-8 md:mb-0 flex justify-center">
               <div className="w-24 h-24 xl:w-28 xl:h-28 rounded-xl bg-white bg-opacity-20 flex items-center justify-center shadow-inner">
                 <FaMobileAlt className="text-4xl xl:text-5xl text-[#009688]" />
               </div>
@@ -179,25 +184,25 @@ export default function DoctorServices() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
                 {[
                   {
-                    title: "حجز مواعيد أونلاين",
+                    title: 'حجز مواعيد أونلاين',
                     icon: <FaCalendarAlt className="text-2xl xl:text-3xl" />,
-                    desc: "احجز موعدك بسهولة في أي وقت"
+                    desc: 'احجز موعدك بسهولة في أي وقت',
                   },
                   {
-                    title: "استشارات عن بعد",
+                    title: 'استشارات عن بعد',
                     icon: <FaVideo className="text-2xl xl:text-3xl" />,
-                    desc: "تواصل مع طبيبك عبر الفيديو"
+                    desc: 'تواصل مع طبيبك عبر الفيديو',
                   },
                   {
-                    title: "متابعة النتائج",
+                    title: 'متابعة النتائج',
                     icon: <FaFileMedicalAlt className="text-2xl xl:text-3xl" />,
-                    desc: "اطلع على نتائجك أونلاين"
+                    desc: 'اطلع على نتائجك أونلاين',
                   },
                   {
-                    title: "تذكير بالمواعيد",
+                    title: 'تذكير بالمواعيد',
                     icon: <FaBell className="text-2xl xl:text-3xl" />,
-                    desc: "تذكيرات تلقائية بمواعيدك"
-                  }
+                    desc: 'تذكيرات تلقائية بمواعيدك',
+                  },
                 ].map((feature, index) => (
                   <motion.div
                     key={index}
@@ -207,7 +212,7 @@ export default function DoctorServices() {
                     transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
                     whileHover={{
                       y: -5,
-                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)"
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
                     }}
                     className="flex flex-col items-center text-center p-4 xl:p-5 bg-white bg-opacity-10 rounded-xl hover:bg-opacity-20 transition-all duration-300 cursor-default"
                   >
