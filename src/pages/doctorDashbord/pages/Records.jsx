@@ -4,35 +4,50 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PrescriptionModel from "./PrescriptionModel";
 import AddIcon from '@mui/icons-material/Add';
+import PrescriptionSheet from "../components/PrescriptionSheet";
 
-
-
-
-// states color
 const statusColor = {
     "مستقر": "bg-green-100 text-green-700",
     "حالة متوسطة": "bg-yellow-100 text-yellow-700",
     "حالة حرجة": "bg-red-100 text-red-700"
 };
 
-
-
 export default function Records() {
     const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [selectedPrescription, setSelectedPrescription] = useState(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [data, setData] = useState(() => JSON.parse(localStorage.getItem("doctorDashboardData")));
+
     const searchRef = useRef(null);
 
-    const data = JSON.parse(localStorage.getItem("doctorDashboardData"));
-    const allPatients = data?.patients || [];
+    // Re-fetch data from localStorage on any update
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const updatedData = JSON.parse(localStorage.getItem("doctorDashboardData"));
+            setData(updatedData);
 
-    // فلترة المرضى حسب الاسم
+            // إعادة تحديد المريض الحالي بعد التحديث لو الاسم مطابق
+            if (selectedPatient) {
+                const updatedPatient = updatedData?.patients?.find(p => p.name === selectedPatient.name);
+                if (updatedPatient) {
+                    setSelectedPatient(updatedPatient);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, [selectedPatient]);
+
+    const allPatients = data?.patients || [];
     const filteredPatients = allPatients.filter((p) =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // إغلاق القائمة عند النقر خارجها
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -49,9 +64,13 @@ export default function Records() {
         setIsSearchOpen(false);
     };
 
+
+
     return (
         <>
-            <PrescriptionModel isOpen={isPrescriptionOpen} onClose={() => setIsPrescriptionOpen(false)} />
+
+            <PrescriptionModel isOpen={isPrescriptionOpen} onClose={() => setIsPrescriptionOpen(false)} selectedPatient={selectedPatient}
+            />
 
             <div className="flex flex-col  mx-2 sm:mx-4 lg:mx-6 my-3 px-4">
                 <div className="flex items-center gap-3 justify-between">
@@ -116,7 +135,7 @@ export default function Records() {
                         <AddIcon fontSize="small" />
                         <span>روشتة جديدة</span>
                     </button>
-                    
+
                 </div>
 
                 {/* معلومات المريض */}
@@ -174,7 +193,7 @@ export default function Records() {
                                             ))}
                                         </ul>
                                     ) : (
-                                        <div className="text-center py-20">
+                                        <div className="text-center py-0 lg:py-3">
                                             <p className="text-gray-500 text-lg">لا توجد  </p>
                                         </div>
                                     )
@@ -191,7 +210,7 @@ export default function Records() {
                                                 }
                                             </ul>
                                         ) : (
-                                            <div className="text-center py-3">
+                                            <div className="text-center py-0 lg:py-3">
                                                 <p className="text-gray-500 text-lg">لا توجد  </p>
                                             </div>
                                         )
@@ -237,7 +256,8 @@ export default function Records() {
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">رقم الزيارة</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">الإسم</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">تاريخ الزيارة</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">الحالة</th>
+                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عدد الأدوية</th>
+                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">الحاله</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عرض</th>
                                     </tr>
                                 </thead>
@@ -246,21 +266,43 @@ export default function Records() {
                                         <tr key={index} className="hover:bg-gray-50 bg-white text-center">
                                             <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
                                             <td className="p-3 border-b border-gray-100 text-gray-600">{selectedPatient.name}</td>
-                                            <td className="p-3 border-b border-gray-100 text-gray-600">{selectedPatient.visits[selectedPatient.visits.length-1].date}</td>
+                                            <td className="p-3 border-b border-gray-100 text-gray-600">{selectedPatient.visits[index].date}</td>
+                                            <td className="p-3 border-b border-gray-200">
+                                                {selectedPatient?.visits?.[index]?.prescriptions?.length || 0}
+                                            </td>
                                             <td className="p-3 border-b border-gray-100">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[selectedPatient.status]}`}>{selectedPatient.status}</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[selectedPatient.status]}`}>{selectedPatient.status}</span>
 
                                             </td>
                                             <td className="p-3 border-b border-gray-100">
-                                                <button className="text-cyan-500 hover:text-cyan-700 transition-colors">
+                                                <button
+                                                    className="text-cyan-500 hover:text-cyan-700 transition-colors"
+                                                    onClick={() => {
+                                                        const visit = selectedPatient.visits[index]; // الزيارة المحددة
+                                                        setSelectedPrescription({
+                                                            date: visit.date,
+                                                            notes: visit.notes || "لا توجد ملاحظات",
+                                                            medications: visit.prescriptions.map((p, idx) => ({
+                                                                id: idx,
+                                                                name: p.name,
+                                                                dosage: p.dosage || "غير محدد",
+                                                                duration: p.duration || "غير محدد"
+                                                            }))
+                                                        });
+                                                        setIsViewModalOpen(true);
+                                                    }}
+                                                >
                                                     <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
                                                 </button>
+
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
+
+
 
                         {/* Mobile Cards */}
                         <div className="sm:hidden space-y-3">
@@ -271,13 +313,30 @@ export default function Records() {
                                             <p className="font-bold">الزيارة #{index + 1}</p>
                                             <p className="text-sm">{selectedPatient.name}</p>
                                         </div>
-                                        <button className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition">
+                                        <button
+                                            className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition"
+                                            onClick={() => {
+                                                const visit = selectedPatient.visits[index];
+                                                setSelectedPrescription({
+                                                    date: visit.date,
+                                                    notes: visit.notes || "لا توجد ملاحظات",
+                                                    medications: visit.prescriptions.map((p, idx) => ({
+                                                        id: idx,
+                                                        name: p.name,
+                                                        dosage: p.dosage || "غير محدد",
+                                                        duration: p.duration || "غير محدد"
+                                                    }))
+                                                });
+                                                setIsViewModalOpen(true);
+                                            }}
+                                        >
                                             <VisibilityIcon fontSize="small" />
                                         </button>
+
                                     </div>
                                     <div className="flex justify-between mt-2 text-sm">
-                                        <span>{selectedPatient.visits[selectedPatient.visits.length-1].date}</span>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[selectedPatient.status]}`}>{selectedPatient.status}</span>
+                                        <span>{selectedPatient.visits[selectedPatient.visits.length - 1].date}</span>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[selectedPatient.status]}`}>{selectedPatient.status}</span>
                                     </div>
                                 </div>
                             ))}
@@ -285,6 +344,17 @@ export default function Records() {
                     </div>
                 )}
             </div>
+            {/*PrescriptionSheet -model  */}
+            <PrescriptionSheet
+                isOpen={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                prescription={selectedPrescription}
+                Patient={selectedPatient}
+                data={data}
+            />
+
         </>
     );
 }
+
+

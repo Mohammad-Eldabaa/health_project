@@ -5,7 +5,6 @@ import Topbar from "../components/Topbar";
 import "./DoctorDashbord.css";
 
 import Home from "./Home";
-import Profile from "./Profile";
 import Appointments from "./Appointments";
 import Patients from "./Patients";
 import Records from "./Records";
@@ -28,7 +27,6 @@ function DoctorDashboard() {
         <Topbar toggleSidebar={toggleSidebar} />
         <Routes>
           <Route path="" element={<Home />} />
-          <Route path="profile" element={<Profile />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="patients" element={<Patients />} />
           <Route path="records" element={<Records />} />

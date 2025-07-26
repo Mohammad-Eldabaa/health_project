@@ -1,6 +1,25 @@
-import React from "react";
-import { Stethoscope } from "lucide-react"; 
+
+import React, { useEffect, useState } from "react";
+import { Stethoscope } from "lucide-react";
+
 export function CurrentPatient() {
+    const [patient, setPatient] = useState(null);
+    const [appointment, setAppointment] = useState(null);
+
+    useEffect(() => {
+        const data = JSON.parse(localStorage.getItem("doctorDashboardData"));
+        if (data && data.currentVisit) {
+            const visit = data.currentVisit;
+            const foundPatient = data.patients.find(p => p.id === visit.patientId);
+            const foundAppointment = data.appointments.find(a => a.id === visit.appointmentId);
+
+            setPatient(foundPatient);
+            setAppointment(foundAppointment);
+        }
+    }, []);
+
+    if (!patient || !appointment) return <p className="text-gray-500">لا يوجد مريض حالياً</p>;
+
     return (
         <>
             <div className="flex justify-between items-center mb-4">
@@ -8,32 +27,23 @@ export function CurrentPatient() {
                 <Stethoscope className="text-primary" />
             </div>
 
-            <div className="bg-blue-100 rounded-lg p-2 mb-2">
+            <div className="bg-blue-100 rounded-lg p-2 mb-4">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h4 className="font-bold text-gray-800">أحمد محمد</h4>
-                        <p className="text-gray-500 text-sm">35 سنة</p>
+                        <h4 className="font-bold text-gray-800">{patient.name}</h4>
+                        <p className="text-gray-500 text-sm">{patient.age} سنة</p>
                     </div>
-                    <span className="bg-primary  px-2 py-1 rounded text-sm">
-                        قيد الكشف
+                    <span className="bg-primary px-2 py-1 rounded text-sm">
+                        {appointment.status}
                     </span>
                 </div>
             </div>
 
-            <div className="mb-4">
-                <h4 className="font-bold text-gray-800 mb-2">الأعراض</h4>
-                <ul className="list-disc list-inside text-gray-600 text-sm space-y-1">
-                    <li>ألم في الصدر</li>
-                    <li>صداع مستمر</li>
-                    <li>دوخة</li>
-                </ul>
-            </div>
-
-            <button className="w-full bg-accent text-white py-2 rounded hover:bg-opacity-90 transition" style={{
-                backgroundColor: "var(--color-accent)"
-            }}>
+            <button className="w-full bg-accent text-white py-2 rounded hover:bg-opacity-90 transition"
+                style={{ backgroundColor: "var(--color-accent)" }}
+            >
                 فتح الملف الطبي الكامل
             </button>
         </>
-    )
+    );
 }

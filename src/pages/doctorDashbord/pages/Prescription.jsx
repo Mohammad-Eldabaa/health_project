@@ -13,33 +13,15 @@ pdfMake.fonts = {
 };
 
 
-const medicationCategories = {
-    'Pain Relievers': ['Paracetamol', 'Ibuprofen', 'Diclofenac', 'Naproxen'],
-    'Antibiotics': ['Amoxicillin', 'Azithromycin', 'Ciprofloxacin', 'Doxycycline'],
-    'Stomach Medications': ['Omeprazole', 'Ranitidine', 'Domperidone'],
-    'Vitamins': ['Vitamin D', 'Vitamin B12', 'Vitamin C']
-};
+
+const data = JSON.parse(localStorage.getItem('doctorDashboardData')) || [];
+let medicationsData = data.medicationCategories;
+let dosageOptionsData = data.dosageOptions;
+let durationOptionsData = data.durationOptions;
+console.log(durationOptionsData);
 
 
-const dosageOptions = [
-    'One tablet twice daily',
-    'One tablet three times daily',
-    'Two tablets every 8 hours',
-    'One tablet every 12 hours',
-    '500 mg every 8 hours',
-    '1 gram every 12 hours',
-    'As needed'
-];
 
-const durationOptions = [
-    '3 days',
-    '5 days',
-    '7 days',
-    '10 days',
-    '14 days',
-    '21 days',
-    'As directed'
-];
 
 
 export default function Prescription({ onClose }) {
@@ -47,7 +29,7 @@ export default function Prescription({ onClose }) {
     const [patientName, setPatientName] = useState('');
     const [notes, setNotes] = useState('');
     const [selectedMeds, setSelectedMeds] = useState([]);
-    const [activeCategory, setActiveCategory] = useState('Pain Relievers');
+    const [activeCategory, setActiveCategory] = useState('مسكنات');
     const [currentMed, setCurrentMed] = useState('');
     const [dosage, setDosage] = useState('');
     const [duration, setDuration] = useState('');
@@ -84,9 +66,15 @@ export default function Prescription({ onClose }) {
             medications: selectedMeds,
             notes
         };
-        localStorage.setItem('lastPrescription', JSON.stringify(prescriptionData));
-        alert('تم حفظ الروشتة بنجاح!');
-        onClose();
+        if (!patientName || selectedMeds.length === 0) {
+            alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
+            return;
+        } else {
+
+            localStorage.setItem('lastPrescription', JSON.stringify(prescriptionData));
+            alert('تم حفظ الروشتة بنجاح!');
+            onClose();
+        }
     };
 
     const printPrescription = () => {
@@ -169,19 +157,19 @@ export default function Prescription({ onClose }) {
                         <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4">
                             <h2 className="text-xl font-bold mb-4 " style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
-                            <div className="bg-gray-100 p-2 rounded-lg mb-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
-                                    {Object.keys(medicationCategories).map(category => (
+                            <div className="bg-gray-100 p-1 rounded-lg mb-4 ">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 ">
+                                    {medicationsData.map(cat => (
                                         <button
-                                            key={category}
-                                            onClick={() => setActiveCategory(category)}
-                                            className={`w-full py-2 rounded-lg text-center font-medium transition ${activeCategory === category
-                                                ? 'bg-cyan-500 text-white'
-                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            key={cat.category}
+                                            onClick={() => setActiveCategory(cat.category)}
+                                            className={`w-full py-2 rounded-lg border-gray-300 text-center font-medium transition ${activeCategory === cat.category
+                                                ? 'bg-blue-500 text-white'
+                                                : 'bg-white text-gray-700 border'
                                                 }`}
-                                            style={{ backgroundColor: activeCategory === category ? "var(--color-accent)" : undefined }}
+                                            style={{ backgroundColor: activeCategory === cat.category ? "var(--color-accent)" : undefined }}
                                         >
-                                            {category}
+                                            {cat.category}
                                         </button>
                                     ))}
                                 </div>
@@ -189,15 +177,18 @@ export default function Prescription({ onClose }) {
 
 
                             <div className="grid grid-cols-2 gap-3">
-                                {medicationCategories[activeCategory].map(med => (
-                                    <button
-                                        key={med}
-                                        onClick={() => handleMedClick(med)}
-                                        className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-center flex items-center justify-center h-15"
-                                    >
-                                        <span className="font-medium">{med}</span>
-                                    </button>
-                                ))}
+                                {
+                                    // دور على الفئة المختارة
+                                    medicationsData.find(cat => cat.category === activeCategory)?.medications.map((med, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleMedClick(med)}
+                                            className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition text-center flex items-center justify-center h-20"
+                                        >
+                                            <span className="font-medium">{med}</span>
+                                        </button>
+                                    ))
+                                }
                             </div>
                         </div>
 
@@ -293,7 +284,7 @@ export default function Prescription({ onClose }) {
                                 <div className="mb-4">
                                     <label className="block mb-2 font-medium text-gray-700">اختر الجرعة</label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {dosageOptions.map((option, index) => (
+                                        {dosageOptionsData.map((option, index) => (
                                             <button
                                                 key={index}
                                                 onClick={() => setDosage(option)}
@@ -315,7 +306,7 @@ export default function Prescription({ onClose }) {
                                 <div className="mb-6">
                                     <label className="block mb-2 font-medium text-gray-700">اختر المدة</label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {durationOptions.map((option, index) => (
+                                        {durationOptionsData.map((option, index) => (
                                             <button
                                                 key={index}
                                                 onClick={() => setDuration(option)}
