@@ -1,8 +1,8 @@
 // src/components/AppointmentSummary.jsx
 const statuses = [
-    { label: "مؤكد", color: "bg-green-500" },
-    { label: "في الانتظار", color: "bg-yellow-500" },
-    { label: "ملغى", color: "bg-red-500" },
+    { label: "تم", color: "bg-green-500" },
+    { label: "في الإنتظار", color: "bg-yellow-500" },
+    { label: "ملغي", color: "bg-red-500" },
 ];
 
 export const AppointmentSummary = ({ appointments }) => {

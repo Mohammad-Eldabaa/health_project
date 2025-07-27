@@ -1,4 +1,3 @@
-import React from "react";
 export function StatsCards({
     stats }) {
 
@@ -11,7 +10,6 @@ export function StatsCards({
                     <span className="text-3xl font-bold text-gray-800">
                         {stat.value}
                     </span>
-                    <span className="text-green-600 text-sm">{stat.change}</span>
                 </div>
             </div>
             <div className="bg-gray-100 p-2 rounded-full">{stat.icon}</div>

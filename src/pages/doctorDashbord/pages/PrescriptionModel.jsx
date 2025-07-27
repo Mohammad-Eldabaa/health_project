@@ -24,7 +24,7 @@ console.log(durationOptionsData);
 
 export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) {
   const today = new Date().toLocaleDateString('ar-EG');
-  const [patientName, setPatientName] = useState(selectedPatient?.name || '');
+  const [patientName, setPatientName] = useState(selectedPatient?.fullName || '');
   const [notes, setNotes] = useState('');
   const [selectedMeds, setSelectedMeds] = useState([]);
   const [activeCategory, setActiveCategory] = useState('مسكنات');
@@ -36,7 +36,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
 
   useEffect(() => {
-    setPatientName(selectedPatient?.name || '');
+    setPatientName(selectedPatient?.fullName || '');
   }, [selectedPatient]);
 
 
