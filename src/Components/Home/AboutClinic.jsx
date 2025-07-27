@@ -106,7 +106,7 @@ export default function AboutClinic() {
                 "برامج علاجية متكاملة",
                 "متابعة الأمراض المزمنة",
                 "خدمات وقائية وتوعوية",
-                "عيادات تخصصية متنوعة"
+                // "عيادات تخصصية متنوعة"
               ].map((item, index) => (
                 <li key={index} className="flex items-start">
                   <svg className="w-5 h-5 text-[#009688] mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
