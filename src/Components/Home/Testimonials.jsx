@@ -134,7 +134,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-16 md:py-20 bg-white w-screen relative overflow-hidden">
+    <section className="py-16 md:py-20  bg-[#E0F7FA] w-screen relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#B2EBF2] opacity-20 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
 
@@ -177,7 +177,7 @@ export default function Testimonials() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-[#E0F7FA] rounded-2xl p-6 md:p-8 lg:p-10 shadow-sm max-w-3xl mx-auto"
+            className="bg-white  rounded-2xl p-6 md:p-8 lg:p-10 shadow-sm max-w-3xl mx-auto"
           >
             <h3 className="text-xl md:text-2xl font-bold text-[#0097A7] mb-6 text-center">
               شاركنا تجربتك
@@ -282,7 +282,7 @@ export default function Testimonials() {
                     exit="exit"
                     className="absolute inset-0 px-2 sm:px-4"
                   >
-                    <div className="bg-[#E0F7FA] rounded-2xl p-6 md:p-8 lg:p-10 shadow-sm flex flex-col md:flex-row items-center gap-6 md:gap-8 h-full">
+                    <div className="bg-white rounded-2xl p-6 md:p-8 lg:p-10 shadow-sm flex flex-col md:flex-row items-center gap-6 md:gap-8 h-full">
                       <div className="flex-shrink-0 text-[#0097A7]">
                         <FaUserCircle className="text-6xl sm:text-7xl md:text-8xl opacity-80" />
                       </div>

@@ -17,11 +17,11 @@ function Home() {
         <HeroSection />
         <AboutClinic />
         <DoctorServices />
-        <Testimonials />
-        <ContactUs />
-        <WhyChooseUs />
-        <AppDownloadSection />
         <MedicalResourcesSection />
+        <Testimonials />
+        <WhyChooseUs />
+        <ContactUs />
+        <AppDownloadSection />
       </Suspense>
     </>
   );

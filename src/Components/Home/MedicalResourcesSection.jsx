@@ -14,7 +14,7 @@ const MedicalResourcesSection = () => {
                 "أمراض الجهاز التنفسي"
             ],
             btnText: "استكشف المقالات",
-            link: "/medical-articles"
+            link: "firstaid"
         },
         {
             title: "الإسعافات الأولية",
@@ -27,7 +27,7 @@ const MedicalResourcesSection = () => {
                 "حالات التسمم الطارئة"
             ],
             btnText: "تعلم الإسعافات",
-            link: "/first-aid"
+            link: "firstaid"
         }
     ];
 

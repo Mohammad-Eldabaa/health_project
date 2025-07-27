@@ -1,12 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Style from "./Navbar.module.css";
 import logo from "../../assets/img/logo.png";
 import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [servicesDropdown, setServicesDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const mobileDropdownRef = useRef(null);
 
-  const handleNavClick = () => setMenuOpen(false);
+  const handleNavClick = () => {
+    setMenuOpen(false);
+    setServicesDropdown(false);
+  };
+
+  const toggleServicesDropdown = (e) => {
+    e.stopPropagation();
+    setServicesDropdown(!servicesDropdown);
+  };
+
+  // إغلاق القوائم عند النقر خارجها
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setServicesDropdown(false);
+      }
+      if (mobileDropdownRef.current && !mobileDropdownRef.current.contains(event.target)) {
+        setServicesDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -14,7 +42,8 @@ export default function Navbar() {
         className="shadow px-4 z-50 fixed top-0 left-0 w-screen"
         style={{ backgroundColor: "var(--color-primary-dark)" }}
       >
-        <div className="flex container  flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
+        <div className="flex container flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
+          {/* Logo and Mobile Menu Button */}
           <div className="flex items-center justify-between gap-6 w-full lg:w-auto">
             <h3
               style={{
@@ -46,21 +75,20 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center  py-2 text-white transition-all duration-700 transform ${
-                menuOpen ? "rotate-180 scale-110" : "rotate-0 scale-100"
-              } hover:scale-105`}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? "rotate-180 scale-110" : "rotate-0 scale-100"
+                } hover:scale-105`}
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
             >
               <i
-                className={`fa-solid ${
-                  menuOpen ? "fa-xmark" : "fa-bars"
-                } transition-all duration-400`}
+                className={`fa-solid ${menuOpen ? "fa-xmark" : "fa-bars"
+                  } transition-all duration-400`}
               ></i>
             </button>
           </div>
 
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:items-center lg:justify-between w-full lg:w-auto">
             <div className="flex flex-col lg:flex-row items-center gap-0 lg:gap-10">
               <ul className="flex flex-col lg:flex-row items-center pe-12 mb-0">
@@ -68,15 +96,15 @@ export default function Navbar() {
                   <NavLink
                     className={({ isActive }) =>
                       `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute  after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full " : "after:w-0"}`
+                      after:content-[''] after:absolute after:left-0 after:bottom-0 
+                      after:h-[2px] after:bg-white 
+                      after:transition-all after:duration-400 
+                      ${isActive ? "after:w-full" : "after:w-0"}`
                     }
                     to={""}
                     onClick={handleNavClick}
                   >
-                    الرئسية
+                    الرئيسية
                   </NavLink>
                 </li>
                 <li>
@@ -84,38 +112,78 @@ export default function Navbar() {
                     to="about"
                     className={({ isActive }) =>
                       `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
+                      after:content-[''] after:absolute after:left-0 after:bottom-0 
+                      after:h-[2px] after:bg-white 
+                      after:transition-all after:duration-400 
+                      ${isActive ? "after:w-full" : "after:w-0"}`
                     }
+                    onClick={handleNavClick}
                   >
                     من نحن
                   </NavLink>
                 </li>
-                <li>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
-                    }
-                    to={"services"}
-                    onClick={handleNavClick}
-                  >
-                    الخدمات
-                  </NavLink>
+
+                {/* Services Dropdown - Desktop */}
+                <li className="relative" ref={dropdownRef}>
+                  <div className="flex items-center">
+                    <NavLink
+                      to="services"
+                      className={({ isActive }) =>
+                        `relative mx-3 text-lg text-white pb-1 
+                        after:content-[''] after:absolute after:left-0 after:bottom-0 
+                        after:h-[2px] after:bg-white 
+                        after:transition-all after:duration-400 
+                        ${isActive ? "after:w-full" : "after:w-0"}`
+                      }
+                      onClick={(e) => {
+                        // يشتغل عند النقر على النص فقط
+                        if (e.target.tagName === 'A') {
+                          handleNavClick();
+                        }
+                      }}
+                    >
+                      الخدمات
+                    </NavLink>
+                    <button
+                      onClick={toggleServicesDropdown}
+                      className="text-white text-sm focus:outline-none ml-1"
+                    >
+                      <i className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'} transition-transform duration-300`}></i>
+                    </button>
+                  </div>
+
+                  {servicesDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 border border-gray-100">
+                      <div className="py-1">
+                        <NavLink
+                          to="firstaid"
+                          className="block px-4 py-2 text-gray-800 hover:bg-[#E0F7FA] transition-colors"
+                          onClick={handleNavClick}
+                        >
+                          <i className="fa-solid fa-book-medical me-2 mr-2 text-[#0097A7]"></i>
+                          المقالات الطبية
+                        </NavLink>
+                        <NavLink
+                          to="firstaid"
+                          className="block px-4 py-2 text-gray-800 hover:bg-[#E0F7FA] transition-colors"
+                          onClick={handleNavClick}
+                        >
+                          <i className="fa-solid fa-kit-medical me-2 mr-2 text-[#0097A7]"></i>
+                          الإسعافات الأولية
+                        </NavLink>
+                      </div>
+                    </div>
+                  )}
                 </li>
+
                 <li>
                   <NavLink
                     className={({ isActive }) =>
                       `relative mx-3 text-lg text-white pb-1 
-     after:content-[''] after:absolute after:left-0 after:bottom-0 
-     after:h-[2px] after:bg-white 
-     after:transition-all after:duration-400 
-     ${isActive ? "after:w-full" : "after:w-0"}`
+                      after:content-[''] after:absolute after:left-0 after:bottom-0 
+                      after:h-[2px] after:bg-white 
+                      after:transition-all after:duration-400 
+                      ${isActive ? "after:w-full" : "after:w-0"}`
                     }
                     to={"contact"}
                     onClick={handleNavClick}
@@ -126,15 +194,14 @@ export default function Navbar() {
               </ul>
             </div>
             <div>
-              <ul className="flex flex-col  lg:flex-row items-center mb-0">
+              <ul className="flex flex-col lg:flex-row items-center mb-0">
                 <li>
                   <NavLink
                     className="mx-3 text-lg text-white"
                     to={"login"}
                     onClick={handleNavClick}
                   >
-                    <i className="fa-solid fa-right-to-bracket"></i> تسجيل
-                    الدخول
+                    <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
                   </NavLink>
                 </li>
                 <li
@@ -158,6 +225,7 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Menu */}
       <div
         className={`
           fixed top-0 left-0 h-full w-80 z-50 lg:hidden
@@ -167,36 +235,9 @@ export default function Navbar() {
         style={{ backgroundColor: "var(--color-primary-dark)" }}
       >
         <div className="flex flex-col h-full">
-          <div className="flex justify-end   p-4 border-b border-gray-600">
-            {/* <h3
-              style={{
-                fontFamily: "var(--logo-font)",
-                marginTop: 0,
-                marginBottom: 0,
-                color: "var(--color-text-white)",
-                letterSpacing: 2,
-                display: "flex",
-                alignItems: "center",
-                fontSize: 20,
-              }}
-            >
-              Clinic
-              <img
-                src={logo}
-                width={30}
-                height={30}
-                alt="Logo"
-                style={{
-                  margin: "0 1px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                }}
-                className="mx-2"
-              />
-              Smart
-            </h3> */}
+          <div className="flex justify-end p-4 border-b border-gray-600">
             <button
-              className="text-white  text-2xl"
+              className="text-white text-2xl"
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
             >
@@ -213,12 +254,12 @@ export default function Navbar() {
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-home ml-3"></i>
-                  الرئسية
+                  الرئيسية
                 </NavLink>
               </li>
               <li>
                 <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded  hover:bg-cyan-400  transition-colors"
+                  className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
                   to={"about"}
                   onClick={handleNavClick}
                 >
@@ -226,16 +267,51 @@ export default function Navbar() {
                   من نحن
                 </NavLink>
               </li>
+
+              
+              {/* Mobile Services Dropdown */}
               <li>
-                <NavLink
-                  className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"services"}
-                  onClick={handleNavClick}
-                >
-                  <i className="fa-solid fa-stethoscope ml-3"></i>
-                  الخدمات
-                </NavLink>
+                <div className="flex justify-between items-center">
+                  {/* نخلي العنوان ده مجرد span علشان ما يمنعش التنقل */}
+                  <span
+                    className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors w-full cursor-pointer"
+                    onClick={() => setServicesDropdown(!servicesDropdown)}
+                  >
+                    <i className="fa-solid fa-stethoscope ml-3"></i>
+                    الخدمات
+                  </span>
+
+                  <button
+                    onClick={() => setServicesDropdown(!servicesDropdown)}
+                    className="text-white px-3"
+                  >
+                    <i className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'} transition-transform duration-300`}></i>
+                  </button>
+                </div>
+
+                {/* العناصر الداخلية داخل Dropdown */}
+                {servicesDropdown && (
+                  <div className="pl-4 mt-2 space-y-2">
+                    <NavLink
+                      to="firstaid"
+                      className="block text-lg text-white py-2 px-2 rounded hover:bg-cyan-500 transition-colors"
+                      onClick={handleNavClick}
+                    >
+                      <i className="fa-solid fa-book-medical ml-3"></i>
+                      المقالات الطبية
+                    </NavLink>
+                    <NavLink
+                      to="firstaid"
+                      className="block text-lg text-white py-2 px-2 rounded hover:bg-cyan-500 transition-colors"
+                      onClick={handleNavClick}
+                    >
+                      <i className="fa-solid fa-kit-medical ml-3"></i>
+                      الإسعافات الأولية
+                    </NavLink>
+                  </div>
+                )}
               </li>
+
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
@@ -252,7 +328,7 @@ export default function Navbar() {
               <ul className="flex flex-col space-y-4">
                 <li>
                   <NavLink
-                    className="block text-lg text-white py-3 px-2 rounded  hover:bg-cyan-400 transition-colors"
+                    className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
                     to={"login"}
                     onClick={handleNavClick}
                   >
@@ -262,12 +338,10 @@ export default function Navbar() {
                 </li>
                 <li>
                   <NavLink
-                    className="block text-lg  hover:bg-cyan-400 text-white py-3 px-2 rounded transition-colors"
+                    className="block text-lg hover:bg-cyan-400 text-white py-3 px-2 rounded transition-colors"
                     to={"booking"}
                     onClick={handleNavClick}
-                    style={{
-                      borderRadius: "8px",
-                    }}
+                    style={{ borderRadius: "8px" }}
                   >
                     <i className="fa-solid fa-user-plus ml-3"></i>
                     حجز موعد
@@ -278,6 +352,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      {/* End Mobile Menu */}
     </>
   );
 }
