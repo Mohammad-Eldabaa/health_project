@@ -11,9 +11,9 @@ export const DoctorDashboard = lazy(() => import('../pages/doctorDashbord/pages/
 export const Profile = lazy(() => import('../pages/DoctorProfile/DoctorProfile.jsx'));
 
 export const Home = lazy(() => import('../Components/Home/Home'));
-export const About = lazy(() => import('../Components/About/About'));
-export const Contact = lazy(() => import('../Components/Contact/Contact'));
-export const Services = lazy(() => import('../Components/Services/Services'));
+export const About = lazy(() => import('../Components/Home/AboutClinic.jsx'));
+export const Contact = lazy(() => import('../Components/Home/ContactUs.jsx'));
+export const Services = lazy(() => import('../Components/Home/DoctorServices.jsx'));
 export const Booking = lazy(() => import('../Components/Booking/Booking'));
 export const Footer = lazy(() => import('../Components/Footer/Footer'));
 export const Layout = lazy(() => import('../Components/Layout/Layout'));

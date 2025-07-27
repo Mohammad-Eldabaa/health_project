@@ -1,7 +1,7 @@
 // authStore.js
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { supabase } from "../supaBase/booking";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { supabase } from '../supaBase/booking';
 
 const useAuthStore = create(
   persist(
@@ -15,7 +15,7 @@ const useAuthStore = create(
         });
 
         if (error) {
-          console.error("Login error:", error.message);
+          console.error('Login error:', error.message);
         } else {
           set({ current_user: data?.user?.user_metadata });
           nav();
@@ -31,13 +31,13 @@ const useAuthStore = create(
               full_name: name,
               phone,
               address,
-              role: "user",
+              role: 'user',
             },
           },
         });
 
         if (error) {
-          console.error("Signup error:", error.message);
+          console.error('Signup error:', error.message);
         } else {
           set({ current_user: data?.user?.user_metadata });
         }
@@ -47,16 +47,39 @@ const useAuthStore = create(
         await supabase.auth.signOut();
         set({ current_user: null });
       },
+      handleForgotPassword: async email => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/resetpassword`,
+        });
+
+        if (error) {
+          console.error('Error sending reset email:', error.message);
+        } else {
+          alert('Check your email for the password reset link.');
+        }
+      },
+
+      updatePassword: async (newPassword, next) => {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          console.error('Error updating email:', error.message);
+        } else {
+          alert('Your password updated successfully.');
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+          next();
+        }
+      },
 
       // CUemail: () => get().current_user?.user?.email || "",
-      CUname: () => get().current_user?.full_name || "",
-      CUaddress: () => get().current_user?.address || "",
-      CUphone: () => get().current_user?.phone || "",
-      CUrole: () => get().current_user?.role || "",
+      CUname: () => get().current_user?.full_name || '',
+      CUaddress: () => get().current_user?.address || '',
+      CUphone: () => get().current_user?.phone || '',
+      CUrole: () => get().current_user?.role || '',
     }),
     {
-      name: "auth-storage",
-      partialize: (state) => ({ current_user: state.current_user }),
+      name: 'auth-storage',
+      partialize: state => ({ current_user: state.current_user }),
     }
   )
 );
