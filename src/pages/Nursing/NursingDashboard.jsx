@@ -51,9 +51,6 @@ const NursingDashboard = () => {
               </button>
             </div>
           </div>
-
-          {/* Dashboard Charts */}
-          <NursingDashboardCharts />
         </main>
       </div>
     </div>

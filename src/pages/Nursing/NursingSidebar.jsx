@@ -26,7 +26,7 @@ const NursingSidebar = () => {
               لوحة التحكم
             </NavLink>
           </li>
-          <li>
+          {/* <li>
             <NavLink
               to="/add-appointment"
               className={({ isActive }) =>
@@ -38,8 +38,8 @@ const NursingSidebar = () => {
               <i className="bi bi-calendar-plus mr-2"></i>
               إضافة موعد
             </NavLink>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <NavLink
               to="/appointments"
               className={({ isActive }) =>
@@ -51,7 +51,7 @@ const NursingSidebar = () => {
               <i className="bi bi-calendar-week mr-2"></i>
               الجدول
             </NavLink>
-          </li>
+          </li> */}
           <li>
             <NavLink
               to="/patients"

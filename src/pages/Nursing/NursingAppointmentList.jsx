@@ -11,7 +11,7 @@ const NursingAppointmentList = () => {
       <NursingSidebar />
 
       {/* Main Content */}
-      <main className="flex-1 p-4 bg-[#B2EBF2]">
+      <main className="flex-1 p-4 bg-light">
         <nav className="navbar navbar-expand-md navbar-light bg-light d-md-none mb-4 rounded-lg">
           <button
             className="navbar-toggler"
