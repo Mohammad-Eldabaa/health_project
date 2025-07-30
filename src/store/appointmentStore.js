@@ -7,7 +7,23 @@ const useAppointmentStore = create((set, get) => ({
 
   fetchAppointments: async () => {
     try {
-      const { data, error } = await supabase.from('Appointments').select('*').order('order_index', { ascending: true });
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(
+          `
+          id,
+          created_at,
+          date,
+          time,
+          status,
+          reason,
+          patient_id,
+          patients (id, fullName),
+          doctor_id,
+          doctors (id, name)
+        `
+        )
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching appointments:', error.message, error.details);
@@ -15,7 +31,20 @@ const useAppointmentStore = create((set, get) => ({
         return;
       }
 
-      set({ appointments: data || [], error: null });
+      // Map data to include patient and doctor names for display
+      const formattedAppointments = data.map(appt => ({
+        id: appt.id,
+        date: appt.date,
+        time: appt.time,
+        status: appt.status,
+        reason: appt.reason || '',
+        patient_id: appt.patient_id,
+        patientName: appt.patients?.fullName || 'غير محدد',
+        doctor_id: appt.doctor_id,
+        doctorName: appt.doctors?.name || 'غير محدد',
+      }));
+
+      set({ appointments: formattedAppointments || [], error: null });
     } catch (err) {
       console.error('Unexpected error fetching appointments:', err);
       set({ error: 'حدث خطأ غير متوقع أثناء جلب المواعيد.' });
@@ -24,14 +53,16 @@ const useAppointmentStore = create((set, get) => ({
 
   addAppointment: async appointment => {
     try {
-      const { appointments } = get();
       const newAppointment = {
-        ...appointment,
-        id: crypto.randomUUID(),
-        order_index: appointments.length,
+        date: appointment.date,
+        time: appointment.time,
+        status: appointment.status,
+        reason: appointment.reason || null,
+        patient_id: appointment.patient_id || null,
+        doctor_id: appointment.doctor_id || null,
       };
 
-      const { error } = await supabase.from('Appointments').insert([newAppointment]);
+      const { error } = await supabase.from('appointments').insert([newAppointment]);
 
       if (error) {
         console.error('Error adding appointment:', error.message, error.details);
@@ -39,8 +70,51 @@ const useAppointmentStore = create((set, get) => ({
         return;
       }
 
+      // Fetch the newly added appointment to get patient and doctor names
+      const { data: newData, error: fetchError } = await supabase
+        .from('appointments')
+        .select(
+          `
+          id,
+          created_at,
+          date,
+          time,
+          status,
+          reason,
+          patient_id,
+          patients (id, fullName),
+          doctor_id,
+          doctors (id, name)
+        `
+        )
+        .eq(
+          'id',
+          (
+            await supabase.from('appointments').select('id').order('created_at', { ascending: false }).limit(1)
+          ).data[0].id
+        )
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching new appointment:', fetchError);
+        alert('تمت إضافة الموعد ولكن فشل في جلب التفاصيل.');
+        return;
+      }
+
+      const formattedNewAppointment = {
+        id: newData.id,
+        date: newData.date,
+        time: newData.time,
+        status: newData.status,
+        reason: newData.reason || '',
+        patient_id: newData.patient_id,
+        patientName: newData.patients?.name || 'غير محدد',
+        doctor_id: newData.doctor_id,
+        doctorName: newData.doctors?.name || 'غير محدد',
+      };
+
       set(state => ({
-        appointments: [...state.appointments, newAppointment],
+        appointments: [...state.appointments, formattedNewAppointment],
         error: null,
       }));
     } catch (err) {
@@ -51,7 +125,7 @@ const useAppointmentStore = create((set, get) => ({
 
   cancelAppointment: async id => {
     try {
-      const { error } = await supabase.from('Appointments').delete().eq('id', id);
+      const { error } = await supabase.from('appointments').delete().eq('id', id);
 
       if (error) {
         console.error('Error canceling appointment:', error.message, error.details);
@@ -63,23 +137,6 @@ const useAppointmentStore = create((set, get) => ({
         appointments: state.appointments.filter(appt => appt.id !== id),
         error: null,
       }));
-
-      // Update order_index for remaining appointments
-      const { appointments } = get();
-      const updates = appointments.map((appt, index) => ({
-        id: appt.id,
-        order_index: index,
-      }));
-
-      const { error: updateError } = await supabase.from('Appointments').upsert(updates, {
-        onConflict: 'id',
-        ignoreDuplicates: false,
-      });
-
-      if (updateError) {
-        console.error('Error updating order_index:', updateError.message, updateError.details);
-        alert(`فشل في تحديث ترتيب المواعيد: ${updateError.message}`);
-      }
     } catch (err) {
       console.error('Unexpected error canceling appointment:', err);
       alert('حدث خطأ غير متوقع أثناء إلغاء الموعد.');
@@ -93,13 +150,13 @@ const useAppointmentStore = create((set, get) => ({
       const [reorderedItem] = newAppointments.splice(startIndex, 1);
       newAppointments.splice(endIndex, 0, reorderedItem);
 
-      // Update order_index in Supabase
+      // Since order_index isn't in the schema, we'll update created_at to simulate ordering
       const updates = newAppointments.map((appt, index) => ({
         id: appt.id,
-        order_index: index,
+        created_at: new Date(Date.now() + index * 1000).toISOString(), // Increment timestamp
       }));
 
-      const { error } = await supabase.from('Appointments').upsert(updates, {
+      const { error } = await supabase.from('appointments').upsert(updates, {
         onConflict: 'id',
         ignoreDuplicates: false,
       });

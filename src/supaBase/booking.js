@@ -6,7 +6,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const addPatient = async (patientData, resetForm) => {
-  const { error } = await supabase.from("Patients").insert(patientData);
+  const { error } = await supabase.from("patients").insert(patientData);
 
   if (error) {
     console.error("Error adding patient:", error);

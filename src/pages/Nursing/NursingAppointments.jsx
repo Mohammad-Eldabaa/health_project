@@ -3,6 +3,8 @@ import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import useAppointmentStore from '../../store/appointmentStore';
+import { supabase } from '../../supaBase/booking';
+import { Schema } from '../bookingPage/schema'; // Import the Yup schema
 import NursingSidebar from './NursingSidebar';
 
 const AppointmentItem = ({ appt, index, moveAppointment }) => {
@@ -43,19 +45,13 @@ const AppointmentItem = ({ appt, index, moveAppointment }) => {
       <td className="py-4">
         <span className="badge bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
           <i className="bi bi-heart-pulse me-1"></i>
-          {appt.doctor}
+          {appt.doctorName}
         </span>
       </td>
       <td className="py-4">
         <span className="badge bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-          <i className="bi bi-telephone me-1"></i>
-          {appt.patientNumber}
-        </span>
-      </td>
-      <td className="py-4">
-        <span className="badge bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-          <i className="bi bi-geo-alt me-1"></i>
-          {appt.patientAddress}
+          <i className="bi bi-tag me-1"></i>
+          {appt.status}
         </span>
       </td>
       <td className="py-4">
@@ -64,7 +60,7 @@ const AppointmentItem = ({ appt, index, moveAppointment }) => {
       <td className="py-4">
         <span className="text-gray-700">{appt.time}</span>
       </td>
-      <td className="py-4">{appt.notes || <span className="text-gray-400 italic">لا توجد ملاحظات</span>}</td>
+      <td className="py-4">{appt.reason || <span className="text-gray-400 italic">لا توجد ملاحظات</span>}</td>
       <td className="py-4">
         <button
           onClick={() => cancelAppointment(appt.id)}
@@ -81,37 +77,108 @@ const AppointmentItem = ({ appt, index, moveAppointment }) => {
 const NursingAppointments = () => {
   const { appointments, addAppointment, reorderAppointments, fetchAppointments, error } = useAppointmentStore();
   const [showModal, setShowModal] = useState(false);
+  const [doctors, setDoctors] = useState([]);
   const [formData, setFormData] = useState({
-    patientName: '',
-    patientNumber: '',
-    patientAddress: '',
-    doctor: '',
+    fullName: '',
+    address: '',
+    age: '',
+    phoneNumber: '',
+    bookingDate: '',
+    visitType: '',
+    notes: '',
+    doctor_id: '',
     date: '',
     time: '',
-    notes: '',
+    status: 'مقرر',
   });
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchAppointments();
+    const fetchDoctors = async () => {
+      const { data, error } = await supabase.from('doctors').select('id, name');
+      if (error) {
+        console.error('Error fetching doctors:', error);
+      } else {
+        setDoctors(data || []);
+      }
+    };
+    fetchDoctors();
   }, [fetchAppointments]);
 
   const handleChange = e => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Clear error for the field being edited
+    setFormErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    addAppointment(formData);
-    setFormData({
-      patientName: '',
-      patientNumber: '',
-      patientAddress: '',
-      doctor: '',
-      date: '',
-      time: '',
-      notes: '',
-    });
-    setShowModal(false);
+    try {
+      // Validate form data using Yup schema
+      await Schema.validate(formData, { abortEarly: false });
+      setFormErrors({});
+
+      // Add patient to get patient_id
+      const patientData = {
+        fullName: formData.fullName,
+        age: formData.age,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        bookingDate: formData.bookingDate,
+        visitType: formData.visitType, // Add visitType to patientData
+      };
+
+      const { data: patient, error: patientError } = await supabase
+        .from('patients')
+        .insert([patientData])
+        .select('id')
+        .single();
+
+      if (patientError) {
+        console.error('Error adding patient:', patientError);
+        alert('فشل في إضافة المريض.');
+        return;
+      }
+
+      const appointmentData = {
+        date: formData.date,
+        time: formData.time,
+        status: formData.status,
+        reason: formData.notes || null,
+        patient_id: patient.id,
+        doctor_id: formData.doctor_id || null,
+      };
+
+      await addAppointment(appointmentData);
+      setFormData({
+        fullName: '',
+        address: '',
+        age: '',
+        phoneNumber: '',
+        bookingDate: '',
+        visitType: '',
+        notes: '',
+        doctor_id: '',
+        date: '',
+        time: '',
+        status: 'مقرر',
+      });
+      setShowModal(false);
+    } catch (err) {
+      if (err.name === 'ValidationError') {
+        const errors = {};
+        err.inner.forEach(error => {
+          errors[error.path] = error.message;
+        });
+        setFormErrors(errors);
+      } else {
+        console.error('Error submitting appointment:', err);
+        alert('حدث خطأ أثناء إضافة الموعد.');
+      }
+    }
   };
 
   const moveAppointment = (fromIndex, toIndex) => {
@@ -183,22 +250,19 @@ const NursingAppointments = () => {
                           المريض
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
-                          نوع الكشف
+                          الطبيب
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
-                          الهاتف
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
-                          العنوان
+                          الحالة
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
                           التاريخ
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
-                          العمر
+                          الوقت
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
-                          الملاحظات
+                          السبب
                         </th>
                         <th scope="col" className="px-4 py-3 text-right font-semibold text-gray-700">
                           الإجراءات
@@ -221,7 +285,10 @@ const NursingAppointments = () => {
                   <div className="flex justify-between items-center mb-6">
                     <h5 className="text-xl font-bold text-green-800">إضافة موعد</h5>
                     <button
-                      onClick={() => setShowModal(false)}
+                      onClick={() => {
+                        setShowModal(false);
+                        setFormErrors({});
+                      }}
                       className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
                     >
                       <i className="bi bi-x-lg text-lg"></i>
@@ -230,64 +297,132 @@ const NursingAppointments = () => {
                   <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 gap-4">
                       <div>
-                        <label htmlFor="patientName" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
                           اسم المريض
                         </label>
                         <input
                           type="text"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
-                          id="patientName"
-                          name="patientName"
-                          value={formData.patientName}
+                          className={`w-full p-3 border ${
+                            formErrors.fullName ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="fullName"
+                          name="fullName"
+                          value={formData.fullName}
                           onChange={handleChange}
                           required
                         />
+                        {formErrors.fullName && <p className="text-red-600 text-sm mt-1">{formErrors.fullName}</p>}
                       </div>
                       <div>
-                        <label htmlFor="patientNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
+                          العمر
+                        </label>
+                        <input
+                          type="number"
+                          className={`w-full p-3 border ${
+                            formErrors.age ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="age"
+                          name="age"
+                          value={formData.age}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
                           رقم الهاتف
                         </label>
                         <input
                           type="tel"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
-                          id="patientNumber"
-                          name="patientNumber"
-                          value={formData.patientNumber}
+                          className={`w-full p-3 border ${
+                            formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
                           onChange={handleChange}
                           required
                         />
+                        {formErrors.phoneNumber && (
+                          <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>
+                        )}
                       </div>
                       <div>
-                        <label htmlFor="patientAddress" className="block text-sm font-semibold text-gray-700 mb-2">
-                          عنوان المريض
+                        <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                          العنوان
                         </label>
                         <input
                           type="text"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
-                          id="patientAddress"
-                          name="patientAddress"
-                          value={formData.patientAddress}
+                          className={`w-full p-3 border ${
+                            formErrors.address ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="address"
+                          name="address"
+                          value={formData.address}
                           onChange={handleChange}
                           required
                         />
+                        {formErrors.address && <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>}
                       </div>
                       <div>
-                        <label htmlFor="doctor" className="block text-sm font-semibold text-gray-700 mb-2">
-                          نوع الكشف
+                        <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-700 mb-2">
+                          تاريخ الحجز
+                        </label>
+                        <input
+                          type="date"
+                          className={`w-full p-3 border ${
+                            formErrors.bookingDate ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="bookingDate"
+                          name="bookingDate"
+                          value={formData.bookingDate}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.bookingDate && (
+                          <p className="text-red-600 text-sm mt-1">{formErrors.bookingDate}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label htmlFor="visitType" className="block text-sm font-semibold text-gray-700 mb-2">
+                          نوع الزيارة
                         </label>
                         <select
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
-                          id="doctor"
-                          name="doctor"
-                          value={formData.doctor}
+                          className={`w-full p-3 border ${
+                            formErrors.visitType ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
+                          id="visitType"
+                          name="visitType"
+                          value={formData.visitType}
                           onChange={handleChange}
                           required
                         >
-                          <option value="">اختر نوع الكشف</option>
-                          <option value="إستشارة">إستشارة</option>
-                          <option value="إعادة كشف">إعادة</option>
-                          <option value="كشف عادي">كشف</option>
-                          <option value="طوارئ">طوارئ</option>
+                          <option value="">اختر نوع الزيارة</option>
+                          <option value="فحص">فحص</option>
+                          <option value="متابعة">متابعة</option>
+                          <option value="استشارة">استشارة</option>
+                        </select>
+                        {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="doctor_id" className="block text-sm font-semibold text-gray-700 mb-2">
+                          الطبيب
+                        </label>
+                        <select
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
+                          id="doctor_id"
+                          name="doctor_id"
+                          value={formData.doctor_id}
+                          onChange={handleChange}
+                        >
+                          <option value="">اختر الطبيب</option>
+                          {doctors.map(doctor => (
+                            <option key={doctor.id} value={doctor.id}>
+                              {doctor.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -306,37 +441,59 @@ const NursingAppointments = () => {
                       </div>
                       <div>
                         <label htmlFor="time" className="block text-sm font-semibold text-gray-700 mb-2">
-                          العمر
+                          الوقت
                         </label>
                         <input
-                          type="number"
+                          type="time"
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
                           id="time"
                           name="time"
                           value={formData.time}
                           onChange={handleChange}
                           required
-                          min="0"
                         />
                       </div>
                       <div>
+                        <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
+                          الحالة
+                        </label>
+                        <select
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
+                          id="status"
+                          name="status"
+                          value={formData.status}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="مقرر">مقرر</option>
+                          <option value="ملغى">ملغى</option>
+                          <option value="مكتمل">مكتمل</option>
+                        </select>
+                      </div>
+                      <div>
                         <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                          ملاحظات
+                          الملاحظات
                         </label>
                         <textarea
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200"
+                          className={`w-full p-3 border ${
+                            formErrors.notes ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors duration-200`}
                           id="notes"
                           name="notes"
                           rows="4"
                           value={formData.notes}
                           onChange={handleChange}
-                          placeholder="أضف أي ملاحظات إضافية..."
+                          placeholder="أضف ملاحظات (اختياري)..."
                         ></textarea>
+                        {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
                       </div>
                       <div className="flex justify-end gap-3 pt-2">
                         <button
                           type="button"
-                          onClick={() => setShowModal(false)}
+                          onClick={() => {
+                            setShowModal(false);
+                            setFormErrors({});
+                          }}
                           className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300"
                         >
                           إلغاء
