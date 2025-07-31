@@ -32,6 +32,7 @@ export const RoutesArray = [
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <DoctorProfile />, path: '/profile' },
   { id: v4(), element: <PatientProfile />, path: '/patientProfile' },
+  { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
 
   // Zezo Route
   {
