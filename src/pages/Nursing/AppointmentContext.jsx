@@ -1,17 +1,32 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 // Create the context
 export const AppointmentContext = createContext();
 
 export const AppointmentProvider = ({ children }) => {
-  const [appointments, setAppointments] = useState([]);
+  // Initialize state with data from localStorage or empty array
+  const [appointments, setAppointments] = useState(() => {
+    const savedAppointments = localStorage.getItem("appointments");
+    return savedAppointments ? JSON.parse(savedAppointments) : [];
+  });
+
+  // Save appointments to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+  }, [appointments]);
 
   const addAppointment = (appointment) => {
-    setAppointments((prev) => [...prev, { ...appointment, id: Date.now() }]);
+    setAppointments((prev) => {
+      const newAppointments = [...prev, { ...appointment, id: Date.now() }];
+      return newAppointments;
+    });
   };
 
   const cancelAppointment = (id) => {
-    setAppointments((prev) => prev.filter((appt) => appt.id !== id));
+    setAppointments((prev) => {
+      const newAppointments = prev.filter((appt) => appt.id !== id);
+      return newAppointments;
+    });
   };
 
   return (

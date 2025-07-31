@@ -17,24 +17,17 @@ export default function App() {
 }
 // import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // import './App.css';
-// import NursingDashboard from './pages/Nursing/NursingDashboard';
-// import NursingAddAnointment from './pages/Nursing/NursingAddAnointment';
-// import NursingAppointmentList from './pages/Nursing/NursingAppointmentList';
 // import NursingPatientsList from './pages/Nursing/NursingPatientsList';
-// import { AppointmentProvider } from './pages/Nursing/AppointmentContext';
+// import NursingAppointments from './pages/Nursing/NursingAppointments';
 
 // function App() {
 //   return (
-//     <AppointmentProvider>
-//       <Router>
-//         <Routes>
-//           <Route path="/" element={<NursingDashboard />} />
-//           <Route path="/add-appointment" element={<NursingAddAnointment />} />
-//           <Route path="/appointments" element={<NursingAppointmentList />} />
-//           <Route path="/patients" element={<NursingPatientsList />} />
-//         </Routes>
-//       </Router>
-//     </AppointmentProvider>
+//     <Router>
+//       <Routes>
+//         <Route path="/" element={<NursingAppointments />} />
+//         <Route path="/patients" element={<NursingPatientsList />} />
+//       </Routes>
+//     </Router>
 //   );
 // }
 

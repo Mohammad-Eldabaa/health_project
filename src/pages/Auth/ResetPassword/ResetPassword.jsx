@@ -48,11 +48,10 @@ export default function Register() {
                   onBlur={formik.handleBlur}
                   value={formik.values.password}
                   placeholder="ادخل كلمة المرور"
-                  className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${
-                    formik.touched.password && formik.errors.password
-                      ? 'border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${formik.touched.password && formik.errors.password
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
                 />
                 {formik.touched.password && formik.errors.password && (
                   <p className="text-red-500 text-sm mt-1 text-right drop-shadow-md">{formik.errors.password}</p>
@@ -68,11 +67,10 @@ export default function Register() {
                 onBlur={formik.handleBlur}
                 value={formik.values.confirmPassword}
                 placeholder="تأكيد كلمة المرور"
-                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${
-                  formik.touched.confirmPassword && formik.errors.confirmPassword
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 text-right bg-white/90 ${formik.touched.confirmPassword && formik.errors.confirmPassword
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
               />
               {formik.touched.confirmPassword && formik.errors.confirmPassword && (
                 <p className="text-red-500 text-sm mt-1 text-right drop-shadow-md">{formik.errors.confirmPassword}</p>
