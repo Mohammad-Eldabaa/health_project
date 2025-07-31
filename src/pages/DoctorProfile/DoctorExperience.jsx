@@ -3,9 +3,8 @@ import { FaBriefcase, FaPlus, FaChevronDown, FaChevronUp, FaTrash } from 'react-
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExperiencesStore } from '../../store/experiences';
 
-const DoctorExperience = ({ editMode, variants, cardVariants }) => {
+const DoctorExperience = ({ editMode, variants, cardVariants, experiences, setExperiences }) => {
   const { getAllExperiences, allExperiences, addExperience, deleteExperience } = useExperiencesStore();
-  const [experiences, setExperiences] = useState(allExperiences);
   const [expandedExperiences, setExpandedExperiences] = useState([]);
   const [showExperienceForm, setShowExperienceForm] = useState(false);
   const [newExperience, setNewExperience] = useState({
@@ -25,7 +24,8 @@ const DoctorExperience = ({ editMode, variants, cardVariants }) => {
 
   const addAnotherExperience = () => {
     if (newExperience.position.trim()) {
-      setExperiences([...experiences, { ...newExperience, id: Date.now() }]);
+      const updatedExperiences = [...experiences, { ...newExperience, id: Date.now() }];
+      setExperiences(updatedExperiences);
       addExperience(newExperience);
       setNewExperience({ position: '', hospital: '', period: '', description: '' });
       setShowExperienceForm(false);

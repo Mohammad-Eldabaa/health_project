@@ -1,65 +1,41 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserNurse } from "@fortawesome/free-solid-svg-icons";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserNurse } from '@fortawesome/free-solid-svg-icons';
 
 const NursingSidebar = () => {
   return (
-    <nav
-      id="sidebarMenu"
-      className="col-md-3 col-lg-2 d-md-block bg-info text-white sidebar collapse p-0"
-      style={{minHeight: "100vh",backgroundColor: "#0097A7" }}
-    >
-      <div
-        className="position-sticky pt-3"
-      >
-        <h2 className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white px-3">
-          <FontAwesomeIcon icon={faUserNurse} className="me-2" />
-          <span className="fs-4">لوحة التمريض</span>
+    <nav id="sidebarMenu" className="w-full md:w-1/4 lg:w-1/5 bg-cyan-700 text-white min-h-screen p-0">
+      <div className="sticky top-0 pt-6">
+        <h2 className="flex items-center mb-6 px-4 text-white text-xl font-medium">
+          <FontAwesomeIcon icon={faUserNurse} className="me-2 mr-2" />
+          <span>لوحة التمريض</span>
         </h2>
-        <hr />
-        <ul className="nav nav-pills flex-column mb-auto px-3">
-          <li className="nav-item">
+        <hr className="border-white opacity-30 mx-4 mb-4" />
+        <ul className="flex flex-col gap-3 px-4">
+          <li>
             <NavLink
-              to="/"
+              to="/nursing-dashboard"
               className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : "text-white"}`
+                `block px-4 py-2 rounded-md text-sm font-medium transition ${
+                  isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
+                }`
               }
             >
-              <i className="bi bi-speedometer2 me-2"></i>
+              <i className="bi bi-speedometer2 mr-2"></i>
               لوحة التحكم
             </NavLink>
           </li>
           <li>
             <NavLink
-              to="/add-appointment"
+              to="/nursing-dashboard/patients"
               className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : "text-white"}`
+                `block px-4 py-2 rounded-md text-sm font-medium transition ${
+                  isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
+                }`
               }
             >
-              <i className="bi bi-calendar-plus me-2"></i>
-              إضافة موعد
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/appointments"
-              className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : "text-white"}`
-              }
-            >
-              <i className="bi bi-calendar-week me-2"></i>
-              الجدول
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/patients"
-              className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : "text-white"}`
-              }
-            >
-              <i className="bi bi-people me-2"></i>
+              <i className="bi bi-people mr-2"></i>
               المرضى
             </NavLink>
           </li>
@@ -67,10 +43,12 @@ const NursingSidebar = () => {
             <NavLink
               to="/logout"
               className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : "text-white"}`
+                `block px-4 py-2 rounded-md text-sm font-medium transition ${
+                  isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
+                }`
               }
             >
-              <i className="bi bi-box-arrow-right me-2"></i>
+              <i className="bi bi-box-arrow-right mr-2"></i>
               تسجيل الخروج
             </NavLink>
           </li>

@@ -1,6 +1,6 @@
-// authStore.js
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import Swal from 'sweetalert2';
 import { supabase } from '../supaBase/booking';
 
 const useAuthStore = create(
@@ -8,70 +8,141 @@ const useAuthStore = create(
     (set, get) => ({
       current_user: null,
 
+      showAlert: (icon, title, text) => {
+        Swal.fire({
+          icon,
+          title,
+          text,
+          confirmButtonColor: '#0097A7',
+          background: '#f8f9fa',
+          customClass: {
+            container: 'custom-swal-container',
+            popup: 'rounded-lg shadow-xl'
+          }
+        });
+      },
+
+      // دالة تسجيل الدخول
       login: async ({ email, password }, nav) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
-        if (error) {
-          console.error('Login error:', error.message);
-        } else {
-          set({ current_user: data?.user?.user_metadata });
-          nav();
+          if (error) {
+            throw error;
+          }
+
+          set({ current_user: data.user?.user_metadata || null });
+          get().showAlert('success', 'تم تسجيل الدخول بنجاح', 'مرحباً بعودتك!');
+          if (nav && typeof nav === 'function') {
+            nav();
+          }
+        } catch (error) {
+          get().showAlert('error', 'خطأ في تسجيل الدخول', error.message || 'حدث خطأ أثناء تسجيل الدخول');
         }
       },
 
+      // دالة التسجيل
       register: async ({ email, password, phone, name, address }) => {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: name,
-              phone,
-              address,
-              role: 'user',
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: name,
+                phone,
+                address,
+                role: 'user',
+              },
             },
-          },
-        });
+          });
 
-        if (error) {
-          console.error('Signup error:', error.message);
-        } else {
-          set({ current_user: data?.user?.user_metadata });
+          if (error) {
+            throw error;
+          }
+
+          set({ current_user: data.user?.user_metadata || null });
+          get().showAlert(
+            'success', 
+            'تم التسجيل بنجاح', 
+            'تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني للتأكيد.'
+          );
+          return true;
+        } catch (error) {
+          get().showAlert('error', 'خطأ في التسجيل', error.message || 'حدث خطأ أثناء التسجيل');
+          return false;
         }
       },
 
+      // دالة تسجيل الخروج
       logout: async () => {
-        await supabase.auth.signOut();
-        set({ current_user: null });
-      },
-      handleForgotPassword: async email => {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/resetpassword`,
-        });
+        try {
+          const { error } = await supabase.auth.signOut();
+          
+          if (error) {
+            throw error;
+          }
 
-        if (error) {
-          console.error('Error sending reset email:', error.message);
-        } else {
-          alert('Check your email for the password reset link.');
+          set({ current_user: null });
+          get().showAlert('success', 'تم تسجيل الخروج', 'نراكم قريباً!');
+          return true;
+        } catch (error) {
+          get().showAlert('error', 'خطأ في تسجيل الخروج', error.message || 'حدث خطأ أثناء تسجيل الخروج');
+          return false;
         }
       },
 
+      // دالة استعادة كلمة المرور
+      handleForgotPassword: async (email) => {
+        try {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/resetpassword`,
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          get().showAlert(
+            'success',
+            'تم إرسال رابط إعادة التعيين',
+            'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.'
+          );
+          return true;
+        } catch (error) {
+          get().showAlert('error', 'خطأ في إرسال البريد', error.message || 'حدث خطأ أثناء إرسال البريد');
+          return false;
+        }
+      },
+
+      // دالة تحديث كلمة المرور
       updatePassword: async (newPassword, next) => {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) {
-          console.error('Error updating email:', error.message);
-        } else {
-          alert('Your password updated successfully.');
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        try {
+          const { error } = await supabase.auth.updateUser({ 
+            password: newPassword 
+          });
 
-          next();
+          if (error) {
+            throw error;
+          }
+
+          get().showAlert('success', 'تم التحديث بنجاح', 'تم تحديث كلمة المرور بنجاح');
+          window.history.replaceState(null, '', window.location.pathname);
+          
+          if (next && typeof next === 'function') {
+            next();
+          }
+          return true;
+        } catch (error) {
+          get().showAlert('error', 'خطأ في تحديث كلمة المرور', error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
+          return false;
         }
       },
 
-      // CUemail: () => get().current_user?.user?.email || "",
+      // دوال مساعدة للحصول على بيانات المستخدم
       CUname: () => get().current_user?.full_name || '',
       CUaddress: () => get().current_user?.address || '',
       CUphone: () => get().current_user?.phone || '',
@@ -79,7 +150,7 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage',
-      partialize: state => ({ current_user: state.current_user }),
+      partialize: (state) => ({ current_user: state.current_user }),
     }
   )
 );

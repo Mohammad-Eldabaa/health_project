@@ -4,6 +4,7 @@ import drr from '../../../assets/drr.jpeg';
 import pitttttt from '../../../assets/pitttttt.png';
 import { ForgetPassword, ResetPassword } from '../../../forms/schema';
 import useAuthStore from '../../../store/auth';
+import { NavLink } from 'react-router-dom';
 
 export default function Login() {
   const { handleForgotPassword } = useAuthStore();
@@ -62,12 +63,15 @@ export default function Login() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md 
+              className="w-full hover:bg-[#009688] bg-[#0097A7] text-white py-2.5 px-4 rounded-md 
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                         transition duration-150 ease-in-out font-medium"
             >
               تأكيد
             </button>
+            <NavLink to="/login" className="text-blue-500 hover:text-blue-500  hover:underline drop-shadow-md">
+                العوده لتسجيل الدخول
+              </NavLink>
           </form>
         </div>
       </div>

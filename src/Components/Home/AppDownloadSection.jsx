@@ -4,7 +4,7 @@ import QRCode from "react-qr-code";
 
 const AppDownloadSection = () => {
   return (
-    <section className="py-16 bg-[#E0F7FA] w-screen relative overflow-hidden">
+    <section className="py-16 bg-white w-screen relative overflow-hidden">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#00BCD4] opacity-10 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
@@ -15,7 +15,7 @@ const AppDownloadSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="bg-white rounded-2xl shadow-lg overflow-hidden"
+          className="bg-[#E0F7FA] rounded-2xl shadow-lg overflow-hidden"
         >
           <div className="flex flex-col md:flex-row">
             {/* Left Side - Content */}
