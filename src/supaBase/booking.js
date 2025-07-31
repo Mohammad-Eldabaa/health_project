@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -6,40 +7,40 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const addPatient = async (patientData, resetForm) => {
-  const { error } = await supabase.from("patients").insert(patientData);
-
-  if (error) {
-    console.error("Error adding patient:", error);
-    // window.location.href = "/login";
-  } else {
-    alert("تم تقديم طلب الحجز بنجاح! سنتواصل معك قريباً لتأكيد الموعد.");
+  try {
+    const { error } = await supabase.from('patients').insert(patientData);
+    if (error) {
+      console.error('Error adding patient:', error);
+      throw error;
+    }
+    alert('تم تقديم طلب الحجز بنجاح! سنتواصل معك قريباً لتأكيد الموعد.');
     resetForm();
+  } catch (error) {
+    console.error('Error adding patient:', error);
+    alert('فشل في إضافة المريض.');
   }
 };
 
-// import { useState, useEffect } from 'react'
+export const useAuth = () => {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-// export default function App() {
-//   const [session, setSession] = useState(null)
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+    };
 
-//   useEffect(() => {
-//     supabase.auth.getSession().then(({ data: { session } }) => {
-//       setSession(session)
-//     })
+    fetchSession();
 
-//     const {
-//       data: { subscription },
-//     } = supabase.auth.onAuthStateChange((_event, session) => {
-//       setSession(session)
-//     })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
 
-//     return () => subscription.unsubscribe()
-//   }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
-//   if (!session) {
-//     // return (<Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />)
-//   }
-//   else {
-//     return (<div>Logged in!</div>)
-//   }
-// }
+  return { session, loading };
+};

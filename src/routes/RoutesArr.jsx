@@ -17,6 +17,8 @@ import {
   Profile,
   Forget,
   Reset,
+  NursingAppointments,
+  NursingPatientsList,
 } from './lazy';
 
 export const RoutesArray = [
@@ -29,8 +31,16 @@ export const RoutesArray = [
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <Profile />, path: '/profile' },
-
-  // Zezo Route
+  {
+    id: v4(),
+    element: <Layout />,
+    path: '/nursing-dashboard',
+    children: [
+      { id: v4(), element: <NursingAppointments />, path: '', index: true },
+      { id: v4(), element: <NursingPatientsList />, path: 'patients' },
+    ],
+  },
+  // ZEZO
   {
     id: v4(),
     element: <Layout />,
@@ -44,7 +54,5 @@ export const RoutesArray = [
       { id: v4(), element: <Footer />, path: 'footer' },
     ],
   },
-
-  // Catch-all route for 404
   { id: v4(), element: <Notfound />, path: '*' },
 ];

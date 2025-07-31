@@ -15,7 +15,7 @@ const NursingSidebar = () => {
         <ul className="flex flex-col gap-3 px-4">
           <li>
             <NavLink
-              to="/"
+              to="/nursing-dashboard"
               className={({ isActive }) =>
                 `block px-4 py-2 rounded-md text-sm font-medium transition ${
                   isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
@@ -26,35 +26,9 @@ const NursingSidebar = () => {
               لوحة التحكم
             </NavLink>
           </li>
-          {/* <li>
-            <NavLink
-              to="/add-appointment"
-              className={({ isActive }) =>
-                `block px-4 py-2 rounded-md text-sm font-medium transition ${
-                  isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
-                }`
-              }
-            >
-              <i className="bi bi-calendar-plus mr-2"></i>
-              إضافة موعد
-            </NavLink>
-          </li> */}
-          {/* <li>
-            <NavLink
-              to="/appointments"
-              className={({ isActive }) =>
-                `block px-4 py-2 rounded-md text-sm font-medium transition ${
-                  isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
-                }`
-              }
-            >
-              <i className="bi bi-calendar-week mr-2"></i>
-              الجدول
-            </NavLink>
-          </li> */}
           <li>
             <NavLink
-              to="/patients"
+              to="/nursing-dashboard/patients"
               className={({ isActive }) =>
                 `block px-4 py-2 rounded-md text-sm font-medium transition ${
                   isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600'
