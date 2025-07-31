@@ -54,8 +54,8 @@ export default function DoctorServices() {
     ],
   };
   const navigate = useNavigate();
-  const Profile = () => {
-    navigate('../Profile');
+  const PatientView = () => {
+    navigate('../profile');
   };
   return (
     <section id="HServices" className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
@@ -104,7 +104,7 @@ export default function DoctorServices() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={Profile}
+                    onClick={PatientView}
                     className="inline-block bg-[#009688] text-white px-8 py-3 rounded-lg hover:bg-[#00897B] transition shadow-md"
                   >
                     عرض الملف الشخصي الكامل
