@@ -92,7 +92,7 @@ export default function Login() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md 
+              className="w-full hover:bg-[#009688] bg-[#0097A7] text-white py-2.5 px-4 rounded-md 
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                         transition duration-150 ease-in-out font-medium"
             >
@@ -102,7 +102,7 @@ export default function Login() {
             {/* Create account link */}
             <div className="text-center mt-4 text-sm">
               <span className="text-white drop-shadow-md">ليس لديك حساب؟ </span>
-              <NavLink to="/register" className="text-white hover:text-blue-500 hover:underline drop-shadow-md">
+              <NavLink to="/register" className="text-blue-500 hover:text-blue-500 hover:underline drop-shadow-md">
                 إنشاء حساب جديد
               </NavLink>
             </div>

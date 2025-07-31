@@ -165,7 +165,7 @@ export default function Register() {
             <div className="text-center mt-4">
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md 
+                className="w-full hover:bg-[#009688] bg-[#0097A7] text-white py-2.5 px-4 rounded-md 
                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                           transition duration-150 ease-in-out font-medium"
               >
@@ -178,7 +178,7 @@ export default function Register() {
               <span className="text-white drop-shadow-md">لديك حساب بالفعل؟ </span>
               <NavLink
                 to="/login"
-                className="text-white hover:text-blue-500 hover:underline font-medium drop-shadow-md"
+                className="text-blue-500  hover:underline font-medium drop-shadow-md"
               >
                 سجل الدخول
               </NavLink>
