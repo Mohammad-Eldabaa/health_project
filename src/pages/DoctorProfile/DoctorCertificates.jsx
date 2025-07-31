@@ -4,9 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OptimizedImage from './OptimizedImage';
 import { useDoctorCertificatesStore } from '../../store/certificateion';
 
-const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants }) => {
+const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants, certificates, setCertificates }) => {
   const { fetchCertificates, allCertificates, deleteCertificate, addCertificate } = useDoctorCertificatesStore();
-  const [certificates, setCertificates] = useState(allCertificates);
   const [showCertificateForm, setShowCertificateForm] = useState(false);
   const [newCertificate, setNewCertificate] = useState({
     name: '',
@@ -39,7 +38,8 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
 
   const addAnotherCertificate = () => {
     if (newCertificate.name.trim()) {
-      setCertificates([...certificates, { ...newCertificate, id: Date.now() }]);
+      const updatedCertificates = [...certificates, { ...newCertificate, id: Date.now() }];
+      setCertificates(updatedCertificates);
       addCertificate(newCertificate);
       setNewCertificate({ name: '', institution: '', year: '', image: null });
       setShowCertificateForm(false);

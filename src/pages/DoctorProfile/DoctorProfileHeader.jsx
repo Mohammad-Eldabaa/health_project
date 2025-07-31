@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaEdit, FaSave } from 'react-icons/fa';
 import { useProfileStore } from '../../store/profile';
-
 import { motion } from 'framer-motion';
 
 const DoctorProfileHeader = ({ editMode, setEditMode, variants }) => {
@@ -15,9 +14,8 @@ const DoctorProfileHeader = ({ editMode, setEditMode, variants }) => {
       <h1 className="text-2xl font-bold">البروفايل الطبي</h1>
       <div className="flex gap-4">
         <motion.button
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
-            editMode ? 'bg-white text-[#0097A7] hover:bg-gray-100' : 'bg-[#006064] hover:bg-[#00838F]'
-          } font-medium transition-all hover:shadow-md`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg ${editMode ? 'bg-white text-[#0097A7] hover:bg-gray-100' : 'bg-[#006064] hover:bg-[#00838F]'
+            } font-medium transition-all hover:shadow-md`}
           onClick={() => {
             if (editMode) {
               delete changedProfileData.image;

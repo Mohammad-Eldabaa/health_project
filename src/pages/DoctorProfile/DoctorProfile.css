@@ -1,4 +1,3 @@
-/* DoctorProfile.css */
 .doctor-profile-container {
     font-family: 'Tajawal', sans-serif;
     direction: rtl;
@@ -148,26 +147,6 @@
     cursor: pointer;
 }
 
-.rating-item {
-    background-color: #26A69A;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: white;
-}
-
-.star-rating {
-    color: #FFD700;
-}
-
-.average-rating {
-    background-color: #26A69A;
-    padding: 1rem;
-    text-align: center;
-    color: white;
-    font-weight: 500;
-}
-
 .image-preview {
     max-width: 100%;
     max-height: 10rem;
@@ -248,6 +227,58 @@
     color: #26A69A;
     font-size: 2rem;
 }
+
+
+
+/* Hover effects for sections */
+.profile-info-section:hover,
+.experience-item:hover,
+.certificate-item:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Contact info hover effect */
+.contact-info-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Hover effects for sections */
+.profile-info-section:hover,
+.experience-item:hover,
+.certificate-item:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Contact info hover effect */
+.contact-info-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+
+/* Hover effects for all sections */
+.profile-info-section:hover,
+.experience-item:hover,
+.certificate-item:hover,
+.contact-info-item:hover {
+    transform: scale(1.03);
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+/* Add some spacing between sections */
+.profile-info-section,
+.experience-item,
+.certificate-item {
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
