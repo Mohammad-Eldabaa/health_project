@@ -1,29 +1,15 @@
 
-import { useState, useEffect } from 'react';
-import pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-
-
-pdfMake.vfs = pdfFonts.default.vfs;
-pdfMake.fonts = {
-  Roboto: {
-    normal: 'Roboto-Regular.ttf',
-    bold: 'Roboto-Medium.ttf',
-    italics: 'Roboto-Italic.ttf',
-    bolditalics: 'Roboto-MediumItalic.ttf'
-  }
-};
-
-
-const data = JSON.parse(localStorage.getItem('doctorDashboardData')) || [];
-let medicationsData = data.medicationCategories;
-let dosageOptionsData = data.dosageOptions;
-let durationOptionsData = data.durationOptions;
-console.log(durationOptionsData);
+import { useState, useEffect, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
+import { supabase } from '../../../supaBase/booking';
+import { usePrescriptionStore } from '../../../store/prescriptionStore';
+import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
+import PrintPrescription from '../components/PrintPrescription';
 
 
 export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) {
-  const today = new Date().toLocaleDateString('ar-EG');
+  const today = new Date().toLocaleDateString('en-US');
   const [patientName, setPatientName] = useState(selectedPatient?.fullName || '');
   const [notes, setNotes] = useState('');
   const [selectedMeds, setSelectedMeds] = useState([]);
@@ -35,17 +21,67 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
 
 
+    const printRef = useRef();
+
+const { drug_categories: medicationsData, dosage_options: dosageOptionsData, duration_options: durationOptionsData } = useDoctorDashboardStore();  
+const prescriptionStore = usePrescriptionStore();
+
+ const handlePrint = useReactToPrint({
+  content: () => {
+    if (!printRef.current) {
+      alert('لا يوجد محتوى للطباعة');
+      return null;
+    }
+    return printRef.current;
+  },
+  pageStyle: `
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+    body {
+      direction: rtl;
+      font-family: 'Arial', sans-serif;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+    }
+  `,
+  onBeforePrint: () => console.log('بدء الطباعة...'),
+  onAfterPrint: () => console.log('تمت الطباعة'),
+  removeAfterPrint: false,
+  documentTitle: `روشتة_طبية_${patientName}_${today}`,
+});
+
+
+
+
+  useEffect(() => {
+    const channel = setupRealtimePatients();
+    return () => channel.unsubscribe();
+  }, []);
+
+  
   useEffect(() => {
     setPatientName(selectedPatient?.fullName || '');
   }, [selectedPatient]);
 
+  useEffect(() => {
+    if (selectedPatient?.id) {
+      // Initialize real-time subscriptions when patient is selected
+      prescriptionStore.initRealtime(selectedPatient.id);
+      
+      // Clean up on unmount
+      return () => {
+        prescriptionStore.cleanupRealtime();
+      };
+    }
+  }, [selectedPatient?.id]);
 
-
-
-  if (!isOpen) return null;
-
-  const handleMedClick = (med) => {
-    setCurrentMed(med);
+  const handleMedClick = (medName) => {
+    setCurrentMed(medName);
     setShowDosageModal(true);
   };
 
@@ -67,128 +103,157 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
     setSelectedMeds(updated);
   };
 
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-
-  if (!patientName || selectedMeds.length === 0) {
-    alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
-    return;
-  }
-
-  try {
-    // قراءة البيانات من localStorage
-    const dashboardData = JSON.parse(localStorage.getItem('doctorDashboardData')) || {};
-    const patients = dashboardData.patients || [];
-
-    // تجهيز بيانات الروشتة
-    const prescriptionItems = selectedMeds.map((med) => ({
-      id: Date.now() + Math.random(),
-      name: med.name,
-      category: med.category,
-      dosage: med.dosage,
-      duration: med.duration
-    }));
-
-    const newVisit = {
-      id: Date.now(),
-      date: today,
-      notes: notes,
-      diagnosis: notes,
-      prescriptions: prescriptionItems
-    };
-
-    // البحث عن المريض
-    const patientIndex = patients.findIndex(p => p.name === patientName);
-
-    if (patientIndex === -1) {
-      // المريض مش موجود
-      const newPatient = {
-        id: Date.now(),
-        name: patientName,
-        age: null,
-        gender: "غير محدد",
-        phone: "",
-        address: "",
-        status: "جديد",
-        blood: "",
-        Medical_condition: "غير محدد",
-        chronic_diseases: [],
-        visits: [newVisit],
-        tests: []
-      };
-      patients.push(newPatient);
-    } else {
-      // المريض موجود، نضيف الزيارة
-      if (!patients[patientIndex].visits) {
-        patients[patientIndex].visits = [];
-      }
-      patients[patientIndex].visits.push(newVisit);
-    }
-
-    // تحديث البيانات داخل doctorDashboardData
-    dashboardData.patients = patients;
-
-    // حفظ البيانات في localStorage
-    localStorage.setItem('doctorDashboardData', JSON.stringify(dashboardData));
-
-    window.dispatchEvent(new Event("storage"));
-
-    alert('تم حفظ الروشتة داخل doctorDashboardData!');
-    onClose();
-
-  } catch (error) {
-    console.error('خطأ أثناء حفظ البيانات:', error);
-    alert('حدث خطأ أثناء حفظ البيانات');
-  }
-};
-
-
-  const printPrescription = () => {
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     if (!patientName || selectedMeds.length === 0) {
       alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
       return;
     }
-    const medsContent = selectedMeds.map((med, index) => ([
-      { text: `${index + 1}. ${med.name}`, style: 'medText' },
-      { text: `الجرعة: ${med.dosage}`, style: 'subText' },
-      { text: `المدة: ${med.duration}`, style: 'subText' },
-      { text: '\n' }
-    ])).flat();
 
-    const docDefinition = {
-      content: [
-        { text: 'روشتة طبية', style: 'header', alignment: 'center' },
-        { text: `اسم المريض: ${patientName}`, style: 'subheader' },
-        { text: `التاريخ: ${today}`, style: 'subheader' },
-        { text: 'التشخيص/الملاحظات:', style: 'subheader' },
-        { text: notes || 'لا توجد ملاحظات', style: 'notesText' },
-        { text: 'الأدوية الموصوفة:', style: 'subheader', margin: [0, 10, 0, 5] },
-        ...medsContent
-      ],
-      styles: {
-        header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
-        subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 3] },
-        medText: { fontSize: 12, bold: true },
-        subText: { fontSize: 11, margin: [20, 0, 0, 0] },
-        notesText: { fontSize: 12, margin: [0, 0, 0, 10] }
-      },
+    try {
+      const currentDoctorId = 1; // Replace with actual doctor ID
 
-      defaultStyle: {
-        font: 'Roboto',
-        alignment: 'right'
+      // Find or create patient
+      const { data: existingPatient, error: patientError } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('fullName', patientName)
+        .single();
+
+      let patientId;
+      
+      if (patientError && patientError.code !== 'PGRST116') {
+        throw patientError;
       }
 
-    };
+      if (!existingPatient) {
+        const { data: newPatient, error: insertError } = await supabase
+          .from('patients')
+          .insert([{
+            fullName: patientName,
+            age: null,
+            gender: "غير محدد",
+            phoneNumber: "",
+            address: "",
+            status: "جديد",
+            blood: "",
+            chronic_diseases: []
+          }])
+          .select('id')
+          .single();
 
-    pdfMake.createPdf(docDefinition).open();
+        if (insertError) throw insertError;
+        patientId = newPatient.id;
+      } else {
+        patientId = existingPatient.id;
+      }
+
+      // Create visit
+      const { data: visit, error: visitError } = await supabase
+        .from('visits')
+        .insert([{
+          patient_id: patientId,
+          doctor_id: currentDoctorId,
+          date: today,
+          notes: notes,
+          appointment_id: selectedPatient?.appointment_id || null
+        }])
+        .select('id')
+        .single();
+
+      if (visitError) throw visitError;
+
+      // Create medical record
+      const { data: medicalRecord, error: recordError } = await supabase
+        .from('medical_records')
+        .insert([{
+          patient_id: patientId,
+          visit_id: visit.id,
+          date: today,
+          diagnosis: notes,
+          notes: notes
+        }])
+        .select('id')
+        .single();
+
+      if (recordError) throw recordError;
+
+      // Save prescription using the store
+      await prescriptionStore.savePrescription(patientId, visit.id, {
+        notes: notes,
+        medications: selectedMeds
+      });
+
+      // Update appointment status if linked
+      if (selectedPatient?.appointment_id) {
+        await supabase
+          .from('appointments')
+          .update({ status: 'completed' })
+          .eq('id', selectedPatient.appointment_id);
+      }
+
+      alert('تم حفظ الروشتة في قاعدة البيانات بنجاح!');
+      onClose();
+    } catch (error) {
+      console.error('خطأ أثناء حفظ البيانات:', error);
+      alert(`حدث خطأ: ${error.message}`);
+    }
   };
+
+  // const printPrescription = () => {
+  //   if (!patientName || selectedMeds.length === 0) {
+  //     alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
+  //     return;
+  //   }
+
+  //   const medsContent = selectedMeds.map((med, index) => ([
+  //     { text: `${index + 1}. ${med.name}`, style: 'medText' },
+  //     { text: `الجرعة: ${med.dosage}`, style: 'subText' },
+  //     { text: `المدة: ${med.duration}`, style: 'subText' },
+  //     { text: '\n' }
+  //   ])).flat();
+
+  //   const docDefinition = {
+  //     content: [
+  //       { text: 'روشتة طبية', style: 'header', alignment: 'center' },
+  //       { text: `اسم المريض: ${patientName}`, style: 'subheader' },
+  //       { text: `التاريخ: ${today}`, style: 'subheader' },
+  //       { text: 'التشخيص/الملاحظات:', style: 'subheader' },
+  //       { text: notes || 'لا توجد ملاحظات', style: 'notesText' },
+  //       { text: 'الأدوية الموصوفة:', style: 'subheader', margin: [0, 10, 0, 5] },
+  //       ...medsContent
+  //     ],
+  //     styles: {
+  //       header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+  //       subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 3] },
+  //       medText: { fontSize: 12, bold: true },
+  //       subText: { fontSize: 11, margin: [20, 0, 0, 0] },
+  //       notesText: { fontSize: 12, margin: [0, 0, 0, 10] }
+  //     },
+  //     defaultStyle: {
+  //       font: 'Roboto',
+  //       alignment: 'right'
+  //     }
+  //   };
+
+  //   pdfMake.createPdf(docDefinition).open();
+  // };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center z-50">
 
+      <div style={{ display: 'none' }}>
+        <PrintPrescription
+          ref={printRef}
+          patientName={patientName}
+          today={today}
+          notes={notes}
+          selectedMeds={selectedMeds}
+        />
+      </div>
 
       {showDosageModal && (
         <div className="fixed inset-0 bg-gray-500/60 flex justify-center items-center z-50 overflow-auto">
@@ -200,13 +265,16 @@ const handleSubmit = (e) => {
             <div className="mb-4">
               <label className="block mb-2 font-medium text-gray-700">اختر الجرعة</label>
               <div className="grid grid-cols-2 gap-2">
-                {dosageOptionsData.map((option, index) => (
+                {dosageOptionsData?.map((option) => (
                   <button
-                    key={index}
-                    onClick={() => setDosage(option)}
-                    className={`p-2 border rounded-lg text-sm ${dosage === option ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                    key={option.id}
+                    onClick={() => setDosage(option.value)}
+                    className={`p-2 border rounded-lg text-sm ${dosage === option.value
+                      ? 'bg-blue-100 border-blue-500'
+                      : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
-                    {option}
+                    {option.value}
                   </button>
                 ))}
               </div>
@@ -219,16 +287,23 @@ const handleSubmit = (e) => {
               />
             </div>
 
+
+
+
+
             <div className="mb-6">
               <label className="block mb-2 font-medium text-gray-700">اختر المدة</label>
               <div className="grid grid-cols-2 gap-2">
-                {durationOptionsData.map((option, index) => (
+                {durationOptionsData?.map((option) => (
                   <button
-                    key={index}
-                    onClick={() => setDuration(option)}
-                    className={`p-2 border rounded-lg text-sm ${duration === option ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                    key={option.id} 
+                    onClick={() => setDuration(option.value)} 
+                    className={`p-2 border rounded-lg text-sm ${duration === option.value
+                      ? 'bg-blue-100 border-blue-500'
+                      : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
-                    {option}
+                    {option.value}
                   </button>
                 ))}
               </div>
@@ -248,9 +323,8 @@ const handleSubmit = (e) => {
                   setDosage('');
                   setDuration('');
                 }}
-                className="flex-1  text-white px-4 py-2 rounded-lg font-medium transition justify-center"
+                className="flex-1 text-white px-4 py-2 rounded-lg font-medium transition justify-center"
                 style={{ backgroundColor: "var(--color-accent)" }}
-
               >
                 إلغاء
               </button>
@@ -259,7 +333,6 @@ const handleSubmit = (e) => {
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition justify-center"
                 disabled={!dosage || !duration}
                 style={{ backgroundColor: "var(--color-accent)" }}
-
               >
                 تأكيد وإضافة
               </button>
@@ -285,36 +358,42 @@ const handleSubmit = (e) => {
 
             <div className="bg-gray-100 p-2 rounded-lg mb-4">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+
                 {medicationsData.map(cat => (
                   <button
-                    key={cat.category}
-                    onClick={() => setActiveCategory(cat.category)}
-                    className={`w-full py-2 rounded-lg border-gray-300 text-center font-medium transition ${activeCategory === cat.category
+                    key={cat.name}
+                    onClick={() => setActiveCategory(cat.name)}
+                    className={`w-full py-2 rounded-lg border-gray-300 text-center font-medium transition ${activeCategory === cat.name
                       ? 'bg-blue-500 text-white'
                       : 'bg-white text-gray-700 border'
                       }`}
-                    style={{ backgroundColor: activeCategory === cat.category ? "var(--color-accent)" : undefined }}
+                    style={{
+                      backgroundColor:
+                        activeCategory === cat.name ? 'var(--color-accent)' : undefined,
+                    }}
                   >
-                    {cat.category}
+                    {cat.name}
                   </button>
                 ))}
               </div>
             </div>
 
-
             <div className="grid grid-cols-2 gap-3">
-              {
-                // دور على الفئة المختارة
-                medicationsData.find(cat => cat.category === activeCategory)?.medications.map((med, idx) => (
+              {medicationsData.find(cat => cat.name === activeCategory)?.medications?.length ? (
+                medicationsData.find(cat => cat.name === activeCategory).medications.map((med, idx) => (
                   <button
                     key={idx}
-                    onClick={() => handleMedClick(med)}
+                    onClick={() => handleMedClick(med.name)}
                     className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition text-center flex items-center justify-center h-20"
                   >
-                    <span className="font-medium">{med}</span>
+                    <span className="font-medium">{med.name}</span>
                   </button>
                 ))
-              }
+              ) : (
+                <div className="col-span-2 text-center py-4 text-gray-500">
+                  <p>لا توجد أدوية في هذه الفئة</p>
+                </div>
+              )}
             </div>
 
           </div>
@@ -332,6 +411,7 @@ const handleSubmit = (e) => {
             <div className="mb-6">
               <label className="block mb-2 font-medium text-gray-700">اسم المريض</label>
               <input
+                disabled
                 type="text"
                 value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
@@ -391,7 +471,7 @@ const handleSubmit = (e) => {
                 حفظ الروشتة
               </button>
               <button
-                onClick={printPrescription}
+                onClick={handlePrint}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition justify-center"
                 style={{ backgroundColor: "var(--color-accent)" }}
               >
@@ -404,4 +484,3 @@ const handleSubmit = (e) => {
     </div>
   );
 }
-

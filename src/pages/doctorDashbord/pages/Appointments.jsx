@@ -1,102 +1,85 @@
-import { Calendar, Clock, User, Stethoscope, Search, ChevronDown, Frown } from "lucide-react";
-import { useState } from "react";
+
+import { Clock, User, Stethoscope, Search, Frown } from "lucide-react";
+import { useEffect, useState } from "react";
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
+import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
+import FilterListIcon from '@mui/icons-material/FilterList';
+
 
 const Appointments = () => {
     const [activeTab, setActiveTab] = useState("today");
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("الكل");
 
-    // بيانات المواعيد النموذجية
-    const appointmentsData = {
-        today: [
-            {
-                id: 1,
-                patientName: "أحمد محمد",
-                time: "09:00 ص",
-                status: "مؤكد",
-                type: "كشف جديد",
-                phone: "0123456789",
-            },
-            {
-                id: 2,
-                patientName: "سارة علي",
-                time: "10:30 ص",
-                status: "مؤكد",
-                type: "متابعة",
-                phone: "0111222333",
-            },
-            {
-                id: 3,
-                patientName: "محمد خالد",
-                time: "12:00 م",
-                status: "في الانتظار",
-                type: "استشارة",
-                phone: "0100555666",
-            },
-        ],
-        upcoming: [
-            {
-                id: 4,
-                patientName: "فاطمة الزهراء",
-                date: "غدًا",
-                time: "10:00 ص",
-                status: "مؤكد",
-                type: "كشف جديد",
-                phone: "0155777888",
-            },
-            {
-                id: 5,
-                patientName: "يوسف أحمد",
-                date: "بعد غد",
-                time: "11:30 ص",
-                status: "مؤكد",
-                type: "متابعة",
-                phone: "0122333444",
-            },
-        ],
-        past: [
-            {
-                id: 6,
-                patientName: "نورا سعيد",
-                date: "الأمس",
-                time: "09:30 ص",
-                status: "منتهي",
-                type: "كشف دوري",
-                phone: "0100111222",
-            },
-            {
-                id: 7,
-                patientName: "خالد عمر",
-                date: "20 يوليو",
-                time: "02:00 م",
-                status: "منتهي",
-                type: "استشارة",
-                phone: "0123444555",
-            },
-        ],
-    };
 
-    // تصفية المواعيد حسب البحث
-    const filteredAppointments = appointmentsData[activeTab].filter((appointment) =>
-        appointment.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        appointment.phone.includes(searchQuery)
-    );
+    const loading = useDoctorDashboardStore((state) => state.loading);
+    const patients = useDoctorDashboardStore((state) => state.patients);
+    const appointments = useDoctorDashboardStore((state) => state.appointments);
+
+    useEffect(() => {
+        const channel = setupRealtimePatients();
+        return () => channel.unsubscribe();
+    }, []);
+
+    const today = new Date().toISOString().split("T")[0];
+
+    if (loading) {
+        return <div className="p-4 text-blue-600">جاري التحميل...</div>;
+    }
+
+    if (!appointments.length || !patients.length) {
+        return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
+    }
+
+    const filteredAppointmentsByTab = appointments.filter((app) => {
+        if (activeTab === "today") return app.date === today;
+        if (activeTab === "upcoming") return app.date > today;
+        if (activeTab === "past") return app.date < today;
+        return false;
+    });
+
+
+
+    const filteredAppointments = filteredAppointmentsByTab
+        .filter((app) => {
+            if (statusFilter === "الكل") return true;
+            return app.status === statusFilter;
+        })
+        .map((app) => {
+            const patient = patients.find((p) => p.id === app.patient_id);
+            return {
+                id: app.id,
+                patientName: patient?.fullName || "مريض غير معروف",
+                phone: patient?.phoneNumber || "غير متوفر",
+                date: app.date,
+                time: new Date(`1970-01-01T${app.time}`).toLocaleTimeString("ar-EG", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                }),
+                type: app.reason,
+                status: app.status,
+            };
+        })
+        .filter(
+            (appointment) =>
+                appointment.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                appointment.phone.includes(searchQuery)
+        );
+
+
 
 
     return (
         <div className="px-6  min-h-screen" dir="rtl">
-            {/* عنوان الصفحة */}
+
             <div className="flex justify-between items-center mb-8">
                 <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3">
                     <span className="text-base sm:text-lg lg:text-xl">جدول المواعيد</span>
                 </div>
-                <button className="text-white px-4 py-2 rounded-2xl flex items-center gap-2"
-                    style={{ backgroundColor: "var(--color-accent)" }}>
-                    إضافة موعد جديد
-                </button>
             </div>
 
-            {/* شريط التبويبات والبحث */}
+
             <div className="bg-gray-100 rounded-lg shadow-sm p-4 mb-6">
                 <div className=" flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex border-b pb-2 border-gray-200 w-full md:w-auto ">
@@ -120,24 +103,42 @@ const Appointments = () => {
                         </button>
                     </div>
 
-                    <div className="relative w-full md:w-64">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400  " size={18} />
-                        <input
-                            type="text"
-                            placeholder="ابحث باسم المريض أو رقم الهاتف"
-                            className="bg-white w-full pl-10 pr-4 py-2 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent "
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <div className="flex gap-2 min-w-full  md:min-w-0  lg:min-w-105 ">
+                        <div className="relative min-w-[120px]  max-w-[200px]">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full appearance-none bg-white border border-gray-300 rounded-full px-5 py-2 text-gray-700 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                            >
+                                <option value="الكل" className="bg-cyan-500">الكل</option>
+                                <option value="تم">تم</option>
+                                <option value="في الإنتظار">في الإنتظار</option>
+                                <option value="ملغي">ملغي</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center pr-2">
+                                <FilterListIcon />
+                            </div>
+                        </div>
+                        <div className="relative w-full ">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400  " size={18} />
+                            <input
+                                type="text"
+                                placeholder="ابحث باسم المريض أو رقم الهاتف"
+                                className="bg-white w-full pl-10 pr-4 py-2 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent "
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
 
 
-                {/* عرض المواعيد - جدول في الشاشات الكبيرة، كروت في الشاشات الصغيرة */}
+
                 <div className=" rounded-lg  overflow-hidden mt-4 ">
                     {filteredAppointments.length > 0 ? (
                         <>
-                            {/* جدول للمواعيد على الشاشات المتوسطة فأعلى */}
+
+
                             <div className="flex hidden md:block overflow-x-auto bg-white">
                                 <table className="min-w-full divide-y divide-gray-100 rounded-2xl">
                                     <thead className="bg-gray-10">
@@ -165,8 +166,8 @@ const Appointments = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-1 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">
-                                                        {appointment.date && `${appointment.date} - `}{appointment.time}
+                                                    <div className="flex text-sm text-gray-900 items-center">
+                                                        {appointment.date}<br />{appointment.time}
                                                     </div>
                                                 </td>
                                                 <td className="px-1 py-4 whitespace-nowrap">
@@ -176,10 +177,18 @@ const Appointments = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-1 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${appointment.status === "مؤكد" ? "bg-green-100 text-green-800" :
-                                                        appointment.status === "في الانتظار" ? "bg-yellow-100 text-yellow-800" :
-                                                            "bg-gray-100 text-gray-800"
-                                                        }`}>
+                                                    <span
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${appointment.status === "في الإنتظار"
+                                                            ? "bg-orange-100 text-yellow-800"
+                                                            : appointment.status === "ملغي"
+                                                                ? "bg-red-100 text-red-800"
+                                                                : appointment.status === "قيد الكشف"
+                                                                    ? "bg-yellow-200 text-yellow-900"
+                                                                    : appointment.status === "تم"
+                                                                        ? "bg-green-200 text-green-800"
+                                                                        : "bg-gray-100 text-yellow-800"
+                                                            }`}
+                                                    >
                                                         {appointment.status}
                                                     </span>
                                                 </td>
@@ -194,33 +203,46 @@ const Appointments = () => {
                                 </table>
                             </div>
 
-                            {/* 📱 كروت للموبايل */}
+
+
                             <div className="md:hidden space-y-4 ">
                                 {filteredAppointments.map((appointment) => (
                                     <div key={appointment.id} className=" rounded-2xl p-4 shadow-sm bg-white">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="bg-cyan-100 text-cyan-600 rounded-full h-10 w-10 flex items-center justify-center">
-                                                <User size={18} />
+                                        <div className="flex items-center gap-3 mb-2 justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-cyan-100 text-cyan-600 rounded-full h-10 w-10 flex items-center justify-center">
+                                                    <User size={18} />
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold text-gray-900">{appointment.patientName}</div>
+                                                    <div className="text-sm text-gray-500">{appointment.phone}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="font-semibold text-gray-900">{appointment.patientName}</div>
-                                                <div className="text-sm text-gray-500">{appointment.phone}</div>
-                                            </div>
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${appointment.status === "في الإنتظار"
+                                                    ? "bg-orange-100 text-yellow-800"
+                                                    : appointment.status === "ملغي"
+                                                        ? "bg-red-100 text-red-800"
+                                                        : appointment.status === "قيد الكشف"
+                                                            ? "bg-yellow-200 text-yellow-900"
+                                                            : appointment.status === "تم"
+                                                                ? "bg-green-200 text-green-800"
+                                                                : "bg-gray-100 text-yellow-800"
+                                                    }`}
+                                            >
+                                                {appointment.status}
+                                            </span>
                                         </div>
                                         <div className="text-sm text-gray-700 mb-1">
                                             <Clock className="inline mr-1 text-gray-400" size={14} />
                                             {appointment.date && `${appointment.date} - `}{appointment.time}
                                         </div>
-                                        <div className="text-sm text-gray-700 mb-1">
-                                            <Stethoscope className="inline mr-1 text-gray-400" size={14} />
-                                            {appointment.type}
-                                        </div>
                                         <div className="mb-1 flex justify-between ">
-                                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${appointment.status === "مؤكد" ? "bg-green-100 text-green-800" :
-                                                appointment.status === "في الانتظار" ? "bg-yellow-100 text-yellow-800" :
-                                                    "bg-gray-100 text-gray-800"}`}>
-                                                {appointment.status}
-                                            </span>
+                                            <div className="text-sm text-gray-700 mb-1">
+                                                <Stethoscope className="inline mr-1 text-gray-400" size={14} />
+                                                {appointment.type}
+                                            </div>
+
                                             <button className="text-teal-800 hover:text-teal-400 transition-colors">
                                                 <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
                                             </button>
@@ -242,26 +264,36 @@ const Appointments = () => {
 
 
 
-            {/* إحصائيات سريعة */}
+
             <div className="bg-gray-50 p-4 rounded-2xl shadow-sm mt-6">
                 <h2 className="text-lg font-semibold mb-4">ملخص إحصائي</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
-                        <h3 className="text-sm font-medium text-gray-500">مواعيد اليوم</h3>
-                        <p className="text-2xl font-bold text-gray-800 mt-1">3</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white p-2 rounded-lg shadow-sm ">
+                        <h3 className="text-sm font-medium text-blue-800 bg-blue-200 p-1 rounded-md">مواعيد اليوم</h3>
+                        <p className="text-2xl font-bold text-gray-800 mt-1 ">{filteredAppointmentsByTab.length}</p>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
-                        <h3 className="text-sm font-medium text-gray-500">مواعيد مؤكدة</h3>
-                        <p className="text-2xl font-bold text-gray-800 mt-1">2</p>
+                    <div className="bg-white p-2 rounded-lg shadow-sm ">
+                        <h3 className="text-sm font-medium text-green-800 bg-green-200 p-1 rounded-md">مواعيد مؤكدة</h3>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">
+                            {filteredAppointmentsByTab.filter(a => a.status === "تم").length}
+                        </p>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
-                        <h3 className="text-sm font-medium text-gray-500">في الانتظار</h3>
-                        <p className="text-2xl font-bold text-gray-800 mt-1">1</p>
+                    <div className="bg-white p-2 rounded-lg shadow-sm ">
+                        <h3 className="text-sm font-medium text-yellow-800 bg-yellow-200 p-1 rounded-md">في الانتظار</h3>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">
+                            {filteredAppointmentsByTab.filter(a => a.status === "في الإنتظار").length}
+                        </p>
+                    </div>
+                    <div className="bg-white p-2 rounded-lg shadow-sm ">
+                        <h3 className="text-sm font-medium text-red-800 bg-red-200 p-1 rounded-md">مواعيد ملغاه</h3>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">
+                            {filteredAppointmentsByTab.filter(a => a.status === "ملغي").length}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+}
 
 export default Appointments;

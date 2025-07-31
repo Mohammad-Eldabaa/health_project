@@ -1,7 +1,6 @@
-
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 import { useEffect } from "react";
-
+import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
 import { CurrentPatient } from '../components/CurrentPatient';
 import { AppointmentSummary } from '../components/AppointmentSummary';
 import { AppointmentList } from '../components/AppointmentList';
@@ -10,122 +9,112 @@ import { useNavigate } from "react-router-dom";
 import { CalendarView } from '../components/CalendarView';
 
 import {
-    UserPlus,
-    CalendarCheck,
-    AlertCircle,
+  UserPlus,
+  CalendarCheck,
+  AlertCircle,
 } from "lucide-react";
 
-
-
-
 const Home = () => {
-    const navigate = useNavigate();
-    const goToPatientFile = () => navigate("./Appointments");
+  const loading = useDoctorDashboardStore(state => state.loading);
 
-    const {
-        appointments,
-        patients,
-        loading,
-        fetchData,
-    } = useDoctorDashboardStore();
+  useEffect(() => {
+    const channel = setupRealtimePatients();
+    return () => channel.unsubscribe();
+  }, []);
 
-    const today = new Date().toISOString().split("T")[0];
+  const patients = useDoctorDashboardStore(state => state.patients);
+  const appointments = useDoctorDashboardStore(state => state.appointments);
+  
+  const navigate = useNavigate();
+  const goToPatientFile = () => navigate("./Appointments");
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  const today = new Date().toISOString().split("T")[0];
 
-    if (loading) {
-        return <div className="p-4 text-blue-600">جاري التحميل...</div>;
-    }
+  if (loading) {
+    return <div className="p-4 text-blue-600">جاري التحميل...</div>;
+  }
 
-    if (!appointments.length || !patients.length) {
-        return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
-    }
+  if (!appointments.length || !patients.length) {
+    return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
+  }
 
-    const todayAppointments = appointments
-        .filter(app => app.date.startsWith(today))
-        .map(app => {
-            const patient = patients.find(p => p.id === app.patient_id);
-            return {
-                id: app.id,
-                patient: patient?.fullName || "مريض غير معروف",
-                time: new Date(`1970-01-01T${app.time}`).toLocaleTimeString("ar-EG", {
-                    hour: "2-digit",
-                    minute: "2-digit",
+  const todayAppointments = appointments
+    .filter(app => app.date.startsWith(today))
+    .map(app => {
+      const patient = patients.find(p => p.id === app.patient_id);
+      return {
+        id: app.id,
+        patient: patient?.fullName || "مريض غير معروف",
+        time: new Date(`1970-01-01T${app.time}`).toLocaleTimeString("ar-EG", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        reason: app.reason,
+        status: app.status,
+      };
+    });
 
-                }),
+  const stats = [
+    {
+      title: "المرضى اليوم",
+      value: todayAppointments.length,
+      icon: <UserPlus className="text-blue-500" />,
+    },
+    {
+      title: "المواعيد",
+      value: appointments.length,
+      icon: <CalendarCheck className="text-green-500" />,
+    },
+    {
+      title: "الحالات الطارئة",
+      value: patients.filter(p => p.status === "حالة حرجة").length,
+      icon: <AlertCircle className="text-red-500" />,
+    },
+  ];
 
-                reason: app.reason,
-                status: app.status,
-            };
-        });
+  return (
+    <div className="min-h-screen">
+      <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3 ">
+        <span className="text-base sm:text-lg lg:text-xl">لوحة التحكم</span>
+      </div>
 
-    console.log(todayAppointments);
+      <div className="container mx-auto p-4">
+        <StatsCards stats={stats} />
 
-
-    const stats = [
-        {
-            title: "المرضى اليوم",
-            value: todayAppointments.length,
-            icon: <UserPlus className="text-blue-500" />,
-        },
-        {
-            title: "المواعيد",
-            value: appointments.length,
-            icon: <CalendarCheck className="text-green-500" />,
-        },
-        {
-            title: "الحالات الطارئة",
-            value: patients.filter(p => p.status === "حالة حرجة").length,
-            icon: <AlertCircle className="text-red-500" />,
-        },
-    ];
-
-    return (
-        <div className="min-h-screen">
-            <div className="flex flex-col font-bold mx-2 sm:mx-4 lg:mx-6 my-3 ">
-                <span className="text-base sm:text-lg lg:text-xl">لوحة التحكم</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-gray-100 rounded-2xl shadow-lg p-6">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xl font-bold text-gray-800">كشوفات اليوم</h3>
+              <div className="flex space-x-2 space-x-reverse">
+                <button
+                  className="bg-accent text-white px-4 py-2 rounded-2xl hover:bg-opacity-90 transition flex items-center gap-2"
+                  onClick={goToPatientFile}
+                  style={{ backgroundColor: "var(--color-accent)" }}
+                >
+                  <span>عرض الكل</span>
+                </button>
+              </div>
             </div>
 
-            <div className="container mx-auto p-4">
-                <StatsCards stats={stats} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-gray-100 rounded-2xl shadow-lg p-6">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-xl font-bold text-gray-800">كشوفات اليوم</h3>
-                            <div className="flex space-x-2 space-x-reverse">
-                                <button
-                                    className="bg-accent text-white px-4 py-2 rounded-2xl hover:bg-opacity-90 transition flex items-center gap-2"
-                                    onClick={goToPatientFile}
-                                    style={{ backgroundColor: "var(--color-accent)" }}
-                                >
-                                    <span>عرض الكل</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <AppointmentList appointmentss={todayAppointments} />
-                        <div className="mt-6 pt-4 border-t border-gray-200">
-                            <AppointmentSummary appointments={todayAppointments} />
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="bg-gray-100 rounded-xl shadow p-6 mb-6">
-                            <CurrentPatient />
-                        </div>
-
-                        <div className="bg-gray-100 rounded-xl shadow p-3 ">
-                            <CalendarView />
-                        </div>
-
-                    </div>
-                </div>
+            <AppointmentList appointmentss={todayAppointments} />
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <AppointmentSummary appointments={todayAppointments} />
             </div>
+          </div>
+
+          <div>
+            <div className="bg-gray-100 rounded-xl shadow p-6 mb-6">
+              <CurrentPatient />
+            </div>
+
+            <div className="bg-gray-100 rounded-xl shadow p-3 ">
+              <CalendarView />
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default Home;
