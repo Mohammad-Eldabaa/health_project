@@ -1,143 +1,175 @@
-import { useState } from 'react';
-import pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-
-pdfMake.vfs = pdfFonts.default.vfs;
-pdfMake.fonts = {
-    Roboto: {
-        normal: 'Roboto-Regular.ttf',
-        bold: 'Roboto-Medium.ttf',
-        italics: 'Roboto-Italic.ttf',
-        bolditalics: 'Roboto-MediumItalic.ttf'
-    }
-};
-
-
-
-const data = JSON.parse(localStorage.getItem('doctorDashboardData')) || [];
-let medicationsData = data.medicationCategories;
-let dosageOptionsData = data.dosageOptions;
-let durationOptionsData = data.durationOptions;
-console.log(durationOptionsData);
-
-
-
-
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { supabase } from '../../../supaBase/booking';
+import { toast } from 'react-toastify';
+import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
+import { usePrescriptionStore } from '../../../store/prescriptionStore';
+import PatientSearch from '../components/PatientSearchPrescription';
+import { useReactToPrint } from 'react-to-print';
+import PrintPrescription from '../components/PrintPrescription';
+import { setupRealtimePatients, removeRealtimeChannel } from "../../../lib/supabaseRealtime";
 
 export default function Prescription({ onClose }) {
     const today = new Date().toLocaleDateString('en-US');
-    const [patientName, setPatientName] = useState('');
-    const [notes, setNotes] = useState('');
-    const [selectedMeds, setSelectedMeds] = useState([]);
-    const [activeCategory, setActiveCategory] = useState('مسكنات');
-    const [currentMed, setCurrentMed] = useState('');
-    const [dosage, setDosage] = useState('');
-    const [duration, setDuration] = useState('');
+    const [formData, setFormData] = useState({
+        patientName: '',
+        notes: '',
+        selectedMeds: [],
+        activeCategory: 'مسكنات',
+        currentMed: '',
+        dosage: '',
+        duration: '',
+    });
     const [showDosageModal, setShowDosageModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    
+    const { drug_categories: medicationsData, dosage_options: dosageOptionsData, duration_options: durationOptionsData } = useDoctorDashboardStore();
+    const prescriptionStore = usePrescriptionStore();
+    const printRef = useRef(null);
+    const realtimeChannel = useRef(null);
 
-    const handleMedClick = (med) => {
-        setCurrentMed(med);
-        setShowDosageModal(true);
-    };
+    // إعداد اشتراكات الوقت الحقيقي
+    useEffect(() => {
+        if (!selectedPatient?.id) return;
 
-    const addMedication = () => {
-        const newMed = {
-            name: currentMed,
-            dosage: dosage || 'جرعة حسب الحاجة',
-            duration: duration || 'حسب التعليمات'
-        };
-        setSelectedMeds([...selectedMeds, newMed]);
-        setDosage('');
-        setDuration('');
-        setShowDosageModal(false);
-    };
-
-    const removeMedication = (index) => {
-        const updated = [...selectedMeds];
-        updated.splice(index, 1);
-        setSelectedMeds(updated);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const prescriptionData = {
-            patientName,
-            date: today,
-            medications: selectedMeds,
-            notes
-        };
-        if (!patientName || selectedMeds.length === 0) {
-            alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
-            return;
-        } else {
-
-            localStorage.setItem('lastPrescription', JSON.stringify(prescriptionData));
-            alert('تم حفظ الروشتة بنجاح!');
-            onClose();
-        }
-    };
-
-    const printPrescription = () => {
-        if (!patientName || selectedMeds.length === 0) {
-            alert('الرجاء إدخال اسم المريض وإضافة أدوية أولاً');
-            return;
-        }
-
-        const medsContent = selectedMeds.map((med, index) => ([
-            { text: `${index + 1}. ${med.name}`, style: 'medText' },
-            { text: `Medical dose: ${med.dosage}`, style: 'subText' },
-            { text: `Time: ${med.duration}`, style: 'subText' },
-            { text: '\n' }
-        ])).flat();
-
-        const docDefinition = {
-            content: [
-                { text: 'Medical Prescription', style: 'header', alignment: 'center' },
-                { text: `Patient Name: ${patientName}`, style: 'subheader' },
-                { text: `Date: ${today}`, style: 'subheader' },
-                { text: 'Diagnosis / Notes:', style: 'subheader' },
-                { text: notes || 'No notes available', style: 'notesText' },
-                { text: 'Prescribed Medications:', style: 'subheader', margin: [0, 10, 0, 5] },
-                ...medsContent
-            ],
-
-            styles: {
-                header: {
-                    fontSize: 18,
-                    bold: true,
-                    margin: [0, 0, 0, 10],
-                    font: 'Roboto'
-                },
-                subheader: {
-                    fontSize: 14,
-                    bold: true,
-                    margin: [0, 5, 0, 3],
-                    font: 'Roboto'
-                },
-                medText: {
-                    fontSize: 12,
-                    bold: true,
-                    font: 'Roboto'
-                },
-                subText: {
-                    fontSize: 11,
-                    margin: [20, 0, 0, 0],
-                    font: 'Roboto'
-                },
-                notesText: {
-                    fontSize: 12,
-                    margin: [0, 0, 0, 10],
-                    font: 'Roboto'
-                }
-            },
-            defaultStyle: {
-                font: 'Roboto',
-                alignment: 'right'
+        const initRealtime = async () => {
+            try {
+                realtimeChannel.current = setupRealtimePatients(selectedPatient.id);
+                await prescriptionStore.fetchPatientPrescriptions(selectedPatient.id);
+            } catch (error) {
+                console.error('Error initializing realtime:', error);
+                toast.error('حدث خطأ في الاتصال بالخادم');
             }
         };
 
-        pdfMake.createPdf(docDefinition).download('prescription.pdf');
+        initRealtime();
+
+        return () => {
+            if (realtimeChannel.current) {
+                removeRealtimeChannel(realtimeChannel.current);
+            }
+        };
+    }, [selectedPatient?.id]);
+
+    const medicationsList = useMemo(() => {
+        return medicationsData?.find(cat => cat.name === formData.activeCategory)?.medications || [];
+    }, [medicationsData, formData.activeCategory]);
+
+    const handleMedClick = useCallback((med) => {
+        setFormData(prev => ({ ...prev, currentMed: med }));
+        setShowDosageModal(true);
+    }, []);
+
+    const addMedication = useCallback(() => {
+        const newMed = {
+            name: formData.currentMed,
+            dosage: formData.dosage || 'جرعة حسب الحاجة',
+            duration: formData.duration || 'حسب التعليمات'
+        };
+        setFormData(prev => ({
+            ...prev,
+            selectedMeds: [...prev.selectedMeds, newMed],
+            dosage: '',
+            duration: '',
+        }));
+        setShowDosageModal(false);
+        toast.success('تم إضافة الدواء');
+    }, [formData.currentMed, formData.dosage, formData.duration]);
+
+    const removeMedication = useCallback((index) => {
+        setFormData(prev => {
+            const updated = [...prev.selectedMeds];
+            updated.splice(index, 1);
+            return { ...prev, selectedMeds: updated };
+        });
+        toast.info('تم إزالة الدواء');
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedPatient || formData.selectedMeds.length === 0) {
+            toast.warn('الرجاء اختيار مريض وإضافة أدوية أولاً');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const currentDoctorId = 1; // استبدال برقم الطبيب الفعلي
+
+            // إنشاء زيارة
+            const { data: visit, error: visitError } = await supabase
+                .from('visits')
+                .insert([{
+                    patient_id: selectedPatient.id,
+                    doctor_id: currentDoctorId,
+                    date: today,
+                    notes: formData.notes,
+                    appointment_id: selectedPatient?.appointment_id || null
+                }])
+                .select('id')
+                .single();
+
+            if (visitError) throw visitError;
+
+            // إنشاء سجل طبي
+            const { data: medicalRecord, error: recordError } = await supabase
+                .from('medical_records')
+                .insert([{
+                    patient_id: selectedPatient.id,
+                    visit_id: visit.id,
+                    date: today,
+                    diagnosis: formData.notes,
+                    notes: formData.notes
+                }])
+                .select('id')
+                .single();
+
+            if (recordError) throw recordError;
+
+            // حفظ الوصفة الطبية
+            await prescriptionStore.savePrescription(selectedPatient.id, visit.id, {
+                notes: formData.notes,
+                medications: formData.selectedMeds
+            });
+
+            // تحديث حالة الموعد إذا كان مرتبطًا
+            if (selectedPatient?.appointment_id) {
+                await supabase
+                    .from('appointments')
+                    .update({ status: 'completed' })
+                    .eq('id', selectedPatient.appointment_id);
+            }
+
+            toast.success('تم حفظ الروشتة بنجاح!');
+            if (typeof onClose === 'function') onClose();
+        } catch (error) {
+            console.error('Error saving data:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
+    const handlePrint = useReactToPrint({
+        content: () => printRef.current,
+        pageStyle: `
+            @page { size: A4; margin: 10mm; }
+            body { direction: rtl; font-family: 'Tajawal', sans-serif; }
+            @media print { .no-print { display: none !important; } }
+        `,
+        onBeforeGetContent: () => {
+            return new Promise((resolve) => {
+                if (formData.selectedMeds.length === 0) {
+                    toast.warn('الرجاء إضافة أدوية أولاً');
+                    resolve();
+                    return;
+                }
+                resolve();
+            });
+        },
+        onAfterPrint: () => toast.success('تمت الطباعة بنجاح'),
+        documentTitle: `روشتة_${formData.patientName}_${today.replace(/\//g, '-')}`,
+    });
 
     return (
         <>
@@ -145,75 +177,74 @@ export default function Prescription({ onClose }) {
                 <span className="text-base sm:text-lg lg:text-xl px-3">كتابة الروشتة</span>
             </div>
             <div className="bg-gray-100 rounded-2xl mx-2 sm:mx-4 lg:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-5">
-
-
-                <div className="min-h-screen bg-gray-100 p-1 ">
-
-
-
-
+                <div className="min-h-screen bg-gray-100 p-1">
                     <div className="flex flex-col lg:flex-row gap-3">
-                        {/* Right Side */}
+                        {/* Right Side - Medications */}
                         <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4">
-                            <h2 className="text-xl font-bold mb-4 " style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
+                            <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
-                            <div className="bg-gray-100 p-1 rounded-lg mb-4 ">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 ">
-                                    {medicationsData.map(cat => (
+                            {/* Categories */}
+                            <div className="bg-gray-100 p-1 rounded-lg mb-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+                                    {medicationsData?.map(cat => (
                                         <button
-                                            key={cat.category}
-                                            onClick={() => setActiveCategory(cat.category)}
-                                            className={`w-full py-2 rounded-lg border-gray-300 text-center font-medium transition ${activeCategory === cat.category
+                                            key={cat.name}
+                                            onClick={() => setFormData(prev => ({ ...prev, activeCategory: cat.name }))}
+                                            className={`w-full py-2 rounded-lg text-center font-medium transition ${formData.activeCategory === cat.name
                                                 ? 'bg-blue-500 text-white'
-                                                : 'bg-white text-gray-700 border'
+                                                : 'bg-white text-gray-700 border border-gray-300'
                                                 }`}
-                                            style={{ backgroundColor: activeCategory === cat.category ? "var(--color-accent)" : undefined }}
+                                            style={{ backgroundColor: formData.activeCategory === cat.name ? "var(--color-accent)" : undefined }}
                                         >
-                                            {cat.category}
+                                            {cat.name}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-
+                            {/* Medications List */}
                             <div className="grid grid-cols-2 gap-3">
-                                {
-                                    // دور على الفئة المختارة
-                                    medicationsData.find(cat => cat.category === activeCategory)?.medications.map((med, idx) => (
+                                {medicationsList.length > 0 ? (
+                                    medicationsList.map((med, idx) => (
                                         <button
                                             key={idx}
-                                            onClick={() => handleMedClick(med)}
+                                            onClick={() => handleMedClick(med.name)}
                                             className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition text-center flex items-center justify-center h-20"
                                         >
-                                            <span className="font-medium">{med}</span>
+                                            <span className="font-medium">{med.name}</span>
                                         </button>
                                     ))
-                                }
+                                ) : (
+                                    <div className="col-span-2 text-center py-4 text-gray-500">
+                                        <p>لا توجد أدوية في هذه الفئة</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Left Side  */}
+                        {/* Left Side - Prescription Form */}
                         <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-5">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold " style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>
+                                <h2 className="text-xl font-bold" style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>
                                 <div className="text-gray-600">
                                     <p className="font-medium">التاريخ: {today}</p>
                                 </div>
                             </div>
 
+                            {/* Patient Search */}
                             <div className="mb-6">
                                 <label className="block mb-2 font-medium text-gray-700">اسم المريض</label>
-                                <input
-                                    type="text"
-                                    value={patientName}
-                                    onChange={(e) => setPatientName(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                                    required
+                                <PatientSearch
+                                    onPatientSelect={(patient) => {
+                                        setSelectedPatient(patient);
+                                        setFormData(prev => ({ ...prev, patientName: patient.fullName }));
+                                    }}
                                 />
                             </div>
 
+                            {/* Medications Table */}
                             <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
-                                <div className=" p-3 grid grid-cols-12 gap-1 font-medium "
+                                <div className="p-3 grid grid-cols-12 gap-1 font-medium"
                                     style={{ backgroundColor: "var(--color-primary-light)", color: "var(--color-text-primary)" }}>
                                     <span className="col-span-5">الدواء</span>
                                     <span className="col-span-3">الجرعة</span>
@@ -221,8 +252,8 @@ export default function Prescription({ onClose }) {
                                     <span className="col-span-1">إزالة</span>
                                 </div>
                                 <div className="max-h-64 overflow-y-auto">
-                                    {selectedMeds.length > 0 ? (
-                                        selectedMeds.map((med, index) => (
+                                    {formData.selectedMeds.length > 0 ? (
+                                        formData.selectedMeds.map((med, index) => (
                                             <div key={index} className="border-b border-gray-200 p-3 grid grid-cols-12 gap-1 items-center hover:bg-gray-50">
                                                 <span className="col-span-5 font-medium">{med.name}</span>
                                                 <span className="col-span-3 text-gray-600">{med.dosage}</span>
@@ -243,29 +274,45 @@ export default function Prescription({ onClose }) {
                                 </div>
                             </div>
 
+                            {/* Doctor Notes */}
                             <div className="mb-6">
                                 <label className="block mb-2 font-medium text-gray-700">ملاحظات الطبيب</label>
                                 <textarea
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
+                                    value={formData.notes}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                                     rows="4"
                                     placeholder="التشخيص أو أي تعليمات إضافية..."
                                 />
                             </div>
 
+                            {/* Action Buttons */}
                             <div className="flex gap-4">
                                 <button
                                     onClick={handleSubmit}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition justify-center"
-                                    style={{ backgroundColor: "var(--color-accent)" }}
+                                    disabled={isSubmitting}
+                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${
+                                        isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
+                                    }`}
+                                    style={{ backgroundColor: isSubmitting ? undefined : "var(--color-accent)" }}
                                 >
-                                    حفظ الروشتة
+                                    {isSubmitting ? 'جاري الحفظ...' : 'حفظ الروشتة'}
                                 </button>
                                 <button
-                                    onClick={printPrescription}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition justify-center"
-                                    style={{ backgroundColor: "var(--color-accent)" }}
+                                    onClick={() => {
+                                        if (formData.selectedMeds.length === 0) {
+                                            toast.warn('الرجاء إضافة أدوية أولاً');
+                                            return;
+                                        }
+                                        handlePrint().catch(() => {
+                                            toast.error('حدث خطأ أثناء الطباعة');
+                                        });
+                                    }}
+                                    disabled={formData.selectedMeds.length === 0}
+                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${
+                                        formData.selectedMeds.length === 0 ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                    style={{ backgroundColor: formData.selectedMeds.length === 0 ? undefined : "var(--color-accent)" }}
                                 >
                                     طباعة الروشتة
                                 </button>
@@ -273,31 +320,31 @@ export default function Prescription({ onClose }) {
                         </div>
                     </div>
 
-                    {/* Modal*/}
+                    {/* Dosage Modal */}
                     {showDosageModal && (
-                        <div className="fixed inset-0  flex justify-center items-center z-50 overflow-auto ">
+                        <div className="fixed inset-0 flex justify-center items-center z-50 overflow-auto bg-gray-500/60">
                             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
-                                <h3 className="text-xl font-bold mb-4 "
+                                <h3 className="text-xl font-bold mb-4"
                                     style={{ color: "var(--color-primary)" }}
-                                >تحديد جرعة الدواء: {currentMed}</h3>
+                                >تحديد جرعة الدواء: {formData.currentMed}</h3>
 
                                 <div className="mb-4">
                                     <label className="block mb-2 font-medium text-gray-700">اختر الجرعة</label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {dosageOptionsData.map((option, index) => (
+                                        {dosageOptionsData?.map((option) => (
                                             <button
-                                                key={index}
-                                                onClick={() => setDosage(option)}
-                                                className={`p-2 border rounded-lg text-sm ${dosage === option ? 'bg-cyan-100 border-cyan-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                                                key={option.id}
+                                                onClick={() => setFormData(prev => ({ ...prev, dosage: option.value }))}
+                                                className={`p-2 border rounded-lg text-sm ${formData.dosage === option.value ? 'bg-cyan-100 border-cyan-500' : 'border-gray-300 hover:bg-gray-50'}`}
                                             >
-                                                {option}
+                                                {option.value}
                                             </button>
                                         ))}
                                     </div>
                                     <input
                                         type="text"
-                                        value={dosage}
-                                        onChange={(e) => setDosage(e.target.value)}
+                                        value={formData.dosage}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, dosage: e.target.value }))}
                                         placeholder="أو اكتب جرعة مخصصة"
                                         className="w-full mt-2 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                                     />
@@ -306,20 +353,20 @@ export default function Prescription({ onClose }) {
                                 <div className="mb-6">
                                     <label className="block mb-2 font-medium text-gray-700">اختر المدة</label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {durationOptionsData.map((option, index) => (
+                                        {durationOptionsData?.map((option) => (
                                             <button
-                                                key={index}
-                                                onClick={() => setDuration(option)}
-                                                className={`p-2 border rounded-lg text-sm ${duration === option ? 'bg-cyan-100 border-cyan-500' : 'border-gray-300 hover:bg-gray-50'}`}
+                                                key={option.id}
+                                                onClick={() => setFormData(prev => ({ ...prev, duration: option.value }))}
+                                                className={`p-2 border rounded-lg text-sm ${formData.duration === option.value ? 'bg-cyan-100 border-cyan-500' : 'border-gray-300 hover:bg-gray-50'}`}
                                             >
-                                                {option}
+                                                {option.value}
                                             </button>
                                         ))}
                                     </div>
                                     <input
                                         type="text"
-                                        value={duration}
-                                        onChange={(e) => setDuration(e.target.value)}
+                                        value={formData.duration}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                                         placeholder="أو اكتب مدة مخصصة"
                                         className="w-full mt-2 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                                     />
@@ -329,21 +376,18 @@ export default function Prescription({ onClose }) {
                                     <button
                                         onClick={() => {
                                             setShowDosageModal(false);
-                                            setDosage('');
-                                            setDuration('');
+                                            setFormData(prev => ({ ...prev, dosage: '', duration: '' }));
                                         }}
-                                        className="flex-1  text-white px-4 py-2 rounded-lg font-medium transition justify-center"
+                                        className="flex-1 text-white px-4 py-2 rounded-lg font-medium transition justify-center"
                                         style={{ backgroundColor: "var(--color-accent)" }}
-
                                     >
                                         إلغاء
                                     </button>
                                     <button
                                         onClick={addMedication}
                                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition justify-center"
-                                        disabled={!dosage || !duration}
+                                        disabled={!formData.dosage || !formData.duration}
                                         style={{ backgroundColor: "var(--color-accent)" }}
-
                                     >
                                         تأكيد وإضافة
                                     </button>
@@ -353,7 +397,25 @@ export default function Prescription({ onClose }) {
                     )}
                 </div>
             </div>
+
+            {/* Loading Overlay */}
+            {isSubmitting && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-4 rounded-lg">
+                        <p>جاري حفظ البيانات...</p>
+                    </div>
+                </div>
+            )}
+
+            <div style={{ display: 'none' }}>
+                <PrintPrescription
+                    ref={printRef}
+                    patientName={formData.patientName}
+                    today={today}
+                    notes={formData.notes}
+                    selectedMeds={formData.selectedMeds}
+                />
+            </div>
         </>
     );
-
 }

@@ -11,11 +11,8 @@ function Topbar({ toggleSidebar }) {
             <button className="burger-btn" onClick={toggleSidebar}>
                 <MenuIcon />
             </button>
-            <SearchBar placeholder="ابحث هنا ...." />
-
-            <div className="topbar-icons">
+            <div className="topbar-icons ">
                 <NotificationsIcon fontSize="large" className="notifications-icon" />
-                <SettingsApplicationsIcon fontSize="large" className="settings-icon" />
                 <span className="user-info">
                     <img
                         src="https:cdn-icons-png.flaticon.com/512/149/149071.png"

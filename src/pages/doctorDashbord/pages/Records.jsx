@@ -1,5 +1,3 @@
-
-
 import { useState, useRef, useEffect } from 'react';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -8,6 +6,7 @@ import PrescriptionSheet from "../components/PrescriptionSheet";
 import PrescriptionModel from "../pages/PrescriptionModel";
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
+import usePatientStore from "../../../store/patientStore";
 
 export default function Records() {
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -16,19 +15,56 @@ export default function Records() {
     const [selectedPrescription, setSelectedPrescription] = useState(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
-
     const searchRef = useRef(null);
 
-    const {
-        loading,
-        patients,
-        doctors,
-    } = useDoctorDashboardStore();
+    const { selectedPatientName } = usePatientStore();
+    const { loading, patients, doctors, fetchData } = useDoctorDashboardStore();
 
-    useEffect(() => {
+    // useEffect(() => {
+    //     if (patients.length === 0 && !loading) {
+    //         fetchData();
+    //     }
+
+    //     const channel = setupRealtimePatients();
+
+    //     return () => {
+    //         channel.unsubscribe();
+    //     };
+    // }, [fetchData, patients.length, loading]);
+
+    // const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+    // useEffect(() => {
+    //     if (!initialLoadDone && patients.length > 0) {
+    //         setInitialLoadDone(true);
+    //     }
+    // }, [patients.length, initialLoadDone]);
+
+
+
+
+
+        useEffect(() => {
+        fetchData();
         const channel = setupRealtimePatients();
         return () => channel.unsubscribe();
-    }, []);
+    }, [fetchData]);
+
+    useEffect(() => {
+        if (selectedPatientName && patients.length > 0) {
+            const found = patients.find(p =>
+                p.fullName?.toLowerCase() === selectedPatientName.toLowerCase()
+            );
+
+            if (found) {
+                setSelectedPatient({
+                    ...found,
+                    visits: found.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                });
+                setSearchTerm(found.fullName);
+            }
+        }
+    }, [selectedPatientName, patients]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -43,7 +79,10 @@ export default function Records() {
     }, []);
 
     const handlePatientSelect = (patient) => {
-        setSelectedPatient(patient);
+        setSelectedPatient({
+            ...patient,
+            visits: patient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+        });
         setSearchTerm(patient.fullName);
         setIsSearchOpen(false);
     };
@@ -152,16 +191,16 @@ export default function Records() {
                                             <td className='px-0 md:px-5'>{selectedPatient.address}</td>
                                         </tr>
                                         <tr>
+                                            <td>التلفون</td>
+                                            <td className='px-0 md:px-5'>{selectedPatient.phoneNumber}</td>
+                                        </tr>
+                                        <tr>
                                             <td>النوع</td>
                                             <td className='px-0 md:px-5'>{selectedPatient.gender}</td>
                                         </tr>
                                         <tr>
                                             <td>فصيله الدم</td>
                                             <td className='px-0 md:px-5'>{selectedPatient.blood}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>التلفون</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.phoneNumber}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -188,15 +227,15 @@ export default function Records() {
                                 </div>
                                 <div className="bg-gray-100 rounded-xl p-3">
                                     <h2 className="text-sm font-bold mb-2 text-gray-800">الأدوية الحالية</h2>
-                                    {selectedPatient?.visits?.length > 0 &&
-                                        selectedPatient.visits.at(-1)?.prescriptions?.length > 0 ? (
+                                    {selectedPatient?.visits?.length > 0 ? (
                                         <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                            {selectedPatient.visits
-                                                .at(-1)
-                                                .prescriptions.at(-1)
-                                                .prescription_medications?.map((med, index) => (
-                                                    <li key={index}>{med.medication?.name || 'غير متوفر'}</li>
-                                                ))}
+                                            {selectedPatient.visits[0]?.prescriptions?.flatMap(prescription =>
+                                                prescription.prescription_medications?.map((med, index) => (
+                                                    <li key={index}>
+                                                        {med.medication?.name || 'غير متوفر'} - {med.dosage}
+                                                    </li>
+                                                )) || []
+                                            ).slice(0, 5)}
                                         </ul>
                                     ) : (
                                         <div className="text-center py-0 lg:py-3">
@@ -209,13 +248,14 @@ export default function Records() {
                                 <h2 className="text-sm font-bold mb-2 text-gray-800">التحاليل والفحوصات</h2>
                                 {selectedPatient?.visits?.some(v => v.test_requests?.length > 0) ? (
                                     <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                        {selectedPatient.visits.map((visit, i) =>
+                                        {selectedPatient.visits.flatMap(visit =>
                                             visit.test_requests?.map((req, j) => (
-                                                <li key={`${i}-${j}`}>
-                                                    <strong>الاسم:</strong> {req.test?.name || 'غير متوفر'}
+                                                <li key={`${visit.id}-${j}`}>
+                                                    <strong>{req.test?.name || 'تحليل غير معروف'}:</strong>
+                                                    {req.test?.description && ` - ${req.test.description}`}
                                                 </li>
-                                            ))
-                                        )}
+                                            )) || []
+                                        ).slice(0, 5)}
                                     </ul>
                                 ) : (
                                     <div className="text-center py-3">
@@ -223,7 +263,6 @@ export default function Records() {
                                     </div>
                                 )}
                             </div>
-
                         </div>
                     </div>
                 ) : (
@@ -241,85 +280,100 @@ export default function Records() {
                                 <thead>
                                     <tr className="bg-white text-sm text-gray-700 text-center">
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">رقم الزيارة</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">الإسم</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">تاريخ الزيارة</th>
+                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">التشخيص</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عدد الأدوية</th>
                                         <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عرض</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {selectedPatient.visits?.map((_, index) => (
-                                        <tr key={index} className="hover:bg-gray-50 bg-white text-center">
-                                            <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
-                                            <td className="p-3 border-b border-gray-100 text-gray-600">{selectedPatient.fullName}</td>
-                                            <td className="p-3 border-b border-gray-100 text-gray-600">{selectedPatient.visits[index].date}</td>
-                                            <td className="p-3 border-b border-gray-200">
-                                                {selectedPatient?.visits?.[index]?.prescriptions?.length || 0}
-                                            </td>
-
-                                            <td className="p-3 border-b border-gray-100">
-                                                <button
-                                                    className="text-cyan-500 hover:text-cyan-700 transition-colors"
-                                                    onClick={() => {
-                                                        const visit = selectedPatient.visits[index];
-                                                        setSelectedPrescription({
-                                                            date: visit.date,
-                                                            notes: visit.notes || "لا توجد ملاحظات",
-                                                            medications: visit.prescriptions.flatMap((p) =>
-                                                                p.prescription_medications?.map((med, idx) => ({
+                                    {selectedPatient.visits?.map((visit, index) => {
+                                        const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
+                                        return (
+                                            <tr key={visit.id} className="hover:bg-gray-50 bg-white text-center">
+                                                <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
+                                                <td className="p-3 border-b border-gray-100 text-gray-600">
+                                                    {new Date(visit.date).toLocaleDateString('ar-EG')}
+                                                </td>
+                                                <td className="p-3 border-b border-gray-100 text-gray-600">
+                                                    {lastPrescription?.diagnosis || 'لا يوجد'}
+                                                </td>
+                                                <td className="p-3 border-b border-gray-200">
+                                                    {lastPrescription?.prescription_medications?.length || 0}
+                                                </td>
+                                                <td className="p-3 border-b border-gray-100">
+                                                    <button
+                                                        className="text-cyan-500 hover:text-cyan-700 transition-colors"
+                                                        onClick={() => {
+                                                            setSelectedPrescription({
+                                                                date: visit.date,
+                                                                diagnosis: lastPrescription?.diagnosis,
+                                                                notes: lastPrescription?.notes || "لا توجد ملاحظات",
+                                                                medications: lastPrescription?.prescription_medications?.map((med, idx) => ({
                                                                     id: idx,
                                                                     name: med.medication?.name || 'غير متوفر',
                                                                     dosage: med.dosage || "غير محدد",
                                                                     duration: med.duration || "غير محدد"
                                                                 })) || []
-                                                            )
-                                                        });
-                                                        setIsViewModalOpen(true);
-                                                    }}
-
-                                                >
-                                                    <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                            });
+                                                            setIsViewModalOpen(true);
+                                                        }}
+                                                    >
+                                                        <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
 
                         <div className="sm:hidden space-y-3">
-                            {selectedPatient.visits?.map((_, index) => (
-                                <div key={index} className="bg-white rounded-2xl p-3 shadow">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="font-bold">الزيارة #{index + 1}</p>
-                                            <p className="text-sm">{selectedPatient.name}</p>
+                            {selectedPatient.visits?.map((visit, index) => {
+                                const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
+                                return (
+                                    <div key={visit.id} className="bg-white rounded-2xl p-3 shadow">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-bold">الزيارة #{index + 1}</p>
+                                                <p className="text-sm">
+                                                    {new Date(visit.date).toLocaleDateString('ar-EG')}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                                    {lastPrescription?.prescription_medications?.length || 0} أدوية
+                                                </span>
+                                                <button
+                                                    className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition"
+                                                    onClick={() => {
+                                                        setSelectedPrescription({
+                                                            date: visit.date,
+                                                            diagnosis: lastPrescription?.diagnosis,
+                                                            notes: lastPrescription?.notes || "لا توجد ملاحظات",
+                                                            medications: lastPrescription?.prescription_medications?.map((med, idx) => ({
+                                                                id: idx,
+                                                                name: med.medication?.name || 'غير متوفر',
+                                                                dosage: med.dosage || "غير محدد",
+                                                                duration: med.duration || "غير محدد"
+                                                            })) || []
+                                                        });
+                                                        setIsViewModalOpen(true);
+                                                    }}
+                                                >
+                                                    <VisibilityIcon fontSize="small" />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <button
-                                            className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition"
-                                            onClick={() => {
-                                                const visit = selectedPatient.visits[index];
-                                                setSelectedPrescription({
-                                                    date: visit.date,
-                                                    notes: visit.notes || "لا توجد ملاحظات",
-                                                    medications: visit.prescriptions.map((p, idx) => ({
-                                                        id: idx,
-                                                        name: p.name,
-                                                        dosage: p.dosage || "غير محدد",
-                                                        duration: p.duration || "غير محدد"
-                                                    }))
-                                                });
-                                                setIsViewModalOpen(true);
-                                            }}
-                                        >
-                                            <VisibilityIcon fontSize="small" />
-                                        </button>
+                                        {lastPrescription?.diagnosis && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                <strong>التشخيص:</strong> {lastPrescription.diagnosis}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex justify-between mt-2 text-sm">
-                                        <span>{selectedPatient.visits[selectedPatient.visits.length - 1].date}</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -327,14 +381,6 @@ export default function Records() {
         </>
     );
 }
-
-
-
-
-
-
-
-
 
 
 

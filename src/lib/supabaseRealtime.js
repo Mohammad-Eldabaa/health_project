@@ -1,327 +1,229 @@
 
 import { supabase } from '../supaBase/booking';
 import useDoctorDashboardStore from '../store/doctorDashboardStore';
+import { usePrescriptionStore } from '../store/prescriptionStore';
 
-export const setupRealtimePatients = () => {
-    const { setPatients, setAppointments } = useDoctorDashboardStore.getState();
+const handleTableUpdate = (tableName, currentData, payload, setter) => {
+    const { eventType, new: newItem, old: oldItem } = payload;
+    console.log(`🔁 Realtime [${tableName}]:`, payload);
 
-    const channel = supabase
-        .channel('realtime:clinic')
-        // --- patients ---
-        .on(
-            'postgres_changes',
-            {
-                event: '*',
-                schema: 'public',
-                table: 'patients',
-            },
-            payload => {
-                console.log('🔁 Realtime [patients]:', payload);
-                const { eventType, new: newPatient, old: oldPatient } = payload;
-                const current = useDoctorDashboardStore.getState().patients || [];
+    switch (eventType) {
+        case 'INSERT':
+            setter([...currentData, newItem]);
+            break;
+        case 'UPDATE':
+            setter(currentData.map(item => (item.id === newItem.id ? newItem : item)));
+            break;
+        case 'DELETE':
+            setter(currentData.filter(item => item.id !== oldItem.id));
+            break;
+        default:
+            break;
+    }
+};
 
-                if (eventType === 'INSERT') {
-                    setPatients([...current, newPatient]);
-                } else if (eventType === 'UPDATE') {
-                    const updated = current.map(p => (p.id === newPatient.id ? newPatient : p));
-                    setPatients(updated);
-                } else if (eventType === 'DELETE') {
-                    const filtered = current.filter(p => p.id !== oldPatient.id);
-                    setPatients(filtered);
-                }
+export const setupRealtimePatients = (patientId = null) => {
+    const {
+        setPatients,
+        setAppointments,
+        setVisits,
+        setPrescriptionMedications,
+        setTests,
+        setTestRequests,
+        setDrugCategories,
+    } = useDoctorDashboardStore.getState();
+
+    const { fetchPatientPrescriptions } = usePrescriptionStore.getState();
+
+    // إنشاء قناة مع اسم فريد
+    const channelName = patientId
+        ? `clinic-patient-${patientId}`
+        : `clinic-global-${Math.random().toString(36).substr(2, 9)}`;
+
+    const channel = supabase.channel(channelName);
+
+    // --- patients --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'patients',
+            ...(patientId && { filter: `id=eq.${patientId}` }),
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().patients || [];
+            handleTableUpdate('patients', current, payload, setPatients);
+        }
+    );
+
+    // --- appointments --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'appointments',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().appointments || [];
+            handleTableUpdate('appointments', current, payload, setAppointments);
+        }
+    );
+
+    // --- visits --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'visits',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().visits || [];
+            handleTableUpdate('visits', current, payload, setVisits);
+        }
+    );
+
+    // --- prescriptions --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'prescriptions',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        async payload => {
+            console.log('🔁 Realtime [prescriptions]:', payload);
+            const { new: newPrescription } = payload;
+            if (newPrescription?.patient_id) {
+                await fetchPatientPrescriptions(newPrescription.patient_id);
             }
-        )
+        }
+    );
 
-        // --- appointments ---
-        .on(
-            'postgres_changes',
-            {
-                event: '*',
-                schema: 'public',
-                table: 'appointments',
-            },
-            payload => {
-                console.log('🔁 Realtime [appointments]:', payload);
-                const { eventType, new: newApp, old: oldApp } = payload;
-                const current = useDoctorDashboardStore.getState().appointments || [];
+    // --- prescription_medications --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'prescription_medications',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().prescription_medications || [];
+            handleTableUpdate('prescription_medications', current, payload, setPrescriptionMedications);
+        }
+    );
 
-                if (eventType === 'INSERT') {
-                    setAppointments([...current, newApp]);
-                } else if (eventType === 'UPDATE') {
-                    const updated = current.map(a => (a.id === newApp.id ? newApp : a));
-                    setAppointments(updated);
-                } else if (eventType === 'DELETE') {
-                    const filtered = current.filter(a => a.id !== oldApp.id);
-                    setAppointments(filtered);
-                }
-            }
-        )
+    // --- tests --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'tests',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().tests || [];
+            handleTableUpdate('tests', current, payload, setTests);
+        }
+    );
 
-        .subscribe();
+    // --- test_requests --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'test_requests',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().test_requests || [];
+            handleTableUpdate('test_requests', current, payload, setTestRequests);
+        }
+    );
+
+    // داخل دالة setupRealtimePatients
+channel
+    .on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'tests',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().tests;
+            handleTableUpdate('tests', current, payload, useDoctorDashboardStore.getState().setTests);
+        }
+    )
+    .on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'test_cat',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().test_categories;
+            handleTableUpdate('test_categories', current, payload, useDoctorDashboardStore.getState().setTestCategories);
+        }
+    )
+    .on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'test_requests',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().test_requests;
+            handleTableUpdate('test_requests', current, payload, useDoctorDashboardStore.getState().setTestRequests);
+        }
+    );
+
+    // --- drug_categories --- (محدثة)
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'drug_categories',
+        },
+        payload => {
+            const current = useDoctorDashboardStore.getState().drug_categories || [];
+            handleTableUpdate('drug_categories', current, payload, setDrugCategories);
+        }
+    );
+
+    // الاشتراك مع معالجة الأخطاء
+    channel.subscribe((status, err) => {
+        if (err) {
+            console.error('Realtime subscription error:', err);
+        }
+        console.log(`Realtime channel [${channelName}] status:`, status);
+    });
 
     return channel;
 };
 
-
-
-
-// import { supabase } from '../supaBase/booking';
-// import useDoctorDashboardStore from '../store/doctorDashboardStore';
-
-// export const setupRealtimePatients = () => {
-//     const { setPatients, setAppointments } = useDoctorDashboardStore.getState();
-
-//     const channel = supabase
-//         .channel('realtime:clinic')
-//         // --- patients ---
-//         .on(
-//             'postgres_changes',
-//             {
-//                 event: '*',
-//                 schema: 'public',
-//                 table: 'patients',
-//             },
-//             payload => {
-//                 console.log('🔁 Realtime [patients]:', payload);
-//                 const { eventType, new: newPatient, old: oldPatient } = payload;
-//                 const current = useDoctorDashboardStore.getState().patients || [];
-
-//                 if (eventType === 'INSERT') {
-//                     setPatients([...current, newPatient]);
-//                 } else if (eventType === 'UPDATE') {
-//                     const updated = current.map(p => (p.id === newPatient.id ? newPatient : p));
-//                     setPatients(updated);
-//                 } else if (eventType === 'DELETE') {
-//                     const filtered = current.filter(p => p.id !== oldPatient.id);
-//                     setPatients(filtered);
-//                 }
-//             }
-//         )
-
-//         // --- appointments ---
-//         .on(
-//             'postgres_changes',
-//             {
-//                 event: '*',
-//                 schema: 'public',
-//                 table: 'appointments',
-//             },
-//             payload => {
-//                 console.log('🔁 Realtime [appointments]:', payload);
-//                 const { eventType, new: newApp, old: oldApp } = payload;
-//                 const current = useDoctorDashboardStore.getState().appointments || [];
-
-//                 if (eventType === 'INSERT') {
-//                     setAppointments([...current, newApp]);
-//                 } else if (eventType === 'UPDATE') {
-//                     const updated = current.map(a => (a.id === newApp.id ? newApp : a));
-//                     setAppointments(updated);
-//                 } else if (eventType === 'DELETE') {
-//                     const filtered = current.filter(a => a.id !== oldApp.id);
-//                     setAppointments(filtered);
-//                 }
-//             }
-//         )
-
-//         // --- visits ---
-//         .on(
-//             'postgres_changes',
-//             {
-//                 event: '*',
-//                 schema: 'public',
-//                 table: 'visits',
-//             },
-//             payload => {
-//                 console.log('🔁 Realtime [visits]:', payload);
-//                 // هنا حسب ما تحتاج: ممكن تحدث store أو تعمل refetch كامل
-//             }
-//         )
-
-//         // --- prescriptions ---
-//         .on(
-//             'postgres_changes',
-//             {
-//                 event: '*',
-//                 schema: 'public',
-//                 table: 'prescriptions',
-//             },
-//             payload => {
-//                 console.log('🔁 Realtime [prescriptions]:', payload);
-//                 // نفس الفكرة
-//             }
-//         )
-
-//         // --- prescription_medications ---
-//         .on(
-//             'postgres_changes',
-//             {
-//                 event: '*',
-//                 schema: 'public',
-//                 table: 'prescription_medications',
-//             },
-//             payload => {
-//                 console.log('🔁 Realtime [prescription_medications]:', payload);
-//                 // حسب الحاجة
-//             }
-//         )
-
-
-
-
-//          .on(
-//       'postgres_changes',
-//       {
-//         event: '*',
-//         schema: 'public',
-//         table: 'visits',
-//       },
-//       payload => {
-//         console.log('🔁 Realtime [visits]:', payload);
-//         const { eventType, new: newVisit, old: oldVisit } = payload;
-//         const current = useDoctorDashboardStore.getState().visits || [];
-//         const { setVisits } = useDoctorDashboardStore.getState();
-
-//         if (eventType === 'INSERT') {
-//           setVisits([...current, newVisit]);
-//         } else if (eventType === 'UPDATE') {
-//           const updated = current.map(v => (v.id === newVisit.id ? newVisit : v));
-//           setVisits(updated);
-//         } else if (eventType === 'DELETE') {
-//           const filtered = current.filter(v => v.id !== oldVisit.id);
-//           setVisits(filtered);
-//         }
-//       }
-//     )
-
-//         .subscribe();
-
-//     return channel;
-// };
-
-
-
-
-
-
-
-// // import { supabase } from '../supaBase/booking';
-// // import useDoctorDashboardStore from '../store/doctorDashboardStore';
-
-// // export const setupRealtimePatients = () => {
-// //   const { setPatients, setAppointments } = useDoctorDashboardStore.getState();
-
-// //   const channel = supabase
-// //     .channel('realtime:clinic')
-
-// //     // --- patients ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, payload => {
-// //       console.log('🔁 Realtime [patients]:', payload);
-// //       const { eventType, new: newPatient, old: oldPatient } = payload;
-// //       const current = useDoctorDashboardStore.getState().patients || [];
-
-// //       if (eventType === 'INSERT') {
-// //         setPatients([...current, newPatient]);
-// //       } else if (eventType === 'UPDATE') {
-// //         const updated = current.map(p => (p.id === newPatient.id ? newPatient : p));
-// //         setPatients(updated);
-// //       } else if (eventType === 'DELETE') {
-// //         const filtered = current.filter(p => p.id !== oldPatient.id);
-// //         setPatients(filtered);
-// //       }
-// //     })
-
-// //     // --- appointments ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, payload => {
-// //       console.log('🔁 Realtime [appointments]:', payload);
-// //       const { eventType, new: newApp, old: oldApp } = payload;
-// //       const current = useDoctorDashboardStore.getState().appointments || [];
-
-// //       if (eventType === 'INSERT') {
-// //         setAppointments([...current, newApp]);
-// //       } else if (eventType === 'UPDATE') {
-// //         const updated = current.map(a => (a.id === newApp.id ? newApp : a));
-// //         setAppointments(updated);
-// //       } else if (eventType === 'DELETE') {
-// //         const filtered = current.filter(a => a.id !== oldApp.id);
-// //         setAppointments(filtered);
-// //       }
-// //     })
-
-// //     // --- visits ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'visits' }, payload => {
-// //       console.log('🔁 Realtime [visits]:', payload);
-// //       // TODO: add visit update logic if needed
-// //     })
-
-// //     // --- prescriptions ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'prescriptions' }, payload => {
-// //       console.log('🔁 Realtime [prescriptions]:', payload);
-// //       // TODO: handle prescription updates if needed
-// //     })
-
-// //     // --- prescription_medications ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'prescription_medications' }, payload => {
-// //       console.log('🔁 Realtime [prescription_medications]:', payload);
-// //       // TODO: handle updates
-// //     })
-
-// //     // --- test_requests ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'test_requests' }, payload => {
-// //       console.log('🔁 Realtime [test_requests]:', payload);
-// //       // TODO: handle updates
-// //     })
-
-// //     // --- tests ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'tests' }, payload => {
-// //       console.log('🔁 Realtime [tests]:', payload);
-// //       // TODO: handle updates
-// //     })
-
-// //     // --- medications ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'medications' }, payload => {
-// //       console.log('🔁 Realtime [medications]:', payload);
-// //       // TODO: update medications in store or refetch
-// //     })
-
-// //     // --- drug_categories ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'drug_categories' }, payload => {
-// //       console.log('🔁 Realtime [drug_categories]:', payload);
-// //       // TODO: update categories if needed
-// //     })
-
-// //     // --- medical_records ---
-// //     .on('postgres_changes', { event: '*', schema: 'public', table: 'medical_records' }, payload => {
-// //       console.log('🔁 Realtime [medical_records]:', payload);
-// //       // TODO: update or refetch medical records
-// //     })
-
-// //     // ----visites--------
-// //     .on.on(
-// //       'postgres_changes',
-// //       {
-// //         event: '*',
-// //         schema: 'public',
-// //         table: 'visits',
-// //       },
-// //       payload => {
-// //         console.log('🔁 Realtime [visits]:', payload);
-// //         const { eventType, new: newVisit, old: oldVisit } = payload;
-// //         const current = useDoctorDashboardStore.getState().visits || [];
-// //         const { setVisits } = useDoctorDashboardStore.getState();
-
-// //         if (eventType === 'INSERT') {
-// //           setVisits([...current, newVisit]);
-// //         } else if (eventType === 'UPDATE') {
-// //           const updated = current.map(v => (v.id === newVisit.id ? newVisit : v));
-// //           setVisits(updated);
-// //         } else if (eventType === 'DELETE') {
-// //           const filtered = current.filter(v => v.id !== oldVisit.id);
-// //           setVisits(filtered);
-// //         }
-// //       }
-// //     )
-
-// //     .subscribe();
-
-// //   return channel;
-// // };
+// دالة مساعدة لإزالة القناة
+export const removeRealtimeChannel = async channel => {
+    if (channel) {
+        try {
+            const { error } = await supabase.removeChannel(channel);
+            if (error) {
+                console.error('Error removing channel:', error);
+            } else {
+                console.log('Channel removed successfully');
+            }
+        } catch (err) {
+            console.error('Exception while removing channel:', err);
+        }
+    }
+};

@@ -1,15 +1,24 @@
 
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import { useEffect, useState } from "react";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
+import { useNavigate } from "react-router-dom";
+import usePatientStore from "../../../store/patientStore";
+
+
 
 
 
 export default function Patients() {
     const [searchTerm, setSearchTerm] = useState("");
+
+
+    const navigate = useNavigate();
+    const setSelectedPatientName = usePatientStore((state) => state.setSelectedPatientName);
+
 
 
     const loading = useDoctorDashboardStore((state) => state.loading);
@@ -91,7 +100,12 @@ export default function Patients() {
                                         </td>
 
                                         <td className="p-3 flex justify-center">
-                                            <button className="text-cyan-500 hover:text-cyan-700 transition-colors">
+                                            <button className="text-cyan-500 hover:text-cyan-700 transition-colors"
+                                                onClick={() => {
+                                                    setSelectedPatientName(p.fullName);
+                                                    navigate("/DoctorDashboard/records");
+                                                }}
+                                            >
                                                 <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
                                             </button>
                                         </td>
@@ -123,8 +137,11 @@ export default function Patients() {
                                 <div><strong>آخر زيارة:</strong> {p.visits?.length > 0 ? p.visits[p.visits.length - 1].date : "لا يوجد زيارات"}</div>
                             </div>
                             <div className="flex justify-around pt-2 border-t border-gray-100">
-                                <button className="text-blue-600 hover:bg-blue-100 p-1 rounded-full"><Eye size={18} /></button>
-                                <button className="text-red-600 hover:bg-red-100 p-1 rounded-full"><Trash2 size={18} /></button>
+                                <button className="text-blue-600 hover:bg-blue-100 p-1 rounded-full"
+                                    onClick={() => {
+                                        setSelectedPatientName(p.fullName);
+                                        navigate("/DoctorDashboard/records");
+                                    }}><Eye size={18} /></button>
                             </div>
                         </div>
                     ))}

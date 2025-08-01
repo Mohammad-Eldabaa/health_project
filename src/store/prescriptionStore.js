@@ -32,7 +32,6 @@ export const usePrescriptionStore = create((set, get) => ({
   error: null,
   realtimeChannel: null,
 
-  
   // Initialize real-time subscriptions
   initRealtime: (patientId) => {
     // Clean up any existing channel

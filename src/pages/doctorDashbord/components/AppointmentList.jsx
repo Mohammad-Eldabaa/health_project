@@ -1,9 +1,17 @@
 import React from "react";
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
+import { useNavigate } from "react-router-dom";
+import usePatientStore from "../../../store/patientStore";
 
 export function AppointmentList({ appointmentss }) {
     const { startVisit, endVisit, exetVisit } = useDoctorDashboardStore();
     console.log(appointmentss);
+
+
+
+    const navigate = useNavigate();
+        const setSelectedPatientName = usePatientStore((state) => state.setSelectedPatientName);
+    
 
 
     return (
@@ -42,7 +50,12 @@ export function AppointmentList({ appointmentss }) {
                     </div>
 
                     <div className="flex space-x-2 space-x-reverse mt-4">
-                        <button className="text-sm text-blue-600 px-3 py-1 rounded-2xl bg-cyan-100 hover:bg-cyan-300 transition flex items-center gap-1 mx-1">
+                        <button className="text-sm text-blue-600 px-3 py-1 rounded-2xl bg-cyan-100 hover:bg-cyan-300 transition flex items-center gap-1 mx-1"
+                            onClick={() => {
+                                setSelectedPatientName(appointment.patient);
+                                navigate("/DoctorDashboard/records");
+                            }}
+                        >
                             الملف الطبي
                         </button>
 
