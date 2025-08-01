@@ -64,6 +64,11 @@ function SideBar({ isOpen, toggleSidebar }) {
                         </NavLink>
                     </li>
                     <li className="sidebar-item">
+                        <NavLink to="/DoctorDashboard/DoctorDashProfile" className="sidebar-link">
+                            <EventIcon /> الملف الشخصي
+                        </NavLink>
+                    </li>
+                    <li className="sidebar-item">
                         <NavLink to="/DoctorDashboard/patients" className="sidebar-link">
                             <GroupIcon /> المرضى
                         </NavLink>

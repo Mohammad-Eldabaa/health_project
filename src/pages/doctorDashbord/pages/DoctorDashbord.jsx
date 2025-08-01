@@ -12,6 +12,7 @@ import Prescription from "./Prescription";
 import Tests from "./Tests";
 import Statistics from "./Statistics";
 import Settings from "./Settings";
+import DoctorDashProfile from "../../DoctorProfile/DoctorDashProfile";
 
 
 
@@ -28,6 +29,7 @@ function DoctorDashboard() {
         <Routes>
           <Route path="" element={<Home />} />
           <Route path="appointments" element={<Appointments />} />
+          <Route path="DoctorDashProfile" element={<DoctorDashProfile />} />
           <Route path="patients" element={<Patients />} />
           <Route path="records" element={<Records />} />
           <Route path="prescription" element={<Prescription />} />
