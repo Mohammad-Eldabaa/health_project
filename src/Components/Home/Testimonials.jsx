@@ -12,7 +12,7 @@ export default function Testimonials() {
     rating: 0,
     comment: ''
   });
-  
+
   // تحميل التقييمات من localStorage عند التحميل الأولي
   const [testimonials, setTestimonials] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -134,7 +134,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-16 md:py-20  bg-[#E0F7FA] w-screen relative overflow-hidden">
+    <section className="py-16 md:py-20  bg-[#E0F7FA] overflow-hidden  relative ">
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#B2EBF2] opacity-20 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
 
@@ -182,7 +182,7 @@ export default function Testimonials() {
             <h3 className="text-xl md:text-2xl font-bold text-[#0097A7] mb-6 text-center">
               شاركنا تجربتك
             </h3>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -197,7 +197,7 @@ export default function Testimonials() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="role" className="block text-[#0097A7] mb-1">الصفة (اختياري)</label>
                   <input
@@ -210,7 +210,7 @@ export default function Testimonials() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-[#0097A7] mb-1">التقييم</label>
                 <div className="flex justify-center gap-1">
@@ -226,7 +226,7 @@ export default function Testimonials() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="comment" className="block text-[#0097A7] mb-1">التعليق</label>
                 <textarea
@@ -239,7 +239,7 @@ export default function Testimonials() {
                   required
                 ></textarea>
               </div>
-              
+
               <div className="pt-2">
                 <button
                   type="submit"
@@ -253,7 +253,7 @@ export default function Testimonials() {
         ) : (
           <>
             <div className="relative h-[380px] sm:h-[320px] md:h-[280px]">
-              <button 
+              <button
                 onClick={prevSlide}
                 className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-md flex items-center justify-center text-[#009688] hover:bg-[#E0F7FA] transition -ml-2 sm:-ml-4"
                 aria-label="السابق"
@@ -261,8 +261,8 @@ export default function Testimonials() {
               >
                 <FaChevronLeft className="text-sm sm:text-base" />
               </button>
-              
-              <button 
+
+              <button
                 onClick={nextSlide}
                 className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-md flex items-center justify-center text-[#009688] hover:bg-[#E0F7FA] transition -mr-2 sm:-mr-4"
                 aria-label="التالي"
@@ -286,24 +286,24 @@ export default function Testimonials() {
                       <div className="flex-shrink-0 text-[#0097A7]">
                         <FaUserCircle className="text-6xl sm:text-7xl md:text-8xl opacity-80" />
                       </div>
-                      
+
                       <div className="text-center md:text-right flex-1">
                         <FaQuoteLeft className="text-[#009688] text-xl md:text-2xl mb-3 md:mb-4 mx-auto md:mx-0" />
-                        
+
                         <p className="text-[#757575] text-sm sm:text-base md:text-lg mb-4 md:mb-6 max-w-2xl mx-auto md:mx-0 leading-relaxed">
                           {testimonials[currentIndex].comment}
                         </p>
-                        
+
                         <div className="mb-3 md:mb-4">
                           {[...Array(5)].map((_, i) => (
-                            <FaStar 
-                              key={i} 
+                            <FaStar
+                              key={i}
                               className={`inline-block mx-0.5 ${i < testimonials[currentIndex].rating ? 'text-yellow-400' : 'text-gray-300'}`}
                               size={18}
                             />
                           ))}
                         </div>
-                        
+
                         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[#212121] mb-1">
                           {testimonials[currentIndex].name}
                         </h3>

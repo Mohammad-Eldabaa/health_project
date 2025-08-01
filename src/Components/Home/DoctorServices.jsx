@@ -59,7 +59,7 @@ export default function DoctorServices() {
     navigate('../profile');
   };
   return (
-    <section id="HServices" className="py-20 bg-[#E0F7FA] relative w-screen overflow-hidden">
+    <section id="HServices" className="py-20 bg-[#E0F7FA] relative ">
       <div className="absolute top-0 left-0 w-full h-full opacity-10">
         <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-[#00BCD4] blur-3xl"></div>
         <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-[#009688] blur-3xl"></div>
@@ -202,16 +202,16 @@ export default function DoctorServices() {
                   {
                     title: 'متابعة النتائج',
                     icon: <FaFileMedicalAlt className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'>جاري العمل على توفير نظام متابعة النتائج 
-                    <FaWarning className="text-xl " />
+                    desc: <span className='text-red-400'>جاري العمل على توفير نظام متابعة النتائج
+                      <FaWarning className="text-xl " />
                     </span>,
                   },
                   {
                     title: 'تذكير بالمواعيد',
                     icon: <FaBell className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'>جاري العمل على توفير نظام تذكير بالمواعيد 
-                    
-                    <FaWarning className="text-xl " /></span>,
+                    desc: <span className='text-red-400'>جاري العمل على توفير نظام تذكير بالمواعيد
+
+                      <FaWarning className="text-xl " /></span>,
                   },
                 ].map((feature, index) => (
                   <motion.div

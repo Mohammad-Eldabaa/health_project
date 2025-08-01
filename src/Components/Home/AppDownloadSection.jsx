@@ -4,7 +4,7 @@ import QRCode from "react-qr-code";
 
 const AppDownloadSection = () => {
   return (
-    <section className="py-16 bg-white w-screen relative overflow-hidden">
+    <section className="py-16 ">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#00BCD4] opacity-10 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
@@ -87,10 +87,10 @@ const AppDownloadSection = () => {
                 <h3 className="text-xl md:text-2xl font-bold mb-2">مسح الكود للتحميل</h3>
                 <p className="text-[#B2EBF2]">استخدم كاميرا هاتفك لمسح QR Code</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-lg shadow-lg mb-6">
-                <QRCode 
-                  value="https://yourclinicapp.com/download" 
+                <QRCode
+                  value="https://yourclinicapp.com/download"
                   size={180}
                   level="H"
                   fgColor="#009688"
@@ -98,7 +98,7 @@ const AppDownloadSection = () => {
                 />
               </div>
 
-              
+
             </div>
           </div>
         </motion.div>

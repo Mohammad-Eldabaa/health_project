@@ -10,10 +10,10 @@ export const FirstAidDetails = lazy(() => import('../pages/FirstAid/FirstAidDeta
 export const DoctorDashboard = lazy(() => import('../pages/doctorDashbord/pages/DoctorDashbord.jsx'));
 export const NursingAppointments = lazy(() => import('../pages/Nursing/NursingAppointments.jsx'));
 export const NursingPatientsList = lazy(() => import('../pages/Nursing/NursingPatientsList.jsx'));
-export const Profile = lazy(() => import('../pages/DoctorProfile/DoctorProfile.jsx'));
-// export const PatientView = lazy(() => import('../pages/DoctorProfile/PatientView.jsx'));
+// export const Profile = lazy(() => import('../pages/DoctorProfile/DoctorProfile.jsx'));
+export const PatientView = lazy(() => import('../pages/DoctorProfile/PatientView.jsx'));
 export const DoctorProfile = lazy(() => import('../pages/DoctorProfile/DoctorDashProfile.jsx'));
-export const PatientProfile = lazy(() => import('../pages/PatientProfile/PatientProfile.jsx'));
+// export const PatientProfile = lazy(() => import('../pages/PatientProfile/PatientProfile.jsx'));
 export const MedicalArticles = lazy(() => import('../pages/MedicalArticles/MedicalArticles.jsx'));
 
 export const Home = lazy(() => import('../Components/Home/Home'));

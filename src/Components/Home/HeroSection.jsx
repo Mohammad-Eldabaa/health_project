@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className='hero w-screen h-screen overflow-x-hidden'>
-      <div className="relative w-screen h-screen overflow-hidden">
+    <section className='hero h-screen '>
+      <div className="relative h-screen ">
         <video
           className="absolute top-0 left-0 w-full h-full object-cover"
           src="/src/assets/video/bgVideo.mp4"

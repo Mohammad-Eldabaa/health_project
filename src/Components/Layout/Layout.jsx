@@ -8,11 +8,11 @@ export default function Layout() {
   return (
     <>
       <Navbar />
-      <div className="container w-screen">
-        <Outlet>
-            
-        </Outlet>
-      </div>
+      {/* <div className=''> */}
+      <Outlet>
+
+      </Outlet>
+      {/* </div> */}
       <Footer />
     </>
   );

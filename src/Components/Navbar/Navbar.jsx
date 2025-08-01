@@ -39,7 +39,7 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="shadow px-4 z-50 fixed top-0 left-0 w-screen"
+        className="shadow px-7 z-50 fixed  top-0 left-0 w-screen"
         style={{ backgroundColor: "var(--color-primary-dark)" }}
       >
         <div className="flex container flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
@@ -55,7 +55,7 @@ export default function Navbar() {
                 display: "flex",
                 alignItems: "center",
                 fontSize: 24,
-                paddingLeft: 60,
+                paddingLeft: 30,
               }}
             >
               Clinic
@@ -101,7 +101,7 @@ export default function Navbar() {
                       after:transition-all after:duration-400 
                       ${isActive ? "after:w-full" : "after:w-0"}`
                     }
-                    to={""}
+                    to={"/"}
                     onClick={handleNavClick}
                   >
                     الرئيسية
@@ -109,7 +109,7 @@ export default function Navbar() {
                 </li>
                 <li>
                   <NavLink
-                    to="about"
+                    to="/about"
                     className={({ isActive }) =>
                       `relative mx-3 text-lg text-white pb-1 
                       after:content-[''] after:absolute after:left-0 after:bottom-0 
@@ -127,7 +127,7 @@ export default function Navbar() {
                 <li className="relative" ref={dropdownRef}>
                   <div className="flex items-center">
                     <NavLink
-                      to="services"
+                      to="/services"
                       className={({ isActive }) =>
                         `relative mx-3 text-lg text-white pb-1 
                         after:content-[''] after:absolute after:left-0 after:bottom-0 
@@ -156,7 +156,7 @@ export default function Navbar() {
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 border border-gray-100">
                       <div className="py-1">
                         <NavLink
-                          to="MedicalArticles"
+                          to="/MedicalArticles"
                           className="block px-4 py-2 text-gray-800 hover:bg-[#E0F7FA] transition-colors"
                           onClick={handleNavClick}
                         >
@@ -164,7 +164,7 @@ export default function Navbar() {
                           المقالات الطبية
                         </NavLink>
                         <NavLink
-                          to="FirstAid"
+                          to="/FirstAid"
                           className="block px-4 py-2 text-gray-800 hover:bg-[#E0F7FA] transition-colors"
                           onClick={handleNavClick}
                         >
@@ -185,7 +185,7 @@ export default function Navbar() {
                       after:transition-all after:duration-400 
                       ${isActive ? "after:w-full" : "after:w-0"}`
                     }
-                    to={"contact"}
+                    to={"/contact"}
                     onClick={handleNavClick}
                   >
                     اتصل بنا
@@ -198,7 +198,7 @@ export default function Navbar() {
                 <li>
                   <NavLink
                     className="mx-3 text-lg text-white"
-                    to={"login"}
+                    to={"/login"}
                     onClick={handleNavClick}
                   >
                     <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
@@ -213,7 +213,7 @@ export default function Navbar() {
                 >
                   <NavLink
                     className="mx-3 text-lg text-white"
-                    to={"bookingpage"}
+                    to={"/bookingpage"}
                     onClick={handleNavClick}
                   >
                     <i className="fa-solid fa-user-plus"></i> حجز موعد
@@ -250,7 +250,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={""}
+                  to={"/"}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-home ml-3"></i>
@@ -260,7 +260,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"about"}
+                  to={"/about"}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-info-circle ml-3"></i>
@@ -293,7 +293,7 @@ export default function Navbar() {
                 {servicesDropdown && (
                   <div className="pl-4 mt-2 space-y-2">
                     <NavLink
-                      to="firstaid"
+                      to="/firstaid"
                       className="block text-lg text-white py-2 px-2 rounded hover:bg-cyan-500 transition-colors"
                       onClick={handleNavClick}
                     >
@@ -301,7 +301,7 @@ export default function Navbar() {
                       المقالات الطبية
                     </NavLink>
                     <NavLink
-                      to="firstaid"
+                      to="/firstaid"
                       className="block text-lg text-white py-2 px-2 rounded hover:bg-cyan-500 transition-colors"
                       onClick={handleNavClick}
                     >
@@ -315,7 +315,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"contact"}
+                  to={"/contact"}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-phone ml-3"></i>
@@ -329,7 +329,7 @@ export default function Navbar() {
                 <li>
                   <NavLink
                     className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                    to={"login"}
+                    to={"/login"}
                     onClick={handleNavClick}
                   >
                     <i className="fa-solid fa-right-to-bracket ml-3"></i>
@@ -339,7 +339,7 @@ export default function Navbar() {
                 <li>
                   <NavLink
                     className="block text-lg hover:bg-cyan-400 text-white py-3 px-2 rounded transition-colors"
-                    to={"booking"}
+                    to={"/booking"}
                     onClick={handleNavClick}
                     style={{ borderRadius: "8px" }}
                   >

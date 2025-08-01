@@ -14,7 +14,7 @@ const MedicalResourcesSection = () => {
                 "أمراض الجهاز التنفسي"
             ],
             btnText: "استكشف المقالات",
-            link: "firstaid"
+            link: "medicalarticles"
         },
         {
             title: "الإسعافات الأولية",
@@ -32,7 +32,7 @@ const MedicalResourcesSection = () => {
     ];
 
     return (
-        <section className="py-20 bg-white w-screen relative overflow-hidden">
+        <section className="py-20 relative">
             {/* Decorative Elements */}
             <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#00BCD4] opacity-10 blur-3xl"></div>
             <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
