@@ -12,6 +12,7 @@ import {
   FaVideo,
   FaFileMedicalAlt,
   FaBell,
+  FaExclamationTriangle as FaWarning,
 } from 'react-icons/fa';
 
 export default function DoctorServices() {
@@ -41,17 +42,17 @@ export default function DoctorServices() {
         icon: <FaClinicMedical className="text-3xl" />,
         description: 'متابعة وعلاج حالات الضغط والسكري والدهون بالدم',
       },
-      {
-        title: 'الفحوصات الدورية',
-        icon: <FaXRay className="text-3xl" />,
-        description: 'برامج فحص دوري شامل للكبار مع تحليل النتائج',
-      },
-      {
-        title: 'الاستشارات الطبية',
-        icon: <FaBrain className="text-3xl" />,
-        description: 'استشارات طبية متخصصة عن بعد لمتابعة الحالات',
-      },
-    ],
+      // {
+      //   title: "الفحوصات الدورية",
+      //   icon: <FaXRay className="text-3xl" />,
+      //   description: "برامج فحص دوري شامل للكبار مع تحليل النتائج"
+      // },
+      // {
+      //   title: "الاستشارات الطبية",
+      //   icon: <FaBrain className="text-3xl" />,
+      //   description: "استشارات طبية متخصصة عن بعد لمتابعة الحالات"
+      // }
+    ]
   };
   const navigate = useNavigate();
   const PatientView = () => {
@@ -137,7 +138,7 @@ export default function DoctorServices() {
                   <p className="text-[#757575] mb-4 text-center xl:text-lg leading-relaxed">{service.description}</p>
                 </div>
 
-                <div className="px-6 pb-6">
+                {/* <div className="px-6 pb-6">
                   <div className="flex items-center justify-center mt-2 pt-4 border-t border-[#B2EBF2]">
                     <div className="w-10 h-10 rounded-full bg-[#E0F7FA] flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#009688]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +152,7 @@ export default function DoctorServices() {
                     </div>
                     <span className="text-sm xl:text-base text-[#0097A7] mr-3">حجز إلكتروني</span>
                   </div>
-                </div>
+                </div> */}
               </motion.div>
             ))}
           </div>
@@ -190,18 +191,27 @@ export default function DoctorServices() {
                   },
                   {
                     title: 'استشارات عن بعد',
-                    icon: <FaVideo className="text-2xl xl:text-3xl" />,
-                    desc: 'تواصل مع طبيبك عبر الفيديو',
+                    icon: <FaVideo className="text-2xl  xl:text-3xl" />,
+                    desc: (
+                      <span className="text-red-400 ">
+                        جاري العمل على توفير نظام استشارات عن بعد
+                        <FaWarning className="text-xl " />
+                      </span>
+                    )
                   },
                   {
                     title: 'متابعة النتائج',
                     icon: <FaFileMedicalAlt className="text-2xl xl:text-3xl" />,
-                    desc: 'اطلع على نتائجك أونلاين',
+                    desc: <span className='text-red-400'>جاري العمل على توفير نظام متابعة النتائج 
+                    <FaWarning className="text-xl " />
+                    </span>,
                   },
                   {
                     title: 'تذكير بالمواعيد',
                     icon: <FaBell className="text-2xl xl:text-3xl" />,
-                    desc: 'تذكيرات تلقائية بمواعيدك',
+                    desc: <span className='text-red-400'>جاري العمل على توفير نظام تذكير بالمواعيد 
+                    
+                    <FaWarning className="text-xl " /></span>,
                   },
                 ].map((feature, index) => (
                   <motion.div
