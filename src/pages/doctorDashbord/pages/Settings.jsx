@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; // Using react-helmet for better async support
 import { Person } from '@mui/icons-material';
 
 const Settings = () => {

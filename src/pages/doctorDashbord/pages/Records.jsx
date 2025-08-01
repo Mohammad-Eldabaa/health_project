@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; // Using react-helmet for better async support
 import PersonInfo from '../components/PersonInfo';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';

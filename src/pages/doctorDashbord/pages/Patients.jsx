@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; 
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import SearchBar from '../components/SearchBar';
 import FilterListIcon from '@mui/icons-material/FilterList';

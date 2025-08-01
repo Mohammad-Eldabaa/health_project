@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; // Using react-helmet for better async support
 import SideBar from '../components/SideBar';
 import Topbar from '../components/Topbar';
 import './DoctorDashbord.css';

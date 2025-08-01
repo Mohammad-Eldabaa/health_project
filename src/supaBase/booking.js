@@ -63,6 +63,8 @@ export const addPatient = async (patientData, resetForm, navigate) => {
 
     showAlert("error", "خطأ في الحجز", errorMessage);
     return false;
+  }
+}
 // export const addPatient = async (patientData, resetForm) => {
 //   try {
 //     const { error } = await supabase.from('patients').insert(patientData);

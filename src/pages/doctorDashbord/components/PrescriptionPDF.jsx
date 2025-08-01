@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; // Using react-helmet for better async support
 import PropTypes from 'prop-types';
 
 // Register Arabic font (optional)

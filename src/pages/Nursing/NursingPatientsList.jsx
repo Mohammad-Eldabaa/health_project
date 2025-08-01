@@ -4,11 +4,13 @@ import { supabase } from '../../supaBase/booking';
 import { Schema } from '../bookingPage/schema';
 import * as Yup from 'yup';
 import NursingSidebar from './NursingSidebar';
-import { Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete, Search } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NursingPatientsList = () => {
   const [patients, setPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
@@ -39,6 +41,7 @@ const NursingPatientsList = () => {
         }
 
         setPatients(data || []);
+        setFilteredPatients(data || []);
         setError(null);
       } catch (err) {
         console.error('Unexpected error fetching patients:', err);
@@ -48,6 +51,20 @@ const NursingPatientsList = () => {
 
     fetchPatients();
   }, []);
+
+  // Handle search
+  useEffect(() => {
+    const filtered = patients.filter(
+      patient =>
+        patient.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || patient.phoneNumber.includes(searchTerm)
+    );
+    setFilteredPatients(filtered);
+  }, [searchTerm, patients]);
+
+  // Handle search input change
+  const handleSearchChange = e => {
+    setSearchTerm(e.target.value);
+  };
 
   // Handle form input changes
   const handleChange = e => {
@@ -74,7 +91,7 @@ const NursingPatientsList = () => {
   // Update patient in Supabase
   const updatePatient = async () => {
     try {
-      const editSchema = Schema.omit(['amount']); // Exclude amount for editing
+      const editSchema = Schema.omit(['amount']);
       await editSchema.validate(formData, { abortEarly: false });
 
       const updatedPatient = {
@@ -95,8 +112,8 @@ const NursingPatientsList = () => {
         return;
       }
 
-      // Update local state
       setPatients(prev => prev.map(p => (p.id === currentPatient.id ? { ...p, ...updatedPatient } : p)));
+      setFilteredPatients(prev => prev.map(p => (p.id === currentPatient.id ? { ...p, ...updatedPatient } : p)));
       setShowEditModal(false);
       setFormErrors({});
       alert('تم تحديث بيانات المريض بنجاح!');
@@ -119,7 +136,6 @@ const NursingPatientsList = () => {
     if (!window.confirm('هل أنت متأكد من حذف هذا المريض؟ سيتم حذف جميع المواعيد المرتبطة بهذا المريض.')) return;
 
     try {
-      // Step 1: Delete all appointments associated with the patient
       const { error: appointmentError } = await supabase.from('appointments').delete().eq('patient_id', id);
 
       if (appointmentError) {
@@ -128,7 +144,6 @@ const NursingPatientsList = () => {
         return;
       }
 
-      // Step 2: Delete the patient
       const { error: patientError } = await supabase.from('patients').delete().eq('id', id);
 
       if (patientError) {
@@ -137,8 +152,8 @@ const NursingPatientsList = () => {
         return;
       }
 
-      // Update local state
       setPatients(prev => prev.filter(p => p.id !== id));
+      setFilteredPatients(prev => prev.filter(p => p.id !== id));
       alert('تم حذف المريض وجميع مواعيده بنجاح!');
     } catch (err) {
       console.error('Unexpected error deleting patient:', err);
@@ -170,10 +185,8 @@ const NursingPatientsList = () => {
         <meta name="twitter:description" content="إدارة بيانات المرضى بسهولة وفعالية مع نظام المواعيد الطبية." />
       </Helmet>
 
-      {/* Sidebar */}
       <NursingSidebar />
 
-      {/* Main Content */}
       <main className="flex-1 p-4 md:p-6">
         <nav className="bg-white p-3 rounded-lg shadow-sm md:hidden mb-4">
           <button
@@ -215,6 +228,25 @@ const NursingPatientsList = () => {
             </div>
           </div>
 
+          {/* Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-6"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                placeholder="ابحث بالاسم أو رقم الهاتف..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+          </motion.div>
+
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -232,7 +264,7 @@ const NursingPatientsList = () => {
             </motion.div>
           )}
 
-          {patients.length === 0 && !error ? (
+          {filteredPatients.length === 0 && !error ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -246,11 +278,10 @@ const NursingPatientsList = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              لا توجد بيانات مرضى بعد.
+              {searchTerm ? 'لا توجد نتائج مطابقة للبحث.' : 'لا توجد بيانات مرضى بعد.'}
             </motion.div>
           ) : (
             <>
-              {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead className="bg-gradient-to-r from-cyan-50 to-blue-50">
@@ -266,7 +297,7 @@ const NursingPatientsList = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {patients.map((patient, index) => (
+                    {filteredPatients.map((patient, index) => (
                       <motion.tr
                         key={patient.id}
                         initial={{ opacity: 0, y: 10 }}
@@ -302,8 +333,7 @@ const NursingPatientsList = () => {
                             whileTap={{ scale: 0.95 }}
                             className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
                             onClick={() => alert(`عرض تفاصيل المريض ${patient.fullName}`)}
-                          >
-                          </motion.button>
+                          ></motion.button>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -327,9 +357,8 @@ const NursingPatientsList = () => {
                 </table>
               </div>
 
-              {/* Mobile Cards View */}
               <div className="md:hidden flex flex-col gap-4">
-                {patients.map((patient, index) => (
+                {filteredPatients.map((patient, index) => (
                   <motion.div
                     key={patient.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -382,8 +411,7 @@ const NursingPatientsList = () => {
                         whileTap={{ scale: 0.95 }}
                         className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
                         onClick={() => alert(`عرض تفاصيل المريض ${patient.fullName}`)}
-                      >
-                      </motion.button>
+                      ></motion.button>
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
@@ -406,234 +434,237 @@ const NursingPatientsList = () => {
               </div>
             </>
           )}
-        </motion.div>
 
-        {/* Edit Patient Modal */}
-        <AnimatePresence>
-          {showEditModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4"
-            >
+          <AnimatePresence>
+            {showEditModal && (
               <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4"
               >
-                <div className="flex justify-between items-center mb-6">
-                  <h5 className="text-xl font-bold text-cyan-800">تعديل بيانات المريض</h5>
-                  <button
-                    onClick={() => {
-                      setShowEditModal(false);
-                      setFormErrors({});
-                    }}
-                    className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    updatePatient();
-                  }}
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200"
                 >
-                  <div className="grid grid-cols-1 gap-4">
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 }}
+                  <div className="flex justify-between items-center mb-6">
+                    <h5 className="text-xl font-bold text-cyan-800">تعديل بيانات المريض</h5>
+                    <button
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setFormErrors({});
+                      }}
+                      className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
                     >
-                      <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-                        اسم المريض
-                      </label>
-                      <input
-                        type="text"
-                        className={`w-full p-3 border ${
-                          formErrors.fullName ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        required
-                      />
-                      {formErrors.fullName && <p className="text-red-600 text-sm mt-1">{formErrors.fullName}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 }}
-                    >
-                      <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
-                        العمر
-                      </label>
-                      <input
-                        type="number"
-                        className={`w-full p-3 border ${
-                          formErrors.age ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="age"
-                        name="age"
-                        value={formData.age}
-                        onChange={handleChange}
-                        required
-                      />
-                      {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
-                        رقم الهاتف
-                      </label>
-                      <input
-                        type="tel"
-                        className={`w-full p-3 border ${
-                          formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        required
-                      />
-                      {formErrors.phoneNumber && <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.25 }}
-                    >
-                      <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
-                        العنوان
-                      </label>
-                      <input
-                        type="text"
-                        className={`w-full p-3 border ${
-                          formErrors.address ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        required
-                      />
-                      {formErrors.address && <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-700 mb-2">
-                        تاريخ الحجز
-                      </label>
-                      <input
-                        type="date"
-                        className={`w-full p-3 border ${
-                          formErrors.bookingDate ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="bookingDate"
-                        name="bookingDate"
-                        value={formData.bookingDate}
-                        onChange={handleChange}
-                        required
-                      />
-                      {formErrors.bookingDate && <p className="text-red-600 text-sm mt-1">{formErrors.bookingDate}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.35 }}
-                    >
-                      <label htmlFor="visitType" className="block text-sm font-semibold text-gray-700 mb-2">
-                        نوع الزيارة
-                      </label>
-                      <select
-                        className={`w-full p-3 border ${
-                          formErrors.visitType ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="visitType"
-                        name="visitType"
-                        value={formData.visitType}
-                        onChange={handleChange}
-                        required
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                       >
-                        <option value="">اختر نوع الزيارة</option>
-                        <option value="فحص">فحص</option>
-                        <option value="متابعة">متابعة</option>
-                        <option value="استشارة">استشارة</option>
-                      </select>
-                      {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                        الملاحظات
-                      </label>
-                      <textarea
-                        className={`w-full p-3 border ${
-                          formErrors.notes ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                        id="notes"
-                        name="notes"
-                        rows="4"
-                        value={formData.notes}
-                        onChange={handleChange}
-                        placeholder="أضف ملاحظات (اختياري)..."
-                      ></textarea>
-                      {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.45 }}
-                      className="flex justify-end gap-3 pt-4"
-                    >
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                        type="button"
-                        onClick={() => {
-                          setShowEditModal(false);
-                          setFormErrors({});
-                        }}
-                        className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-sm"
-                      >
-                        إلغاء
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                        type="submit"
-                        className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-300 shadow-md"
-                      >
-                        حفظ التعديلات
-                      </motion.button>
-                    </motion.div>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
-                </form>
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      updatePatient();
+                    }}
+                  >
+                    <div className="grid grid-cols-1 gap-4">
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
+                          اسم المريض
+                        </label>
+                        <input
+                          type="text"
+                          className={`w-full p-3 border ${
+                            formErrors.fullName ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="fullName"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.fullName && <p className="text-red-600 text-sm mt-1">{formErrors.fullName}</p>}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.15 }}
+                      >
+                        <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
+                          العمر
+                        </label>
+                        <input
+                          type="number"
+                          className={`w-full p-3 border ${
+                            formErrors.age ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="age"
+                          name="age"
+                          value={formData.age}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+                          رقم الهاتف
+                        </label>
+                        <input
+                          type="tel"
+                          className={`w-full p-3 border ${
+                            formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.phoneNumber && (
+                          <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>
+                        )}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.25 }}
+                      >
+                        <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                          العنوان
+                        </label>
+                        <input
+                          type="text"
+                          className={`w-full p-3 border ${
+                            formErrors.address ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="address"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.address && <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-700 mb-2">
+                          تاريخ الحجز
+                        </label>
+                        <input
+                          type="date"
+                          className={`w-full p-3 border ${
+                            formErrors.bookingDate ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="bookingDate"
+                          name="bookingDate"
+                          value={formData.bookingDate}
+                          onChange={handleChange}
+                          required
+                        />
+                        {formErrors.bookingDate && (
+                          <p className="text-red-600 text-sm mt-1">{formErrors.bookingDate}</p>
+                        )}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.35 }}
+                      >
+                        <label htmlFor="visitType" className="block text-sm font-semibold text-gray-700 mb-2">
+                          نوع الزيارة
+                        </label>
+                        <select
+                          className={`w-full p-3 border ${
+                            formErrors.visitType ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="visitType"
+                          name="visitType"
+                          value={formData.visitType}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="">اختر نوع الزيارة</option>
+                          <option value="فحص">فحص</option>
+                          <option value="متابعة">متابعة</option>
+                          <option value="استشارة">استشارة</option>
+                        </select>
+                        {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
+                          الملاحظات
+                        </label>
+                        <textarea
+                          className={`w-full p-3 border ${
+                            formErrors.notes ? 'border-red-300' : 'border-gray-300'
+                          } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                          id="notes"
+                          name="notes"
+                          rows="4"
+                          value={formData.notes}
+                          onChange={handleChange}
+                          placeholder="أضف ملاحظات (اختياري)..."
+                        ></textarea>
+                        {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.45 }}
+                        className="flex justify-end gap-3 pt-4"
+                      >
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.98 }}
+                          type="button"
+                          onClick={() => {
+                            setShowEditModal(false);
+                            setFormErrors({});
+                          }}
+                          className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-sm"
+                        >
+                          إلغاء
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.98 }}
+                          type="submit"
+                          className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-300 shadow-md"
+                        >
+                          حفظ التعديلات
+                        </motion.button>
+                      </motion.div>
+                    </div>
+                  </form>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </main>
     </div>
   );

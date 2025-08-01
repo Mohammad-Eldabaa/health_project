@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async'; // Using react-helmet-async for better async support
+import { Helmet } from 'react-helmet'; // Using react-helmet for better async support
 import PropTypes from 'prop-types';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';

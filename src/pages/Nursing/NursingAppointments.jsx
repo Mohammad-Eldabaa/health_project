@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -10,7 +10,8 @@ import NursingSidebar from './NursingSidebar';
 import axios from 'axios';
 import * as Yup from 'yup';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Payment, Delete, Add, Close, Visibility } from '@mui/icons-material';
+import { Payment, Delete, Add, Close, Visibility, Search } from '@mui/icons-material';
+import Chart from 'chart.js/auto';
 
 // Simple Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -526,6 +527,10 @@ const NursingAppointments = () => {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAppointments, setFilteredAppointments] = useState(appointments);
+  const lineChartRef = useRef(null);
+  const visitTypeChartRef = useRef(null);
+  const doctorChartRef = useRef(null);
+  const paymentChartRef = useRef(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -551,6 +556,273 @@ const NursingAppointments = () => {
     };
   }, [fetchAppointments]);
 
+  // Calculate dynamic chart data
+  const getChartData = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    // Daily visits (last 7 days) with status breakdown
+    const dailyCounts = {};
+    const completedCounts = {};
+    const pendingCounts = {};
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toLocaleDateString('ar-EG');
+      dailyCounts[dateStr] = 0;
+      completedCounts[dateStr] = 0;
+      pendingCounts[dateStr] = 0;
+    }
+    appointments.forEach(appt => {
+      if (appt.date) {
+        const dateStr = new Date(appt.date).toLocaleDateString('ar-EG');
+        if (dailyCounts[dateStr] !== undefined) {
+          dailyCounts[dateStr]++;
+          if (appt.status === 'تم') {
+            completedCounts[dateStr]++;
+          } else if (appt.status === 'في الإنتظار') {
+            pendingCounts[dateStr]++;
+          }
+        }
+      }
+    });
+
+    // Visit type counts with payment status
+    const visitTypeCounts = {
+      فحص: { paid: 0, unpaid: 0 },
+      متابعة: { paid: 0, unpaid: 0 },
+      استشارة: { paid: 0, unpaid: 0 },
+    };
+    appointments.forEach(appt => {
+      if (appt.visitType && visitTypeCounts[appt.visitType] !== undefined) {
+        if (appt.payment) {
+          visitTypeCounts[appt.visitType].paid++;
+        } else {
+          visitTypeCounts[appt.visitType].unpaid++;
+        }
+      }
+    });
+
+    // Doctor appointment counts
+    const doctorCounts = {};
+    doctors.forEach(doctor => {
+      doctorCounts[doctor.name] = 0;
+    });
+    appointments.forEach(appt => {
+      if (appt.doctorName) {
+        doctorCounts[appt.doctorName] = (doctorCounts[appt.doctorName] || 0) + 1;
+      }
+    });
+
+    // Payment status counts
+    const paymentCounts = {
+      paid: 0,
+      unpaid: 0,
+    };
+    appointments.forEach(appt => {
+      if (appt.payment) {
+        paymentCounts.paid++;
+      } else {
+        paymentCounts.unpaid++;
+      }
+    });
+
+    // Summary counts
+    const todayCount = appointments.filter(
+      appt => appt.date && new Date(appt.date).toDateString() === today.toDateString()
+    ).length;
+    const weekCount = appointments.filter(
+      appt => appt.date && new Date(appt.date) >= startOfWeek && new Date(appt.date) <= endOfWeek
+    ).length;
+    const monthCount = appointments.filter(
+      appt => appt.date && new Date(appt.date) >= startOfMonth && new Date(appt.date) <= endOfMonth
+    ).length;
+
+    return {
+      dailyCounts,
+      completedCounts,
+      pendingCounts,
+      visitTypeCounts,
+      doctorCounts,
+      paymentCounts,
+      todayCount,
+      weekCount,
+      monthCount,
+    };
+  };
+
+  const {
+    dailyCounts,
+    completedCounts,
+    pendingCounts,
+    visitTypeCounts,
+    doctorCounts,
+    paymentCounts,
+    todayCount,
+    weekCount,
+    monthCount,
+  } = getChartData();
+
+  useEffect(() => {
+    const lineChart = new Chart(lineChartRef.current, {
+      type: 'line',
+      data: {
+        labels: Object.keys(dailyCounts),
+        datasets: [
+          {
+            label: 'جميع المواعيد',
+            data: Object.values(dailyCounts),
+            borderColor: '#0097A7',
+            backgroundColor: 'rgba(0, 151, 167, 0.2)',
+            fill: true,
+            tension: 0.4,
+          },
+          {
+            label: 'المواعيد المكتملة',
+            data: Object.values(completedCounts),
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            fill: true,
+            tension: 0.4,
+          },
+          {
+            label: 'المواعيد في الانتظار',
+            data: Object.values(pendingCounts),
+            borderColor: '#FFC107',
+            backgroundColor: 'rgba(255, 193, 7, 0.2)',
+            fill: true,
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#333' },
+          },
+          title: { display: false },
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'التاريخ', color: '#333' },
+            ticks: { color: '#333' },
+          },
+          y: {
+            title: { display: true, text: 'عدد المواعيد', color: '#333' },
+            ticks: { color: '#333' },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    const visitTypeChart = new Chart(visitTypeChartRef.current, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(visitTypeCounts).flatMap(type => [`${type} (مدفوع)`, `${type} (غير مدفوع)`]),
+        datasets: [
+          {
+            label: 'عدد المواعيد',
+            data: Object.values(visitTypeCounts).flatMap(counts => [counts.paid, counts.unpaid]),
+            backgroundColor: [
+              '#00BCD4', // فحص مدفوع
+              '#B2EBF2', // فحص غير مدفوع
+              '#4DD0E1', // متابعة مدفوع
+              '#B2DFDB', // متابعة غير مدفوع
+              '#26A69A', // استشارة مدفوع
+              '#80CBC4', // استشارة غير مدفوع
+            ],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#333' },
+          },
+          title: { display: false },
+        },
+      },
+    });
+
+    const doctorChart = new Chart(doctorChartRef.current, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(doctorCounts),
+        datasets: [
+          {
+            label: 'عدد المواعيد لكل طبيب',
+            data: Object.values(doctorCounts),
+            backgroundColor: 'rgba(0, 151, 167, 0.6)',
+            borderColor: '#0097A7',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#333' },
+          },
+          title: { display: false },
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'الطبيب', color: '#333' },
+            ticks: { color: '#333' },
+          },
+          y: {
+            title: { display: true, text: 'عدد المواعيد', color: '#333' },
+            ticks: { color: '#333' },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    const paymentChart = new Chart(paymentChartRef.current, {
+      type: 'doughnut',
+      data: {
+        labels: ['مدفوع', 'غير مدفوع'],
+        datasets: [
+          {
+            label: 'حالة الدفع',
+            data: [paymentCounts.paid, paymentCounts.unpaid],
+            backgroundColor: ['#4CAF50', '#F44336'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#333' },
+          },
+          title: { display: false },
+        },
+      },
+    });
+
+    return () => {
+      lineChart.destroy();
+      visitTypeChart.destroy();
+      doctorChart.destroy();
+      paymentChart.destroy();
+    };
+  }, [appointments, doctors]);
+
   useEffect(() => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -564,12 +836,13 @@ const NursingAppointments = () => {
 
     let filtered = appointments;
 
-    // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(appt => appt.patientName?.toLowerCase().includes(searchQuery.toLowerCase()));
+      filtered = filtered.filter(
+        appt =>
+          appt.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) || appt.phoneNumber?.includes(searchQuery)
+      );
     }
 
-    // Apply date filter
     switch (filter) {
       case 'today':
         filtered = filtered.filter(appt => appt.date && new Date(appt.date).toDateString() === today.toDateString());
@@ -668,6 +941,7 @@ const NursingAppointments = () => {
         amount: formData.amount ? parseFloat(formData.amount) : null,
         patient_id: patientId,
         doctor_id: formData.doctor_id || null,
+        visitType: formData.visitType,
       };
 
       await addAppointment(appointmentData);
@@ -751,6 +1025,57 @@ const NursingAppointments = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="bg-white shadow-xl rounded-2xl p-4 md:p-6 border border-gray-100 mb-6"
+            >
+              <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <i className="bi bi-graph-up"></i> إحصائيات المواعيد
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 text-center gap-6 mb-6">
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات اليوم</h6>
+                  <p className="text-blue-600 text-xl font-semibold">{todayCount}</p>
+                </div>
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات الأسبوعية</h6>
+                  <p className="text-cyan-600 text-xl font-semibold">{weekCount}</p>
+                </div>
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات الشهرية</h6>
+                  <p className="text-green-600 text-xl font-semibold">{monthCount}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-graph-up"></i> المواعيد اليومية
+                  </h5>
+                  <canvas ref={lineChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-pie-chart"></i> أنواع المواعيد حسب حالة الدفع
+                  </h5>
+                  <canvas ref={visitTypeChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-bar-chart"></i> المواعيد حسب الطبيب
+                  </h5>
+                  <canvas ref={doctorChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-pie-chart"></i> حالة الدفع
+                  </h5>
+                  <canvas ref={paymentChartRef}></canvas>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
               className="bg-white shadow-xl rounded-2xl p-4 md:p-6 border border-gray-100"
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -796,15 +1121,23 @@ const NursingAppointments = () => {
                 </motion.button>
               </div>
 
-              <div className="mb-6">
-                <input
-                  type="text"
-                  placeholder="ابحث عن مواعيد المرضى بالاسم..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-6"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="ابحث بالاسم أو رقم الهاتف..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </motion.div>
 
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
@@ -871,7 +1204,9 @@ const NursingAppointments = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <h4 className="text-lg font-semibold mb-1">لا توجد مواعيد مجدولة بعد</h4>
+                  <h4 className="text-lg font-semibold mb-1">
+                    {searchQuery ? 'لا توجد نتائج مطابقة للبحث.' : 'لا توجد مواعيد مجدولة بعد'}
+                  </h4>
                   <p className="text-sm text-blue-700">اضغط على زر "إضافة موعد" لبدء جدولة المواعيد</p>
                 </motion.div>
               ) : (
