@@ -49,7 +49,7 @@ export default function WhyChooseUs() {
   ];
 
   return (
-    <section className="py-20 bg-white relative w-screen overflow-hidden">
+    <section className="py-20 bg-white relative">
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#B2EBF2] opacity-30 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
 

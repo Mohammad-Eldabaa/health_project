@@ -3,7 +3,7 @@ import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaWhatsapp } from 'react-icons/fa'
 
 export default function ContactUs() {
   return (
-    <section id="HContact" className="py-20 bg-[#E0F7FA] w-screen relative overflow-x-hidden">
+    <section id="HContact" className="py-20 bg-[#E0F7FA] ">
       <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#00BCD4] opacity-10 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#009688] opacity-10 blur-3xl"></div>
 

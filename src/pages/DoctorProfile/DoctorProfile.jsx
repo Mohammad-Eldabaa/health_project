@@ -23,22 +23,22 @@ const DoctorProfile = ({ isDoctorView = false }) => {
 
   const initialData = {
     experiences: [
-      {
-        id: 1,
-        position: 'استشاري القلب والأوعية الدموية',
-        hospital: 'مستشفى القاهرة الجديدة',
-        period: '2020 - حتى الآن',
-        description: 'تشخيص وعلاج حالات القلب المعقدة وإجراء القسطرة القلبية',
-      },
+      // {
+      //   id: 1,
+      //   position: 'ستشاري القلب والأوعية الدموية',
+      //   hospital: 'مستشفى القاهرة الجديدة',
+      //   period: '2020 - حتى الآن',
+      //   description: 'تشخيص وعلاج حالات القلب المعقدة وإجراء القسطرة القلبية',
+      // },
     ],
     certificates: [
-      {
-        id: 1,
-        name: 'دكتوراه في أمراض القلب',
-        institution: 'جامعة القاهرة',
-        year: '2014',
-        image: null,
-      },
+      // {
+      //   id: 1,
+      //   name: 'دكتوراه في أمراض القلب',
+      //   institution: 'جامعة القاهرة',
+      //   year: '2014',
+      //   image: null,
+      // },
     ],
   };
 

@@ -3,7 +3,7 @@ import CountUp from 'react-countup';
 
 export default function AboutClinic() {
   return (
-    <section id="HAbout" className="py-20 w-screen overflow-x-hidden bg-white">
+    <section id="HAbout" className="py-20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0 }}
