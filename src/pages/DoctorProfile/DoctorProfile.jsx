@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { FaEdit, FaSave } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import DoctorProfileHeader from './DoctorProfileHeader';
@@ -67,8 +68,6 @@ const DoctorProfile = ({ isDoctorView = false }) => {
     },
   };
 
-  // ... (الكود السابق يبقى كما هو)
-
   const cardVariants = {
     hidden: {
       opacity: 0,
@@ -84,10 +83,7 @@ const DoctorProfile = ({ isDoctorView = false }) => {
         duration: 0.5,
       },
     },
-    // تم إزالة hover من هنا
   };
-
-  // ... (الكود التالي يبقى كما هو)
 
   const itemVariants = {
     hidden: { opacity: 0, x: 30 },
@@ -112,6 +108,28 @@ const DoctorProfile = ({ isDoctorView = false }) => {
       initial="hidden"
       animate="visible"
     >
+      <Helmet>
+        <title>ملف الطبيب - نظام المواعيد الطبية</title>
+        <meta
+          name="description"
+          content="عرض وإدارة ملف الطبيب الشخصي، بما في ذلك الخبرات العملية والشهادات الطبية، في نظام المواعيد الطبية."
+        />
+        <meta name="keywords" content="ملف الطبيب, خبرات عملية, شهادات طبية, نظام عيادة, برمجيات طبية" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="نظام إدارة العيادات" />
+        <meta property="og:title" content="ملف الطبيب - نظام المواعيد الطبية" />
+        <meta
+          property="og:description"
+          content="نظام متقدم لإدارة ملف الطبيب الشخصي، يتيح عرض وتعديل الخبرات والشهادات بسهولة."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:locale" content="ar_EG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="ملف الطبيب - نظام المواعيد الطبية" />
+        <meta name="twitter:description" content="إدارة ملف الطبيب بسهولة وفعالية مع نظام المواعيد الطبية." />
+      </Helmet>
+
       {isDoctorView ? (
         <DoctorProfileHeader editMode={editMode} setEditMode={setEditMode} variants={itemVariants} />
       ) : (
@@ -129,7 +147,6 @@ const DoctorProfile = ({ isDoctorView = false }) => {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-        // تم إزالة whileHover من هنا
         >
           <DoctorProfileInfo editMode={isDoctorView && editMode} variants={itemVariants} />
           <DoctorExperience

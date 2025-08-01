@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { FaBriefcase, FaPlus, FaChevronDown, FaChevronUp, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExperiencesStore } from '../../store/experiences';
@@ -58,6 +59,28 @@ const DoctorExperience = ({ editMode, variants, cardVariants, experiences, setEx
 
   return (
     <div className="border-t border-gray-200 p-6">
+      <Helmet>
+        <title>خبرات الطبيب - نظام المواعيد الطبية</title>
+        <meta name="description" content="عرض وإدارة الخبرات العملية للأطباء بسهولة وفعالية في نظام المواعيد الطبية." />
+        <meta name="keywords" content="خبرات عملية, ملف الطبيب, نظام عيادة, إدارة خبرات, برمجيات طبية" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="نظام إدارة العيادات" />
+        <meta property="og:title" content="خبرات الطبيب - نظام المواعيد الطبية" />
+        <meta
+          property="og:description"
+          content="نظام متقدم لإدارة الخبرات العملية للأطباء، يتيح إضافة وتعديل وحذف الخبرات بسهولة."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:locale" content="ar_EG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="خبرات الطبيب - نظام المواعيد الطبية" />
+        <meta
+          name="twitter:description"
+          content="إدارة وعرض الخبرات العملية للأطباء بطريقة منظمة وموثوقة في نظام المواعيد الطبية."
+        />
+      </Helmet>
+
       <div className="flex justify-between items-center mb-6 pb-2 border-b border-gray-200">
         <h3 className="text-xl font-semibold text-[#0097A7] flex items-center gap-2">
           <FaBriefcase /> الخبرات العملية

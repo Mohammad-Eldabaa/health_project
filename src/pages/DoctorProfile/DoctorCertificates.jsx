@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { FaGraduationCap, FaPlus, FaCamera, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import OptimizedImage from './OptimizedImage';
@@ -75,6 +76,28 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
 
   return (
     <div className="border-t border-gray-200 p-6">
+      <Helmet>
+        <title>شهادات الطبيب - نظام المواعيد الطبية</title>
+        <meta name="description" content="عرض وإدارة شهادات ومؤهلات الأطباء بسهولة وفعالية في نظام المواعيد الطبية." />
+        <meta name="keywords" content="شهادات طبية, مؤهلات الأطباء, نظام عيادة, إدارة شهادات, برمجيات طبية" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="نظام إدارة العيادات" />
+        <meta property="og:title" content="شهادات الطبيب - نظام المواعيد الطبية" />
+        <meta
+          property="og:description"
+          content="تصفح وأدر شهادات ومؤهلات الأطباء بسهولة في نظام متقدم لإدارة العيادات."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:locale" content="ar_EG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="شهادات الطبيب - نظام المواعيد الطبية" />
+        <meta
+          name="twitter:description"
+          content="إدارة وعرض شهادات الأطباء بطريقة منظمة وموثوقة في نظام المواعيد الطبية."
+        />
+      </Helmet>
+
       <div className="flex justify-between items-center mb-6 pb-2 border-b border-gray-200">
         <h3 className="text-xl font-semibold text-[#0097A7] flex items-center gap-2">
           <FaGraduationCap /> الشهادات والمؤهلات
@@ -119,6 +142,7 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#0097A7] focus:border-[#0097A7]"
                 placeholder="مثال: جامعة القاهرة"
               />
+              “‘’‘jsx
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 mb-1">سنة الحصول:</label>

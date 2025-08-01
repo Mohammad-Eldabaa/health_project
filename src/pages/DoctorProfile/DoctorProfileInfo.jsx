@@ -10,6 +10,7 @@ import {
   FaTimes,
   FaCamera,
 } from 'react-icons/fa';
+import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { useProfileStore } from '../../store/profile';
 import OptimizedImage from './OptimizedImage';
@@ -75,6 +76,54 @@ const DoctorProfileInfo = ({ editMode, variants = defaultVariants }) => {
 
   return (
     <>
+      <Helmet>
+        <title>
+          {profile.name ? `${profile.name} - ملف الطبيب الشخصي` : 'ملف الطبيب الشخصي - نظام المواعيد الطبية'}
+        </title>
+        <meta
+          name="description"
+          content={
+            profile.bio
+              ? `${profile.bio.substring(0, 160)}`
+              : 'إدارة المعلومات الشخصية للطبيب بما في ذلك التخصص، التواصل، وساعات العمل في نظام المواعيد الطبية.'
+          }
+        />
+        <meta
+          name="keywords"
+          content={`ملف الطبيب, ${profile.name || 'معلومات الطبيب'}, تخصص طبي, نظام عيادة, برمجيات طبية`}
+        />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="نظام إدارة العيادات" />
+        <meta
+          property="og:title"
+          content={profile.name ? `${profile.name} - ملف الطبيب الشخصي` : 'ملف الطبيب الشخصي - نظام المواعيد الطبية'}
+        />
+        <meta
+          property="og:description"
+          content={
+            profile.bio
+              ? `${profile.bio.substring(0, 160)}`
+              : 'إدارة فعالة للمعلومات الشخصية للطبيب مع خيارات التعديل في نظام متقدم لإدارة العيادات.'
+          }
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:locale" content="ar_EG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content={profile.name ? `${profile.name} - ملف الطبيب الشخصي` : 'ملف الطبيب الشخصي - نظام المواعيد الطبية'}
+        />
+        <meta
+          name="twitter:description"
+          content={
+            profile.bio
+              ? `${profile.bio.substring(0, 160)}`
+              : 'إدارة معلومات الطبيب بسهولة وفعالية مع نظام المواعيد الطبية.'
+          }
+        />
+      </Helmet>
+
       {/* Profile Image */}
       <div className="relative flex flex-col items-center p-6">
         <motion.div
@@ -94,17 +143,18 @@ const DoctorProfileInfo = ({ editMode, variants = defaultVariants }) => {
 
         {editMode && (
           <motion.label
-            class="absolute bottom-4 right-95 md:right-100 bg-[#006064] text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-[#00838F] transition-all" whileHover={{ scale: 1.1 }}
+            className="absolute bottom-4 right-95 md:right-100 bg-[#006064] text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-[#00838F] transition-all"
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <FaCamera />
             <input type="file" ref={imageInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
           </motion.label>
         )}
-      </div >
+      </div>
 
       {/* Name */}
-      < div className="text-center pb-6 border-b border-gray-200 px-6" >
+      <div className="text-center pb-6 border-b border-gray-200 px-6">
         {editingField === 'name' ? (
           <motion.div className="mb-4" variants={variants}>
             <input
@@ -134,57 +184,18 @@ const DoctorProfileInfo = ({ editMode, variants = defaultVariants }) => {
               </motion.button>
             )}
           </motion.div>
-        )
-        }
+        )}
 
         {/* Specialty */}
-        {
-          editingField === 'specialty' ? (
-            <motion.div className="mb-4" variants={variants}>
-              <input
-                type="text"
-                value={tempValue}
-                onChange={e => setTempValue(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0097A7] focus:border-[#0097A7]"
-              />
-              <div className="flex justify-center gap-2 mt-2">
-                <motion.button onClick={saveEdit} className="px-3 py-1 bg-green-100 text-green-600 rounded-lg">
-                  <FaSave />
-                </motion.button>
-                <motion.button onClick={cancelEdit} className="px-3 py-1 bg-red-100 text-red-600 rounded-lg">
-                  <FaTimes />
-                </motion.button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div className="flex justify-center items-center gap-3 mb-6" variants={variants}>
-              <p className="text-xl text-[#0097A7] font-medium relative pb-2">
-                {profile.specialty}
-                <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-[#4DD0E1] rounded-full"></span>
-              </p>
-              {editMode && (
-                <motion.button
-                  className="text-[#0097A7] hover:text-[#006064]"
-                  onClick={() => startEditing('specialty', profile.specialty)}
-                >
-                  <FaEdit />
-                </motion.button>
-              )}
-            </motion.div>
-          )
-        }
-      </div>
-
-      {/* Bio */}
-      {
-        editingField === 'bio' ? (
-          <motion.div className="p-6" variants={variants}>
-            <textarea
+        {editingField === 'specialty' ? (
+          <motion.div className="mb-4" variants={variants}>
+            <input
+              type="text"
               value={tempValue}
               onChange={e => setTempValue(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0097A7] focus:border-[#0097A7] min-h-[120px]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0097A7] focus:border-[#0097A7]"
             />
-            <div className="flex justify-between gap-2 mt-2">
+            <div className="flex justify-center gap-2 mt-2">
               <motion.button onClick={saveEdit} className="px-3 py-1 bg-green-100 text-green-600 rounded-lg">
                 <FaSave />
               </motion.button>
@@ -194,19 +205,53 @@ const DoctorProfileInfo = ({ editMode, variants = defaultVariants }) => {
             </div>
           </motion.div>
         ) : (
-          <motion.div className="flex flex-col items-center p-6" variants={variants}>
-            <p className="text-gray-600 text-lg leading-relaxed text-center">{profile.bio}</p>
+          <motion.div className="flex justify-center items-center gap-3 mb-6" variants={variants}>
+            <p className="text-xl text-[#0097A7] font-medium relative pb-2">
+              {profile.specialty}
+              <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-[#4DD0E1] rounded-full"></span>
+            </p>
             {editMode && (
               <motion.button
-                className="mt-4 text-[#0097A7] hover:text-[#006064]"
-                onClick={() => startEditing('bio', profile.bio)}
+                className="text-[#0097A7] hover:text-[#006064]"
+                onClick={() => startEditing('specialty', profile.specialty)}
               >
                 <FaEdit />
               </motion.button>
             )}
           </motion.div>
-        )
-      }
+        )}
+      </div>
+
+      {/* Bio */}
+      {editingField === 'bio' ? (
+        <motion.div className="p-6" variants={variants}>
+          <textarea
+            value={tempValue}
+            onChange={e => setTempValue(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0097A7] focus:border-[#0097A7] min-h-[120px]"
+          />
+          <div className="flex justify-between gap-2 mt-2">
+            <motion.button onClick={saveEdit} className="px-3 py-1 bg-green-100 text-green-600 rounded-lg">
+              <FaSave />
+            </motion.button>
+            <motion.button onClick={cancelEdit} className="px-3 py-1 bg-red-100 text-red-600 rounded-lg">
+              <FaTimes />
+            </motion.button>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div className="flex flex-col items-center p-6" variants={variants}>
+          <p className="text-gray-600 text-lg leading-relaxed text-center">{profile.bio}</p>
+          {editMode && (
+            <motion.button
+              className="mt-4 text-[#0097A7] hover:text-[#006064]"
+              onClick={() => startEditing('bio', profile.bio)}
+            >
+              <FaEdit />
+            </motion.button>
+          )}
+        </motion.div>
+      )}
 
       {/* Contact Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">

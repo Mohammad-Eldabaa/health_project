@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import Card from './components/Card';
 import useFirstAidStore from '../../store/firstaid';
 import Navbar from '../../components/Navbar/Navbar';
@@ -28,6 +29,31 @@ export default function FirstAid() {
 
   return (
     <>
+      <Helmet>
+        <title>الإسعافات الأولية - نظام المواعيد الطبية</title>
+        <meta
+          name="description"
+          content="تعرف على الإسعافات الأولية الأساسية لمعالجة الإصابات الشائعة بسرعة وفعالية من خلال دليلنا الشامل."
+        />
+        <meta
+          name="keywords"
+          content={`إسعافات أولية, نصائح طبية, معالجة الإصابات, نظام عيادة${searchTerm ? ', ' + searchTerm : ''}`}
+        />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="نظام إدارة العيادات" />
+        <meta property="og:title" content="الإسعافات الأولية - نظام المواعيد الطبية" />
+        <meta
+          property="og:description"
+          content="اكتشف كيفية التعامل مع الإصابات الشائعة باستخدام إرشادات الإسعافات الأولية الموثوقة."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:locale" content="ar_EG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="الإسعافات الأولية - نظام المواعيد الطبية" />
+        <meta name="twitter:description" content="دليل شامل للإسعافات الأولية لمعالجة الإصابات بسرعة وأمان." />
+      </Helmet>
+
       <Navbar />
 
       {/* Fixed Search Bar */}

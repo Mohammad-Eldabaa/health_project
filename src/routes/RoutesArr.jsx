@@ -21,6 +21,7 @@ import {
   PatientProfile,
   NursingAppointments,
   NursingPatientsList,
+  Profile,
 } from './lazy';
 
 export const RoutesArray = [
