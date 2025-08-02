@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import Style from "./Navbar.module.css";
-import logo from "../../assets/img/logo.png";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import Style from './Navbar.module.css';
+import logo from '../../assets/img/logo.png';
+import { NavLink } from 'react-router-dom';
+import useAuthStore from '../../store/auth';
 
 export default function Navbar() {
+  const { CUname, logout } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -14,14 +16,14 @@ export default function Navbar() {
     setServicesDropdown(false);
   };
 
-  const toggleServicesDropdown = (e) => {
+  const toggleServicesDropdown = e => {
     e.stopPropagation();
     setServicesDropdown(!servicesDropdown);
   };
 
   // إغلاق القوائم عند النقر خارجها
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setServicesDropdown(false);
       }
@@ -30,9 +32,9 @@ export default function Navbar() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -40,20 +42,20 @@ export default function Navbar() {
     <>
       <nav
         className="shadow px-7 z-50 fixed  top-0 left-0 w-screen"
-        style={{ backgroundColor: "var(--color-primary-dark)" }}
+        style={{ backgroundColor: 'var(--color-primary-dark)' }}
       >
         <div className="flex container flex-col lg:flex-row items-center justify-between mx-auto py-2 relative">
           {/* Logo and Mobile Menu Button */}
           <div className="flex items-center justify-between gap-6 w-full lg:w-auto">
             <h3
               style={{
-                fontFamily: "var(--logo-font)",
+                fontFamily: 'var(--logo-font)',
                 marginTop: 5,
                 marginBottom: 0,
-                color: "var(--color-text-white)",
+                color: 'var(--color-text-white)',
                 letterSpacing: 2,
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 fontSize: 24,
                 paddingLeft: 30,
               }}
@@ -65,9 +67,9 @@ export default function Navbar() {
                 height={35}
                 alt="Logo"
                 style={{
-                  margin: "0 1px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
+                  margin: '0 1px',
+                  verticalAlign: 'middle',
+                  display: 'inline-block',
                 }}
                 className="mx-2"
               />
@@ -75,16 +77,14 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? "rotate-180 scale-110" : "rotate-0 scale-100"
-                } hover:scale-105`}
-              onClick={() => setMenuOpen((prev) => !prev)}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
+                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
+              } hover:scale-105`}
+              onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
             >
-              <i
-                className={`fa-solid ${menuOpen ? "fa-xmark" : "fa-bars"
-                  } transition-all duration-400`}
-              ></i>
+              <i className={`fa-solid ${menuOpen ? 'fa-xmark' : 'fa-bars'} transition-all duration-400`}></i>
             </button>
           </div>
 
@@ -99,9 +99,9 @@ export default function Navbar() {
                       after:content-[''] after:absolute after:left-0 after:bottom-0 
                       after:h-[2px] after:bg-white 
                       after:transition-all after:duration-400 
-                      ${isActive ? "after:w-full" : "after:w-0"}`
+                      ${isActive ? 'after:w-full' : 'after:w-0'}`
                     }
-                    to={"/"}
+                    to={'/'}
                     onClick={handleNavClick}
                   >
                     الرئيسية
@@ -115,7 +115,7 @@ export default function Navbar() {
                       after:content-[''] after:absolute after:left-0 after:bottom-0 
                       after:h-[2px] after:bg-white 
                       after:transition-all after:duration-400 
-                      ${isActive ? "after:w-full" : "after:w-0"}`
+                      ${isActive ? 'after:w-full' : 'after:w-0'}`
                     }
                     onClick={handleNavClick}
                   >
@@ -133,9 +133,9 @@ export default function Navbar() {
                         after:content-[''] after:absolute after:left-0 after:bottom-0 
                         after:h-[2px] after:bg-white 
                         after:transition-all after:duration-400 
-                        ${isActive ? "after:w-full" : "after:w-0"}`
+                        ${isActive ? 'after:w-full' : 'after:w-0'}`
                       }
-                      onClick={(e) => {
+                      onClick={e => {
                         // يشتغل عند النقر على النص فقط
                         if (e.target.tagName === 'A') {
                           handleNavClick();
@@ -144,11 +144,12 @@ export default function Navbar() {
                     >
                       الخدمات
                     </NavLink>
-                    <button
-                      onClick={toggleServicesDropdown}
-                      className="text-white text-sm focus:outline-none ml-1"
-                    >
-                      <i className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'} transition-transform duration-300`}></i>
+                    <button onClick={toggleServicesDropdown} className="text-white text-sm focus:outline-none ml-1">
+                      <i
+                        className={`fa-solid fa-chevron-${
+                          servicesDropdown ? 'up' : 'down'
+                        } transition-transform duration-300`}
+                      ></i>
                     </button>
                   </div>
 
@@ -183,9 +184,9 @@ export default function Navbar() {
                       after:content-[''] after:absolute after:left-0 after:bottom-0 
                       after:h-[2px] after:bg-white 
                       after:transition-all after:duration-400 
-                      ${isActive ? "after:w-full" : "after:w-0"}`
+                      ${isActive ? 'after:w-full' : 'after:w-0'}`
                     }
-                    to={"/contact"}
+                    to={'/contact'}
                     onClick={handleNavClick}
                   >
                     اتصل بنا
@@ -196,26 +197,24 @@ export default function Navbar() {
             <div>
               <ul className="flex flex-col lg:flex-row items-center mb-0">
                 <li>
-                  <NavLink
-                    className="mx-3 text-lg text-white"
-                    to={"/login"}
-                    onClick={handleNavClick}
-                  >
-                    <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
-                  </NavLink>
+                  {CUname() ? (
+                    <NavLink className="mx-3 text-lg text-white" to={'/login'} onClick={logout}>
+                      <i className="fa-solid fa-right-to-bracket"></i> تسجيل الخروج
+                    </NavLink>
+                  ) : (
+                    <NavLink className="mx-3 text-lg text-white" to={'/login'} onClick={handleNavClick}>
+                      <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+                    </NavLink>
+                  )}
                 </li>
                 <li
                   style={{
-                    backgroundColor: "var(--color-primary)",
-                    padding: "3px",
-                    borderRadius: "5px",
+                    backgroundColor: 'var(--color-primary)',
+                    padding: '3px',
+                    borderRadius: '5px',
                   }}
                 >
-                  <NavLink
-                    className="mx-3 text-lg text-white"
-                    to={"/bookingpage"}
-                    onClick={handleNavClick}
-                  >
+                  <NavLink className="mx-3 text-lg text-white" to={'/bookingpage'} onClick={handleNavClick}>
                     <i className="fa-solid fa-user-plus"></i> حجز موعد
                   </NavLink>
                 </li>
@@ -230,17 +229,13 @@ export default function Navbar() {
         className={`
           fixed top-0 left-0 h-full w-80 z-50 lg:hidden
           transform transition-transform duration-600 ease-in-out
-          ${menuOpen ? "translate-x-0" : "-translate-x-full"}
+          ${menuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
-        style={{ backgroundColor: "var(--color-primary-dark)" }}
+        style={{ backgroundColor: 'var(--color-primary-dark)' }}
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-end p-4 border-b border-gray-600">
-            <button
-              className="text-white text-2xl"
-              onClick={() => setMenuOpen(false)}
-              aria-label="Close menu"
-            >
+            <button className="text-white text-2xl" onClick={() => setMenuOpen(false)} aria-label="Close menu">
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -250,7 +245,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"/"}
+                  to={'/'}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-home ml-3"></i>
@@ -260,7 +255,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"/about"}
+                  to={'/about'}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-info-circle ml-3"></i>
@@ -281,11 +276,12 @@ export default function Navbar() {
                     الخدمات
                   </span>
 
-                  <button
-                    onClick={() => setServicesDropdown(!servicesDropdown)}
-                    className="text-white px-3"
-                  >
-                    <i className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'} transition-transform duration-300`}></i>
+                  <button onClick={() => setServicesDropdown(!servicesDropdown)} className="text-white px-3">
+                    <i
+                      className={`fa-solid fa-chevron-${
+                        servicesDropdown ? 'up' : 'down'
+                      } transition-transform duration-300`}
+                    ></i>
                   </button>
                 </div>
 
@@ -315,7 +311,7 @@ export default function Navbar() {
               <li>
                 <NavLink
                   className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                  to={"/contact"}
+                  to={'/contact'}
                   onClick={handleNavClick}
                 >
                   <i className="fa-solid fa-phone ml-3"></i>
@@ -327,21 +323,32 @@ export default function Navbar() {
             <div className="mt-auto">
               <ul className="flex flex-col space-y-4">
                 <li>
-                  <NavLink
-                    className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                    to={"/login"}
-                    onClick={handleNavClick}
-                  >
-                    <i className="fa-solid fa-right-to-bracket ml-3"></i>
-                    تسجيل الدخول
-                  </NavLink>
+                  {CUname() ? (
+                    <NavLink
+                      className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
+                      to={'/login'}
+                      onClick={logout}
+                    >
+                      <i className="fa-solid fa-right-to-bracket ml-3"></i>
+                      تسجيل الخروج
+                    </NavLink>
+                  ) : (
+                    <NavLink
+                      className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
+                      to={'/login'}
+                      onClick={handleNavClick}
+                    >
+                      <i className="fa-solid fa-right-to-bracket ml-3"></i>
+                      تسجيل الدخول
+                    </NavLink>
+                  )}
                 </li>
                 <li>
                   <NavLink
                     className="block text-lg hover:bg-cyan-400 text-white py-3 px-2 rounded transition-colors"
-                    to={"/booking"}
+                    to={'/booking'}
                     onClick={handleNavClick}
-                    style={{ borderRadius: "8px" }}
+                    style={{ borderRadius: '8px' }}
                   >
                     <i className="fa-solid fa-user-plus ml-3"></i>
                     حجز موعد

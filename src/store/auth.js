@@ -7,6 +7,21 @@ const useAuthStore = create(
   persist(
     (set, get) => ({
       current_user: null,
+
+      showAlert: (icon, title, text) => {
+        Swal.fire({
+          icon,
+          title,
+          text,
+          confirmButtonColor: '#0097A7',
+          background: '#f8f9fa',
+          customClass: {
+            container: 'custom-swal-container',
+            popup: 'rounded-lg shadow-xl',
+          },
+        });
+      },
+
       login: async ({ email, password }, nav) => {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -24,11 +39,11 @@ const useAuthStore = create(
             nav();
           }
         } catch (error) {
-          get().showAlert('error', 'خطأ في تسجيل الدخول', error.message || 'حدث خطأ أثناء تسجيل الدخول');
+          get().showAlert('error', 'خطأ في تسجيل الدخول', 'يوجد خطأ فى الايميل أو كلمة السر');
         }
       },
 
-      register: async ({ email, password, phone, name, address }) => {
+      register: async ({ email, password, phone, name, address }, { resetForm }) => {
         try {
           const { data, error } = await supabase.auth.signUp({
             email,
@@ -53,6 +68,7 @@ const useAuthStore = create(
             'تم التسجيل بنجاح',
             'تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني للتأكيد.'
           );
+          resetForm();
           return true;
         } catch (error) {
           get().showAlert('error', 'خطأ في التسجيل', error.message || 'حدث خطأ أثناء التسجيل');
@@ -90,7 +106,7 @@ const useAuthStore = create(
           get().showAlert(
             'success',
             'تم إرسال رابط إعادة التعيين',
-            'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.'
+            'إذا كان البريد مسجلاً لدينا، ستتلقى رابط إعادة التعيين على بريدك الإلكتروني.'
           );
           return true;
         } catch (error) {
