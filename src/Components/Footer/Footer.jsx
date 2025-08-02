@@ -66,7 +66,7 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">روابط سريعة</h4>
             <ul className="space-y-2 text-[#B2EBF2]">
-              {['الرئيسية', 'عن العيادة', 'الخدمات', 'الأطباء', ].map((item, index) => (
+              {['الرئيسية', 'عن العيادة', 'الخدمات', ].map((item, index) => (
                 <motion.li 
                   key={index}
                   whileHover={{ x: 5 }}
