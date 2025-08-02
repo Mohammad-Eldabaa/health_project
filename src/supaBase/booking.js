@@ -6,7 +6,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const addPatient = async (patientData, resetForm) => {
-  const { phoneNumber, email } = patientData;
+  const { phoneNumber } = patientData;
 
   const { data: existingPhone } = await supabase
     .from('patients')
@@ -14,27 +14,24 @@ export const addPatient = async (patientData, resetForm) => {
     .eq('phoneNumber', phoneNumber)
     .maybeSingle();
 
-  if (existingPhone) {
-    alert('رقم الهاتف مستخدم بالفعل.');
-    return;
-  }
-
-  if (email) {
-    const { data: existingEmail } = await supabase.from('patients').select('id').eq('email', email).maybeSingle();
-
-    if (existingEmail) {
-      alert('البريد الإلكتروني مستخدم بالفعل.');
-      return;
+  if (!existingPhone) {
+    const { error } = await supabase.from('patients').insert(patientData);
+    if (error) {
+      console.error('Error adding patient:', error);
     }
   }
 
-  // Proceed with insert
-  const { error } = await supabase.from('patients').insert(patientData);
+  const now = new Date();
+
+  const { error } = await supabase
+    .from('appointments')
+    .insert([{ date: patientData.bookingDate, status: 'في الإنتظار', doctor_id: 1, time: now.toLocaleTimeString() }])
+    .select();
 
   if (error) {
     console.error('Error adding patient:', error);
   } else {
-    alert('تم تقديم طلب الحجز بنجاح! سنتواصل معك قريباً لتأكيد الموعد.');
+    alert('every thing done.');
     if (typeof resetForm === 'function') resetForm();
   }
 };

@@ -11,7 +11,7 @@ export const useProfileStore = create(
         set({ changedProfileData: dt });
       },
       updateProfileData: async dt => {
-        const { data, error } = await supabase.from('DoctorProfile').update(dt).eq('id', 1).select();
+        const { data, error } = await supabase.from('doctors').update(dt).eq('id', 1).select();
         if (error) {
           console.error('Update failed:', error.message);
         } else {
@@ -21,7 +21,7 @@ export const useProfileStore = create(
       },
 
       getDoctorProfile: async () => {
-        const { data, error } = await supabase.from('DoctorProfile').select('*').single();
+        const { data, error } = await supabase.from('doctors').select('*').single();
 
         if (error) {
           console.error('Error fetching doctor profile:', error);
@@ -60,10 +60,7 @@ export const useProfileStore = create(
         }
 
         // Update table with file path
-        const { error: updateError } = await supabase
-          .from('DoctorProfile')
-          .update({ image: filePath })
-          .eq('id', userId);
+        const { error: updateError } = await supabase.from('doctors').update({ image: filePath }).eq('id', userId);
 
         if (updateError) {
           console.error(updateError);
