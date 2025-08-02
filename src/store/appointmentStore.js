@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../supaBase/booking';
+import { supabase } from '../supaBase/NursingBooking';
 import Swal from 'sweetalert2';
 
 const useAppointmentStore = create((set, get) => ({

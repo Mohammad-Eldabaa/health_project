@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { supabase } from '../../supaBase/booking';
-import { Schema } from '../bookingPage/schema';
+import { supabase } from '../../supaBase/NursingBooking';
+import { Schema } from './nursingBookingSchema';
 import * as Yup from 'yup';
 import NursingSidebar from './NursingSidebar';
 import { Edit, Delete, Search, Add } from '@mui/icons-material';

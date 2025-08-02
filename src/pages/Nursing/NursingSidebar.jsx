@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserNurse, faUsers, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { useMediaQuery } from 'react-responsive';
-import { supabase } from '../../supaBase/booking';
+import { supabase } from '../../supaBase/NursingBooking';
 
 const NursingSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);

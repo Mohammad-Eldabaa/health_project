@@ -4,8 +4,8 @@ import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import useAppointmentStore from '../../store/appointmentStore';
-import { supabase } from '../../supaBase/booking';
-import { Schema } from '../bookingPage/schema';
+import { supabase } from '../../supaBase/NursingBooking';
+import { Schema } from './nursingBookingSchema';
 import NursingSidebar from './NursingSidebar';
 import axios from 'axios';
 import * as Yup from 'yup';
@@ -1016,7 +1016,7 @@ const NursingAppointments = () => {
       const appointmentData = {
         date,
         time,
-        status: formData.status,
+        status: 'في الإنتظار',
         reason: formData.notes || null,
         amount: formData.amount ? parseFloat(formData.amount) : null,
         patient_id: patientId,
@@ -1560,27 +1560,6 @@ const NursingAppointments = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.5 }}
                         >
-                          <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
-                            الحالة
-                          </label>
-                          <select
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option value="في الإنتظار">في الإنتظار</option>
-                            <option value="ملغى">ملغى</option>
-                            <option value="تم">تم</option>
-                          </select>
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.55 }}
-                        >
                           <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
                             الملاحظات
                           </label>
@@ -1600,7 +1579,7 @@ const NursingAppointments = () => {
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6 }}
+                          transition={{ delay: 0.55 }}
                           className="flex justify-end gap-3 pt-4"
                         >
                           <motion.button
