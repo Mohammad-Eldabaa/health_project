@@ -58,7 +58,7 @@ export default function Patients() {
 
     const filteredPatients = patientsWithLastVisit.filter((p) => {
         const nameMatch = p.fullName?.toLowerCase().includes(lowerSearch);
-        const phoneMatch = p.phoneNumber?.includes(searchTerm);
+        const phoneMatch = p.phoneNumber?.toString().includes(searchTerm);
         return nameMatch || phoneMatch;
     });
 
