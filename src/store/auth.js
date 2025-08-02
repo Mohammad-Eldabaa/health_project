@@ -7,22 +7,6 @@ const useAuthStore = create(
   persist(
     (set, get) => ({
       current_user: null,
-
-      showAlert: (icon, title, text) => {
-        Swal.fire({
-          icon,
-          title,
-          text,
-          confirmButtonColor: '#0097A7',
-          background: '#f8f9fa',
-          customClass: {
-            container: 'custom-swal-container',
-            popup: 'rounded-lg shadow-xl'
-          }
-        });
-      },
-
-      // دالة تسجيل الدخول
       login: async ({ email, password }, nav) => {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -44,7 +28,6 @@ const useAuthStore = create(
         }
       },
 
-      // دالة التسجيل
       register: async ({ email, password, phone, name, address }) => {
         try {
           const { data, error } = await supabase.auth.signUp({
@@ -66,8 +49,8 @@ const useAuthStore = create(
 
           set({ current_user: data.user?.user_metadata || null });
           get().showAlert(
-            'success', 
-            'تم التسجيل بنجاح', 
+            'success',
+            'تم التسجيل بنجاح',
             'تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني للتأكيد.'
           );
           return true;
@@ -77,11 +60,10 @@ const useAuthStore = create(
         }
       },
 
-      // دالة تسجيل الخروج
       logout: async () => {
         try {
           const { error } = await supabase.auth.signOut();
-          
+
           if (error) {
             throw error;
           }
@@ -95,8 +77,7 @@ const useAuthStore = create(
         }
       },
 
-      // دالة استعادة كلمة المرور
-      handleForgotPassword: async (email) => {
+      handleForgotPassword: async email => {
         try {
           const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/resetpassword`,
@@ -118,11 +99,10 @@ const useAuthStore = create(
         }
       },
 
-      // دالة تحديث كلمة المرور
       updatePassword: async (newPassword, next) => {
         try {
-          const { error } = await supabase.auth.updateUser({ 
-            password: newPassword 
+          const { error } = await supabase.auth.updateUser({
+            password: newPassword,
           });
 
           if (error) {
@@ -131,7 +111,7 @@ const useAuthStore = create(
 
           get().showAlert('success', 'تم التحديث بنجاح', 'تم تحديث كلمة المرور بنجاح');
           window.history.replaceState(null, '', window.location.pathname);
-          
+
           if (next && typeof next === 'function') {
             next();
           }
@@ -142,7 +122,6 @@ const useAuthStore = create(
         }
       },
 
-      // دوال مساعدة للحصول على بيانات المستخدم
       CUname: () => get().current_user?.full_name || '',
       CUaddress: () => get().current_user?.address || '',
       CUphone: () => get().current_user?.phone || '',
@@ -150,7 +129,7 @@ const useAuthStore = create(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ current_user: state.current_user }),
+      partialize: state => ({ current_user: state.current_user }),
     }
   )
 );
