@@ -185,6 +185,8 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
           .update({ status: 'completed' })
           .eq('id', selectedPatient.appointment_id);
       }
+const { fetchData } = useDoctorDashboardStore.getState();
+await fetchData();
 
       toast.success('تم حفظ الروشتة بنجاح!');
       onClose();
@@ -195,7 +197,6 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
       setIsSubmitting(false);
     }
   };
-
     const handleMedClick = useCallback((medName) => {
     setCurrentMed(medName);
     setShowDosageModal(true);

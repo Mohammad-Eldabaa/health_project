@@ -20,51 +20,60 @@ export default function Records() {
     const { selectedPatientName } = usePatientStore();
     const { loading, patients, doctors, fetchData } = useDoctorDashboardStore();
 
-    // useEffect(() => {
-    //     if (patients.length === 0 && !loading) {
-    //         fetchData();
-    //     }
 
-    //     const channel = setupRealtimePatients();
-
-    //     return () => {
-    //         channel.unsubscribe();
-    //     };
-    // }, [fetchData, patients.length, loading]);
-
-    // const [initialLoadDone, setInitialLoadDone] = useState(false);
-
-    // useEffect(() => {
-    //     if (!initialLoadDone && patients.length > 0) {
-    //         setInitialLoadDone(true);
-    //     }
-    // }, [patients.length, initialLoadDone]);
-
-
-
-
-
-        useEffect(() => {
+    useEffect(() => {
         fetchData();
         const channel = setupRealtimePatients();
+
+        channel.on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+            if (payload.table === 'prescriptions' || payload.table === 'visits' || payload.table === 'medical_records') {
+                fetchData().then(() => {
+                    // تحديث المريض المحدد إذا كان موجودًا
+                    if (selectedPatient?.id) {
+                        const updatedPatient = patients.find(p => p.id === selectedPatient.id);
+                        if (updatedPatient) {
+                            setSelectedPatient({
+                                ...updatedPatient,
+                                visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
         return () => channel.unsubscribe();
-    }, [fetchData]);
+    }, [fetchData, selectedPatient?.id]);
+
+
+
 
     useEffect(() => {
         if (selectedPatientName && patients.length > 0) {
-            const found = patients.find(p =>
-                p.fullName?.toLowerCase() === selectedPatientName.toLowerCase()
-            );
-
-            if (found) {
-                setSelectedPatient({
-                    ...found,
-                    visits: found.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-                });
-                setSearchTerm(found.fullName);
+            if (typeof selectedPatientName === 'object' && selectedPatientName.id) {
+                const updatedPatient = patients.find(p => p.id === selectedPatientName.id);
+                if (updatedPatient) {
+                    setSelectedPatient({
+                        ...updatedPatient,
+                        visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                    });
+                    setSearchTerm(updatedPatient.fullName);
+                }
+            }
+            else if (typeof selectedPatientName === 'string') {
+                const found = patients.find(p =>
+                    p.fullName?.toLowerCase() === selectedPatientName.toLowerCase()
+                );
+                if (found) {
+                    setSelectedPatient({
+                        ...found,
+                        visits: found.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                    });
+                    setSearchTerm(found.fullName);
+                }
             }
         }
-    }, [selectedPatientName, patients]);
+    }, [patients, selectedPatientName]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -110,9 +119,23 @@ export default function Records() {
             />
             <PrescriptionModel
                 isOpen={isPrescriptionOpen}
-                onClose={() => setIsPrescriptionOpen(false)}
+                onClose={(shouldRefresh = false) => {
+                    setIsPrescriptionOpen(false);
+                    if (shouldRefresh && selectedPatient?.id) {
+                        fetchData().then(() => {
+                            const updatedPatient = patients.find(p => p.id === selectedPatient.id);
+                            if (updatedPatient) {
+                                setSelectedPatient({
+                                    ...updatedPatient,
+                                    visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                                });
+                            }
+                        });
+                    }
+                }}
                 selectedPatient={selectedPatient}
             />
+
             <div className="flex flex-col mx-2 sm:mx-4 lg:mx-6 my-3 px-4">
                 <div className="flex items-center gap-3 justify-between">
                     <span className="font-bold sm:text-lg lg:text-xl mb-5">سجل المريض</span>
