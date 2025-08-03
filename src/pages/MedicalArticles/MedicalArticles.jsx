@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Calendar, User, Stethoscope } from 'lucide-react';
+import { Search, Calendar, User, Stethoscope, Mic } from 'lucide-react';
 import medicalArticlesData from './medicalArticlesData.json';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 
 const MedicalArticlesPage = () => {
@@ -37,12 +38,12 @@ const MedicalArticlesPage = () => {
             <Navbar />
             <div className="min-h-screen" style={{ backgroundColor: '#E0F7FA' }}>
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-5">
                     {/* Page Title */}
-                    <div className="text-center mb-8">
+                    <div className="text-center m-8">
                         <div className="flex items-center justify-center space-x-4 mb-4">
                             <Stethoscope className="h-10 w-10" style={{ color: '#0097A7' }} />
-                            <h1 className="text-4xl py-9 font-bold" style={{ color: '#212121' }}>المقالات الطبية</h1>
+                            <h1 className="text-3xl font-bold" style={{ color: '#212121' }}>المقالات الطبية</h1>
                         </div>
                         <p className="text-lg" style={{ color: '#757575' }}>
                             مصدرك الموثوق للمعلومات الطبية والصحية المفيدة
@@ -52,7 +53,7 @@ const MedicalArticlesPage = () => {
                     {/* Search and Filter Section */}
                     <div className="mb-8">
                         {/* Search Bar */}
-                        <div className="relative mb-6">
+                        {/* <div className="relative mb-6">
                             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                             <input
                                 type="text"
@@ -62,7 +63,22 @@ const MedicalArticlesPage = () => {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                        </div> */}
+                        <div className="relative mb-6">
+                            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                            <Mic className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5"
+                                style={{ color: 'var(--color-primary-dark)' }}
+                            />
+                            <input
+                                type="text"
+                                placeholder="ابحث في المقالات الطبية..."
+                                className="w-full pr-12 pl-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent focus:outline-none text-right"
+                                style={{ backgroundColor: '#FFFFFF' }}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
+
 
                         {/* Category Filter */}
                         <div className="flex items-center space-x-4 mb-6">
@@ -242,7 +258,6 @@ const MedicalArticlesPage = () => {
                     {/* No Results */}
                     {filteredArticles.length === 0 && (
                         <div className="text-center py-12">
-                            <div className="text-6xl mb-4">🔍</div>
                             <h3 className="text-xl font-bold mb-2" style={{ color: '#212121' }}>
                                 لم يتم العثور على مقالات
                             </h3>
@@ -253,7 +268,7 @@ const MedicalArticlesPage = () => {
                     )}
                 </div>
             </div>
-
+            <Footer />
         </>
     );
 };

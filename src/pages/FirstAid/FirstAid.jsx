@@ -31,8 +31,8 @@ export default function FirstAid() {
       <Navbar />
 
       {/* Fixed Search Bar */}
-      <div className="fixed top-[78px] left-0 w-full z-40 py-2 lg:py-0 px-4 bg-white shadow-md">
-        <form className="flex items-center max-w-2xl mx-auto mb-3">
+      <div className="fixed top-[56px] left-0 w-full z-40 py-2 px-4 bg-white shadow-md">
+        <form className="flex items-center max-w-2xl mx-auto py-1">
           <input
             type="text"
             value={searchTerm}
