@@ -16,10 +16,8 @@ export default function Login() {
     },
     validationSchema: loginSchema,
     onSubmit: values => {
-      console.log('Login Data:', values);
-      login(values, () => {
-        navigate('/');
-      });
+      // console.log('Login Data:', values);
+      login(values, navigate);
     },
   });
 

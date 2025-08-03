@@ -22,7 +22,7 @@ const useAuthStore = create(
         });
       },
 
-      login: async ({ email, password }, nav) => {
+      login: async ({ email, password }, navigate) => {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -35,9 +35,9 @@ const useAuthStore = create(
 
           set({ current_user: data.user?.user_metadata || null });
           get().showAlert('success', 'تم تسجيل الدخول بنجاح', 'مرحباً بعودتك!');
-          if (nav && typeof nav === 'function') {
-            nav();
-          }
+          if (data.user?.user_metadata.role == 'doctor') navigate('/DoctorDashboard');
+          else if (data.user?.user_metadata.role == 'nurse') navigate('/DoctorDashboard');
+          else navigate('/');
         } catch (error) {
           get().showAlert('error', 'خطأ في تسجيل الدخول', 'يوجد خطأ فى الايميل أو كلمة السر');
         }
