@@ -21,7 +21,7 @@ const Home = () => {
     const channel = setupRealtimePatients();
     return () => channel.unsubscribe();
   }, []);
-
+  
   const patients = useDoctorDashboardStore(state => state.patients);
   const appointments = useDoctorDashboardStore(state => state.appointments);
 
@@ -69,17 +69,17 @@ const Home = () => {
   const reson = [
     {
       title: "كشف",
-      value: appointments.filter(app => app.reason === 'فحص').length,
+      value: appointments.filter(app => app.type === 'فحص' && app.status === 'في الإنتظار').length,
       icon: <UserPlus className="text-blue-500" />,
     },
     {
       title: "متابعه",
-      value: appointments.filter(app => app.reason === 'متابعة').length,
+      value: appointments.filter(app => app.type === 'متابعة'&& app.status === 'في الإنتظار').length,
       icon: <CalendarCheck className="text-yellow-500" />,
     },
     {
       title: "إستشاره",
-      value: appointments.filter(app => app.reason === 'إستشارة').length,
+      value: appointments.filter(app => app.type === 'إستشارة'&& app.status === 'في الإنتظار').length,
       icon: <AlertCircle className="text-green-500" />,
     },
   ];

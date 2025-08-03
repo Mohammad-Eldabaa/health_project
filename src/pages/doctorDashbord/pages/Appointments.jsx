@@ -16,6 +16,8 @@ const Appointments = () => {
     const loading = useDoctorDashboardStore((state) => state.loading);
     const patients = useDoctorDashboardStore((state) => state.patients);
     const appointments = useDoctorDashboardStore((state) => state.appointments);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const channel = setupRealtimePatients();
@@ -66,6 +68,17 @@ const Appointments = () => {
                 appointment.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 appointment.phone.includes(searchQuery)
         );
+
+
+    const openAppointmentDetails = (appointment) => {
+        setSelectedAppointment(appointment);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedAppointment(null);
+    };
 
 
 
@@ -194,7 +207,12 @@ const Appointments = () => {
                                                 </td>
                                                 <td className="px-1 py-1 whitespace-nowrap text-sm font-medium">
                                                     <div className="flex">
-                                                        <button className="text-blue-600 hover:text-blue-900  p-2 hover:bg-cyan-100 rounded-2xl">تفاصيل</button>
+                                                        <button
+                                                            onClick={() => openAppointmentDetails(appointment)}
+                                                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-cyan-100 rounded-2xl"
+                                                        >
+                                                            تفاصيل
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -292,6 +310,127 @@ const Appointments = () => {
                     </div>
                 </div>
             </div>
+
+
+
+
+
+
+            {/* Modal للتفاصيل */}
+            {isModalOpen && selectedAppointment && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        {/* الخلفية المعتمة */}
+                        <div
+                            className="fixed inset-0 transition-opacity"
+                            aria-hidden="true"
+                            onClick={closeModal}
+                        >
+                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                        </div>
+
+                        {/* المحتوى الفعلي للمودال */}
+                        <div className="inline-block align-bottom bg-white rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-50">
+                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <div className="sm:flex sm:items-start">
+                                    <div className="mt-3 text-center sm:mt-0 sm:text-right w-full">
+                                        {/* العنوان وإغلاق */}
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                                تفاصيل الموعد
+                                            </h3>
+                                            <button
+                                                onClick={closeModal}
+                                                className="text-gray-400 hover:text-gray-500"
+                                            >
+                                                <span className="sr-only">إغلاق</span>
+                                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        {/* محتوى التفاصيل */}
+                                        <div className="mt-2 space-y-4">
+                                            <div className="flex items-center">
+                                                <User className="text-gray-400 ml-2" size={18} />
+                                                <div>
+                                                    <p className="text-sm text-gray-500">المريض</p>
+                                                    <p className="font-medium">{selectedAppointment.patientName}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <Clock className="text-gray-400 ml-2" size={18} />
+                                                <div>
+                                                    <p className="text-sm text-gray-500">التاريخ والوقت</p>
+                                                    <p className="font-medium">
+                                                        {selectedAppointment.date} - {selectedAppointment.time}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <Stethoscope className="text-gray-400 ml-2" size={18} />
+                                                <div>
+                                                    <p className="text-sm text-gray-500">نوع الزيارة</p>
+                                                    <p className="font-medium">{selectedAppointment.type}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <div className="ml-2">
+                                                    <p className="text-sm text-gray-500">رقم الهاتف</p>
+                                                    <p className="font-medium">{selectedAppointment.phone}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <div className="ml-2">
+                                                    <p className="text-sm text-gray-500">حالة الموعد</p>
+                                                    <span
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${selectedAppointment.status === "في الإنتظار"
+                                                            ? "bg-orange-100 text-yellow-800"
+                                                            : selectedAppointment.status === "ملغي"
+                                                                ? "bg-red-100 text-red-800"
+                                                                : selectedAppointment.status === "قيد الكشف"
+                                                                    ? "bg-yellow-200 text-yellow-900"
+                                                                    : selectedAppointment.status === "تم"
+                                                                        ? "bg-green-200 text-green-800"
+                                                                        : "bg-gray-100 text-yellow-800"
+                                                            }`}
+                                                    >
+                                                        {selectedAppointment.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* أزرار الإجراءات */}
+                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                    onClick={closeModal}
+                                >
+                                    تم
+                                </button>
+                                {selectedAppointment.status === "في الإنتظار" && (
+                                    <button
+                                        type="button"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                    >
+                                        تأكيد الموعد
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

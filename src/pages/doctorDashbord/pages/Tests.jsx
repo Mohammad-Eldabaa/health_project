@@ -14,7 +14,9 @@ import {
     Science,
     Bloodtype,
     MonitorHeart,
-    MedicalServices
+    MedicalServices,
+    Check
+
 } from '@mui/icons-material';
 
 import {
@@ -90,7 +92,7 @@ const Tests = () => {
             if (data) setCategories([{ name: 'الكل' }, ...data.map(cat => ({
                 name: cat.name,
                 color: cat.color,
-                icon: <MedicalServices /> // تقدر تخصّصها حسب الاسم
+                icon: <MedicalServices />
             }))]);
         };
 
@@ -233,7 +235,7 @@ const Tests = () => {
       </head>
       <body>
         <h2>تقرير التحاليل</h2>
-        <p><strong>اسم المريض:</strong> ${patients.find(p => p.id === selectedPatient)?.name || '---'}</p>
+        <p><strong>اسم المريض:</strong> ${patients.find(p => p.id === selectedPatient)?.fullName || '---'}</p>
         <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString()}</p>
         <table>
           <thead>
@@ -322,7 +324,7 @@ const Tests = () => {
                         className={`flex-1 items-center gap-2 px-2 py-2 rounded-lg border transition  ${activeFilter === cat.name ? 'bg-cyan-100 border-cyan-500' : 'bg-white border-gray-200 hover:bg-gray-100'}`}
                         style={{ color: cat.color }}
                     >
-                        <span>{cat.icon}</span> {cat.name}
+                        <span className='hidden md:inline'>{cat.icon}</span> {cat.name}
                     </button>
                 ))}
             </div>
@@ -381,7 +383,21 @@ const Tests = () => {
                                     <td className="p-4">{test.duration}</td>
                                     <td className="p-4">
                                         <div className="flex justify-center">
-                                            <button className="text-teal-800 hover:bg-teal-50 p-2 rounded-full "><Add /></button>
+                                            <button
+                                                className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${selectedTests.includes(test.id)
+                                                    ? 'bg-teal-100 text-teal-700'
+                                                    : 'text-teal-800 hover:bg-teal-50'
+                                                    }`}
+                                                onClick={() => handleSelectTest(test.id)}
+                                                aria-checked={selectedTests.includes(test.id)}
+                                                role="checkbox"
+                                            >
+                                                {selectedTests.includes(test.id) ? (
+                                                    <Check className="text-lg" />
+                                                ) : (
+                                                    <Add className="text-lg" />
+                                                )}
+                                            </button>
                                             <button className="text-cyan-500 hover:bg-cyan-50 p-2 rounded-full" onClick={() => {
                                                 setEditTestData({
                                                     ...test,
@@ -404,7 +420,7 @@ const Tests = () => {
                 </div>
 
                 {/* Card view on mobile */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden  mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden  mt-3 max-h-[50vh] overflow-y-auto">
                     {filteredTests.map(test => (
                         <div key={test.id} className={`p-4 rounded-lg shadow bg-white ${selectedTests.includes(test.id) ? 'border border-blue-400' : ''}`}>
                             <div className="flex justify-between items-center">
@@ -414,7 +430,21 @@ const Tests = () => {
                             <div className="text-sm mt-1">مدة النتيجة: {test.duration}</div>
                             <div className="flex justify-between items-center mt-3">
                                 <div className="flex gap-2">
-                                    <button className="text-teal-800 hover:bg-teal-50 p-2 rounded-full "><Add /></button>
+                                    <button
+                                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${selectedTests.includes(test.id)
+                                            ? 'bg-teal-100 text-teal-700'
+                                            : 'text-teal-800 hover:bg-teal-50'
+                                            }`}
+                                        onClick={() => handleSelectTest(test.id)}
+                                        aria-checked={selectedTests.includes(test.id)}
+                                        role="checkbox"
+                                    >
+                                        {selectedTests.includes(test.id) ? (
+                                            <Check className="text-lg" />
+                                        ) : (
+                                            <Add className="text-lg" />
+                                        )}
+                                    </button>
                                     <button className="text-cyan-500 hover:bg-cyan-50 p-2 rounded-full" onClick={() => {
                                         setEditTestData({
                                             ...test,
@@ -440,10 +470,9 @@ const Tests = () => {
                 <div className="flex flex-wrap gap-4 justify-between items-center bg-gray-50 p-4 rounded-xl shadow my-5">
                     <div className="font-medium text-slate-800">{selectedTests.length} عنصر محدد</div>
                     <div className="flex flex-wrap gap-2">
-                        <button className="flex items-center gap-1  px-2 py-2 rounded-md text-white  bg-teal-600"  onClick={() => setOpenConfirm(true)}><Add/> إضافة</button>
+                        <button className="flex items-center gap-1  px-2 py-2 rounded-md text-white  bg-teal-600" onClick={() => setOpenConfirm(true)}><Add /> إضافة</button>
                         <button className="flex items-center gap-1  px-2 py-2 rounded-md text-white  bg-cyan-500" onClick={handlePrint}
                         ><Print /> طباعة</button>
-                        <button className="flex items-center gap-1 bg-red-900 text-white px-2 py-2 rounded-md"><Delete /> حذف</button>
                     </div>
                 </div>
             )}

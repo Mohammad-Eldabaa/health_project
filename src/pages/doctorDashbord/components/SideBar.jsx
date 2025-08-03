@@ -6,7 +6,6 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import ScienceIcon from "@mui/icons-material/Science";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import SettingsIcon from "@mui/icons-material/Settings";
 import { NavLink } from "react-router-dom";
 import logo from "../../../assets/logo2.png";
 import CloseIcon from "@mui/icons-material/Close";
@@ -64,11 +63,6 @@ function SideBar({ isOpen, toggleSidebar }) {
                         </NavLink>
                     </li>
                     <li className="sidebar-item">
-                        <NavLink to="/DoctorDashboard/DoctorDashProfile" className="sidebar-link">
-                            <EventIcon /> الملف الشخصي
-                        </NavLink>
-                    </li>
-                    <li className="sidebar-item">
                         <NavLink to="/DoctorDashboard/patients" className="sidebar-link">
                             <GroupIcon /> المرضى
                         </NavLink>
@@ -80,7 +74,7 @@ function SideBar({ isOpen, toggleSidebar }) {
                     </li>
                     <li className="sidebar-item">
                         <NavLink to="/DoctorDashboard/prescription" className="sidebar-link">
-                            <LocalHospitalIcon /> كتابة روشتة
+                            <LocalHospitalIcon /> الروشتة والأدوية
                         </NavLink>
                     </li>
                     <li className="sidebar-item">
@@ -94,10 +88,11 @@ function SideBar({ isOpen, toggleSidebar }) {
                         </NavLink>
                     </li>
                     <li className="sidebar-item">
-                        <NavLink to="/DoctorDashboard/settings" className="sidebar-link">
-                            <SettingsIcon /> الإعدادات
+                        <NavLink to="/DoctorDashboard/DoctorDashProfile" className="sidebar-link">
+                            <PersonIcon /> الملف الشخصي
                         </NavLink>
                     </li>
+
                 </ul>
             </div>
         </>

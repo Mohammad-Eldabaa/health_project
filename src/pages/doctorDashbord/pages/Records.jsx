@@ -269,20 +269,30 @@ export default function Records() {
                             </div>
                             <div className="bg-gray-100 rounded-xl p-3">
                                 <h2 className="text-sm font-bold mb-2 text-gray-800">التحاليل والفحوصات</h2>
-                                {selectedPatient?.visits?.some(v => v.test_requests?.length > 0) ? (
+                                {selectedPatient?.test_requests?.length > 0 ? (
                                     <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                        {selectedPatient.visits.flatMap(visit =>
-                                            visit.test_requests?.map((req, j) => (
-                                                <li key={`${visit.id}-${j}`}>
-                                                    <strong>{req.test?.name || 'تحليل غير معروف'}:</strong>
-                                                    {req.test?.description && ` - ${req.test.description}`}
+                                        {selectedPatient.test_requests
+                                            .filter(req => req.status !== 'تم')
+                                            .slice(0, 5)
+                                            .map((req, index) => (
+                                                <li key={index} className="flex justify-between items-center">
+                                                    <div>
+                                                        <strong>{req.test?.name || 'تحليل غير معروف'}</strong>
+                                                        {req.test?.description && ` - ${req.test.description}`}
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded text-xs ${req.status === 'قيد التنفيذ' ? 'bg-yellow-100 text-yellow-800' :
+                                                            req.status === 'جاهز' ? 'bg-blue-100 text-blue-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {req.status || 'غير محدد'}
+                                                    </span>
                                                 </li>
-                                            )) || []
-                                        ).slice(0, 5)}
+                                            ))}
+                                            
                                     </ul>
                                 ) : (
                                     <div className="text-center py-3">
-                                        <p className="text-gray-500 text-lg">لا توجد</p>
+                                        <p className="text-gray-500 text-lg">لا توجد تحاليل معلقة</p>
                                     </div>
                                 )}
                             </div>
@@ -295,7 +305,7 @@ export default function Records() {
                 )}
 
                 {selectedPatient && (
-                    <div className="bg-gray-100 rounded-2xl my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10">
+                    <div className="bg-gray-100 rounded-2xl my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10  max-h-[50vh] overflow-y-auto">
                         <h3 className="text-base sm:text-lg font-semibold m-0">الزيارات السابقة</h3>
 
                         <div className="hidden sm:block overflow-auto bg-white rounded-2xl shadow-md">
@@ -352,7 +362,7 @@ export default function Records() {
                             </table>
                         </div>
 
-                        <div className="sm:hidden space-y-3">
+                        <div className="sm:hidden space-y-3  max-h-[50vh] overflow-y-auto">
                             {selectedPatient.visits?.map((visit, index) => {
                                 const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
                                 return (

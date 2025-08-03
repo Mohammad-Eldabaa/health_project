@@ -3,6 +3,8 @@ import { supabase } from '../supaBase/booking';
 import useDoctorDashboardStore from '../store/doctorDashboardStore';
 import { usePrescriptionStore } from '../store/prescriptionStore';
 
+const activeChannels = new Map();
+
 const handleTableUpdate = (tableName, currentData, payload, setter) => {
     const { eventType, new: newItem, old: oldItem } = payload;
     console.log(`🔁 Realtime [${tableName}]:`, payload);
@@ -23,6 +25,11 @@ const handleTableUpdate = (tableName, currentData, payload, setter) => {
 };
 
 export const setupRealtimePatients = (patientId = null) => {
+    // إذا كان هناك قناة نشطة لنفس المريض، نعيدها
+    if (patientId && activeChannels.has(`patient-${patientId}`)) {
+        return activeChannels.get(`patient-${patientId}`);
+    }
+
     const {
         setPatients,
         setAppointments,
@@ -31,18 +38,23 @@ export const setupRealtimePatients = (patientId = null) => {
         setTests,
         setTestRequests,
         setDrugCategories,
+        setTestCategories
     } = useDoctorDashboardStore.getState();
 
     const { fetchPatientPrescriptions } = usePrescriptionStore.getState();
 
-    // إنشاء قناة مع اسم فريد
-    const channelName = patientId
+    const channelName = patientId 
         ? `clinic-patient-${patientId}`
         : `clinic-global-${Math.random().toString(36).substr(2, 9)}`;
 
+    // إذا كانت القناة موجودة بالفعل، نعيدها
+    if (activeChannels.has(channelName)) {
+        return activeChannels.get(channelName);
+    }
+
     const channel = supabase.channel(channelName);
 
-    // --- patients --- (محدثة)
+    // --- patients ---
     channel.on(
         'postgres_changes',
         {
@@ -57,7 +69,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- appointments --- (محدثة)
+    // --- appointments ---
     channel.on(
         'postgres_changes',
         {
@@ -72,7 +84,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- visits --- (محدثة)
+    // --- visits ---
     channel.on(
         'postgres_changes',
         {
@@ -87,7 +99,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- prescriptions --- (محدثة)
+    // --- prescriptions ---
     channel.on(
         'postgres_changes',
         {
@@ -105,7 +117,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- prescription_medications --- (محدثة)
+    // --- prescription_medications ---
     channel.on(
         'postgres_changes',
         {
@@ -119,7 +131,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- tests --- (محدثة)
+    // --- tests ---
     channel.on(
         'postgres_changes',
         {
@@ -133,7 +145,7 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- test_requests --- (محدثة)
+    // --- test_requests ---
     channel.on(
         'postgres_changes',
         {
@@ -148,21 +160,8 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // داخل دالة setupRealtimePatients
-channel
-    .on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'tests',
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().tests;
-            handleTableUpdate('tests', current, payload, useDoctorDashboardStore.getState().setTests);
-        }
-    )
-    .on(
+    // --- test_cat ---
+    channel.on(
         'postgres_changes',
         {
             event: '*',
@@ -170,24 +169,12 @@ channel
             table: 'test_cat',
         },
         payload => {
-            const current = useDoctorDashboardStore.getState().test_categories;
-            handleTableUpdate('test_categories', current, payload, useDoctorDashboardStore.getState().setTestCategories);
-        }
-    )
-    .on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'test_requests',
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().test_requests;
-            handleTableUpdate('test_requests', current, payload, useDoctorDashboardStore.getState().setTestRequests);
+            const current = useDoctorDashboardStore.getState().test_categories || [];
+            handleTableUpdate('test_categories', current, payload, setTestCategories);
         }
     );
 
-    // --- drug_categories --- (محدثة)
+    // --- drug_categories ---
     channel.on(
         'postgres_changes',
         {
@@ -205,25 +192,30 @@ channel
     channel.subscribe((status, err) => {
         if (err) {
             console.error('Realtime subscription error:', err);
+            activeChannels.delete(channelName);
+        } else {
+            activeChannels.set(channelName, channel);
+            console.log(`Realtime channel [${channelName}] status:`, status);
         }
-        console.log(`Realtime channel [${channelName}] status:`, status);
     });
 
     return channel;
 };
 
-// دالة مساعدة لإزالة القناة
 export const removeRealtimeChannel = async channel => {
-    if (channel) {
-        try {
-            const { error } = await supabase.removeChannel(channel);
-            if (error) {
-                console.error('Error removing channel:', error);
-            } else {
-                console.log('Channel removed successfully');
-            }
-        } catch (err) {
-            console.error('Exception while removing channel:', err);
+    if (!channel) return;
+
+    try {
+        const channelName = channel.topic.replace('realtime:', '');
+        const { error } = await supabase.removeChannel(channel);
+        
+        if (error) {
+            console.error('Error removing channel:', error);
+        } else {
+            activeChannels.delete(channelName);
+            console.log('Channel removed successfully');
         }
+    } catch (err) {
+        console.error('Exception while removing channel:', err);
     }
 };

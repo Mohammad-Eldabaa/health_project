@@ -11,7 +11,6 @@ import Records from "./Records";
 import Prescription from "./Prescription";
 import Tests from "./Tests";
 import Statistics from "./Statistics";
-import Settings from "./Settings";
 import DoctorDashProfile from "../../DoctorProfile/DoctorDashProfile";
 
 
@@ -23,7 +22,7 @@ function DoctorDashboard() {
 
   return (
     <div className="doctor-dashboard">
-      <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}  />
       <div className="content">
         <Topbar toggleSidebar={toggleSidebar} />
         <Routes>
@@ -35,7 +34,6 @@ function DoctorDashboard() {
           <Route path="prescription" element={<Prescription />} />
           <Route path="tests" element={<Tests />} />
           <Route path="statistics" element={<Statistics />} />
-          <Route path="settings" element={<Settings />} />
         </Routes>
       </div>
     </div>

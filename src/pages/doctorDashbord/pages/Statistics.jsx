@@ -93,7 +93,7 @@ const Statistics = () => {
       const { data, error } = await supabase
         .from('appointments')
         .select(`date, amount`)
-        .eq('status', 'completed')
+        .eq('status', 'تم')
         .order('date', { ascending: true });
 
       if (error) throw error;
@@ -101,7 +101,7 @@ const Statistics = () => {
       // تجميع الإيرادات حسب الربع
       const quarterlyData = data.reduce((acc, appointment) => {
         const date = new Date(appointment.date);
-        const quarter = `Q${Math.floor(date.getMonth() / 3) + 1}`;
+        const quarter = ` الشهر ${date.getMonth() + 1}`;
 
         if (!acc[quarter]) {
           acc[quarter] = 0;
@@ -269,9 +269,9 @@ endOfMonth.setMonth(endOfMonth.getMonth() + 1);
             إحصائيات العياده <Activity className="text-cyan-600 inline" />{' '}
           </span>
         </div>
-        <div>
+        <div className='pt-4'>
           <select
-            className="border rounded-lg p-2 bg-white shadow-sm"
+            className="border border-cyan-500 rounded-lg p-2 bg-white shadow-sm"
             value={timeRange}
             onChange={e => setTimeRange(e.target.value)}
           >
