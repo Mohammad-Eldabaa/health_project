@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { supabase } from '../supaBase/booking';
+import { supabase } from '../supaBase/NursingBooking';
+import Swal from 'sweetalert2';
 
 const useAppointmentStore = create((set, get) => ({
   appointments: [],
@@ -23,7 +24,8 @@ const useAppointmentStore = create((set, get) => ({
           patient_id,
           patients (id, fullName),
           doctor_id,
-          doctors (id, name)
+          doctors (id, name),
+          type
         `
         )
         .order('created_at', { ascending: true });
@@ -52,6 +54,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: appt.patients?.fullName || 'غير محدد',
         doctor_id: appt.doctor_id,
         doctorName: appt.doctors?.name || 'غير محدد',
+        type: appt.type || 'غير محدد',
       }));
 
       set({ appointments: formattedAppointments || [], error: null });
@@ -77,6 +80,7 @@ const useAppointmentStore = create((set, get) => ({
         cancelled: false,
         patient_id: appointment.patient_id || null,
         doctor_id: appointment.doctor_id || null,
+        type: appointment.type || null,
       };
 
       const { data, error } = await supabase
@@ -96,7 +100,8 @@ const useAppointmentStore = create((set, get) => ({
           patient_id,
           patients (id, fullName),
           doctor_id,
-          doctors (id, name)
+          doctors (id, name),
+          type
         `
         )
         .single();
@@ -108,7 +113,13 @@ const useAppointmentStore = create((set, get) => ({
           hint: error.hint,
           code: error.code,
         });
-        alert(`فشل في إضافة الموعد: ${error.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في إضافة الموعد: ${error.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
@@ -125,19 +136,34 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
+        type: data.type || 'غير محدد',
       };
 
       set(state => ({
         appointments: [...state.appointments, formattedNewAppointment],
         error: null,
       }));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تمت الإضافة',
+        text: 'تم إضافة الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       console.error('Unexpected error adding appointment:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      alert('حدث خطأ غير متوقع أثناء إضافة الموعد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء إضافة الموعد.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   },
 
@@ -165,7 +191,8 @@ const useAppointmentStore = create((set, get) => ({
           patient_id,
           patients (id, fullName),
           doctor_id,
-          doctors (id, name)
+          doctors (id, name),
+          type
         `
         )
         .single();
@@ -177,7 +204,13 @@ const useAppointmentStore = create((set, get) => ({
           hint: error.hint,
           code: error.code,
         });
-        alert(`فشل في تحديث الموعد: ${error.message}${error.details ? ` - ${error.details}` : ''}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في تحديث الموعد: ${error.message}${error.details ? ` - ${error.details}` : ''}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
@@ -198,52 +231,214 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
+        type: data.type || 'غير محدد',
       };
 
       set(state => ({
         appointments: state.appointments.map(appt => (appt.id === id ? formattedUpdatedAppointment : appt)),
         error: null,
       }));
-      alert('تم تحديث الموعد بنجاح!');
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تم التحديث',
+        text: 'تم تحديث الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       console.error('Unexpected error updating appointment:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      alert('حدث خطأ غير متوقع أثناء تحديث الموعد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء تحديث الموعد.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   },
 
-  cancelAppointment: async id => {
+  togglePaymentStatus: async (id, currentPaymentStatus) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('appointments')
-        .update({ cancelled: true, updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .update({
+          payment: !currentPaymentStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select(
+          `
+          id,
+          created_at,
+          date,
+          time,
+          status,
+          reason,
+          payment,
+          cancelled,
+          amount,
+          patient_id,
+          patients (id, fullName),
+          doctor_id,
+          doctors (id, name),
+          type
+        `
+        )
+        .single();
 
       if (error) {
-        console.error('Error canceling appointment:', {
+        console.error('Error toggling payment status:', {
           message: error.message,
           details: error.details,
           hint: error.hint,
           code: error.code,
         });
-        alert(`فشل في إلغاء الموعد: ${error.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في تحديث حالة الدفع: ${error.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
+      const formattedUpdatedAppointment = {
+        id: data.id,
+        date: data.date,
+        time: data.time,
+        status: data.status,
+        reason: data.reason || '',
+        payment: data.payment,
+        cancelled: data.cancelled,
+        amount: data.amount,
+        patient_id: data.patient_id,
+        patientName: data.patients?.fullName || 'غير محدد',
+        doctor_id: data.doctor_id,
+        doctorName: data.doctors?.name || 'غير محدد',
+        type: data.type || 'غير محدد',
+      };
+
       set(state => ({
-        appointments: state.appointments.filter(appt => appt.id !== id),
+        appointments: state.appointments.map(appt => (appt.id === id ? formattedUpdatedAppointment : appt)),
         error: null,
       }));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تم التحديث',
+        text: `تم تحديث حالة الدفع إلى ${data.payment ? 'مدفوع' : 'غير مدفوع'}!`,
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
-      console.error('Unexpected error canceling appointment:', {
+      console.error('Unexpected error toggling payment status:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      alert('حدث خطأ غير متوقع أثناء إلغاء الموعد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء تحديث حالة الدفع.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
+    }
+  },
+
+  toggleCancelledStatus: async (id, currentCancelledStatus) => {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .update({
+          cancelled: !currentCancelledStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select(
+          `
+          id,
+          created_at,
+          date,
+          time,
+          status,
+          reason,
+          payment,
+          cancelled,
+          amount,
+          patient_id,
+          patients (id, fullName),
+          doctor_id,
+          doctors (id, name),
+          type
+        `
+        )
+        .single();
+
+      if (error) {
+        console.error('Error toggling cancelled status:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في تحديث حالة الإلغاء: ${error.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
+
+      const formattedUpdatedAppointment = {
+        id: data.id,
+        date: data.date,
+        time: data.time,
+        status: data.status,
+        reason: data.reason || '',
+        payment: data.payment,
+        cancelled: data.cancelled,
+        amount: data.amount,
+        patient_id: data.patient_id,
+        patientName: data.patients?.fullName || 'غير محدد',
+        doctor_id: data.doctor_id,
+        doctorName: data.doctors?.name || 'غير محدد',
+        type: data.type || 'غير محدد',
+      };
+
+      set(state => ({
+        appointments: state.appointments.map(appt => (appt.id === id ? formattedUpdatedAppointment : appt)),
+        error: null,
+      }));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تم التحديث',
+        text: `تم تحديث حالة الإلغاء إلى ${data.cancelled ? 'ملغى' : 'غير ملغى'}!`,
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
+    } catch (err) {
+      console.error('Unexpected error toggling cancelled status:', {
+        error: err,
+        message: err?.message || 'No message provided',
+        stack: err?.stack || 'No stack trace available',
+      });
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء تحديث حالة الإلغاء.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   },
 
@@ -258,7 +453,13 @@ const useAppointmentStore = create((set, get) => ({
           hint: error.hint,
           code: error.code,
         });
-        alert(`فشل في حذف الموعد: ${error.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في حذف الموعد: ${error.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
@@ -266,14 +467,27 @@ const useAppointmentStore = create((set, get) => ({
         appointments: state.appointments.filter(appt => appt.id !== id),
         error: null,
       }));
-      alert('تم حذف الموعد بنجاح!');
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تم الحذف',
+        text: 'تم حذف الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       console.error('Unexpected error deleting appointment:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      alert('حدث خطأ غير متوقع أثناء حذف الموعد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء حذف الموعد.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   },
 
@@ -296,6 +510,7 @@ const useAppointmentStore = create((set, get) => ({
         amount: appt.amount,
         patient_id: appt.patient_id,
         doctor_id: appt.doctor_id,
+        type: appt.type,
       }));
 
       const { error } = await supabase.from('appointments').upsert(updates, {
@@ -310,18 +525,38 @@ const useAppointmentStore = create((set, get) => ({
           hint: error.hint,
           code: error.code,
         });
-        alert(`فشل في إعادة ترتيب المواعيد: ${error.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في إعادة ترتيب المواعيد: ${error.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
       set({ appointments: newAppointments, error: null });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'تم إعادة الترتيب',
+        text: 'تم إعادة ترتيب المواعيد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       console.error('Unexpected error reordering appointments:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      alert('حدث خطأ غير متوقع أثناء إعادة ترتيب المواعيد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ غير متوقع أثناء إعادة ترتيب المواعيد.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   },
 }));

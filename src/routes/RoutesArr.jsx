@@ -1,3 +1,4 @@
+
 import { v4 } from 'uuid';
 import {
   Login,
@@ -23,6 +24,8 @@ import {
   NursingAppointments,
   NursingPatientsList,
 } from './lazy';
+import NursingLayout from '../pages/Nursing/NursingLayout';
+
 
 export const RoutesArray = [
   { id: v4(), element: <Login />, path: '/login' },
@@ -41,7 +44,7 @@ export const RoutesArray = [
   // { id: v4(), element: <DoctorProfile />, path: '/profile' },
   {
     id: v4(),
-    element: <Layout />,
+    element: <NursingLayout />,
     path: '/nursing-dashboard',
     children: [
       { id: v4(), element: <NursingAppointments />, path: '', index: true },
