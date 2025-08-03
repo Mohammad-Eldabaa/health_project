@@ -3,6 +3,7 @@ import Style from './Navbar.module.css';
 import logo from '../../assets/img/logo.png';
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/auth';
+import ProfileModal from './ProfileModal';
 
 export default function Navbar() {
   const { CUname, logout } = useAuthStore();
@@ -10,6 +11,11 @@ export default function Navbar() {
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
+  const [authDropdown, setAuthDropdown] = useState(false);
+  const authDropdownRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
 
   const handleNavClick = () => {
     setMenuOpen(false);
@@ -30,6 +36,9 @@ export default function Navbar() {
       if (mobileDropdownRef.current && !mobileDropdownRef.current.contains(event.target)) {
         setServicesDropdown(false);
       }
+      if (authDropdownRef.current && !authDropdownRef.current.contains(event.target)) {
+        setAuthDropdown(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -37,6 +46,7 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
 
   return (
     <>
@@ -77,9 +87,8 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
-                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
-              } hover:scale-105`}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
+                } hover:scale-105`}
               onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
@@ -146,9 +155,8 @@ export default function Navbar() {
                     </NavLink>
                     <button onClick={toggleServicesDropdown} className="text-white text-sm focus:outline-none ml-1">
                       <i
-                        className={`fa-solid fa-chevron-${
-                          servicesDropdown ? 'up' : 'down'
-                        } transition-transform duration-300`}
+                        className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
+                          } transition-transform duration-300`}
                       ></i>
                     </button>
                   </div>
@@ -196,17 +204,68 @@ export default function Navbar() {
             </div>
             <div>
               <ul className="flex flex-col lg:flex-row items-center mb-0">
-                <li>
-                  {CUname() ? (
-                    <NavLink className="mx-3 text-lg text-white" to={'/login'} onClick={logout}>
-                      <i className="fa-solid fa-right-to-bracket"></i> تسجيل الخروج
-                    </NavLink>
-                  ) : (
-                    <NavLink className="mx-3 text-lg text-white" to={'/login'} onClick={handleNavClick}>
-                      <i className="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
-                    </NavLink>
+                <li className="relative" ref={authDropdownRef}>
+                  <button
+                    onClick={() => setAuthDropdown(prev => !prev)}
+                    className="mx-3 text-lg text-white flex items-center gap-1"
+                    aria-label="Account"
+                  >
+                    <i className="fa-solid fa-user"></i>
+                    {/* <i className={`fa-solid fa-chevron-${authDropdown ? 'up' : 'down'} ml-1`}></i> */}
+                  </button>
+
+
+                  {authDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-100">
+                      <div className="py-1">
+                        {CUname() ? (
+                          <div>
+                            <NavLink
+                              to="/login"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setIsModalOpen(true);
+                              }}
+                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                            >
+                              <i className="fa-solid fa-user me-2"></i>
+                              الملف الشخصي
+                            </NavLink>
+
+                            <NavLink
+                              to="/login"
+                              onClick={() => {
+                                logout();
+                                setAuthDropdown(false);
+                              }}
+                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                            >
+                              <i className="fa-solid fa-right-to-bracket me-2"></i>
+                              تسجيل الخروج
+                            </NavLink>
+
+                            <ProfileModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+                          </div>
+
+                        ) : (
+                          <NavLink
+                            to="/login"
+                            onClick={() => {
+                              handleNavClick();
+                              setAuthDropdown(false);
+                            }}
+                            className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          >
+                            <i className="fa-solid fa-right-to-bracket me-2"></i>
+                            تسجيل الدخول
+                          </NavLink>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </li>
+
                 <li
                   style={{
                     backgroundColor: 'var(--color-primary)',
@@ -278,9 +337,8 @@ export default function Navbar() {
 
                   <button onClick={() => setServicesDropdown(!servicesDropdown)} className="text-white px-3">
                     <i
-                      className={`fa-solid fa-chevron-${
-                        servicesDropdown ? 'up' : 'down'
-                      } transition-transform duration-300`}
+                      className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
+                        } transition-transform duration-300`}
                     ></i>
                   </button>
                 </div>
@@ -323,15 +381,34 @@ export default function Navbar() {
             <div className="mt-auto">
               <ul className="flex flex-col space-y-4">
                 <li>
+
                   {CUname() ? (
-                    <NavLink
-                      className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-                      to={'/login'}
-                      onClick={logout}
-                    >
-                      <i className="fa-solid fa-right-to-bracket ml-3"></i>
-                      تسجيل الخروج
-                    </NavLink>
+                    <div>
+                      <div>
+                        <NavLink
+                          className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
+                          to="/login"
+                          onClick={logout}
+                        >
+                          <i className="fa-solid fa-right-to-bracket ml-3"></i>
+                          تسجيل الخروج
+                        </NavLink>
+                      </div>
+
+                      <div>
+                        <NavLink
+                          className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
+                          to="/login"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <i className="fa-solid fa-user ml-3"></i>
+                          الملف الشخصي
+                        </NavLink>
+                      </div>
+                    </div>
                   ) : (
                     <NavLink
                       className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
