@@ -1,5 +1,6 @@
 import { TypeAnimation } from 'react-type-animation';
 import { motion } from 'framer-motion';
+import { NavLink } from "react-router-dom";
 
 export default function HeroSection() {
   return (
@@ -51,25 +52,32 @@ export default function HeroSection() {
             transition={{ delay: 0.7, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <motion.button
+
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-white text-[#212121] px-8 py-3 rounded-lg text-lg hover:text-white hover:bg-[#0097A7] transition duration-300 shadow-md"
             >
-              احجز موعدك الآن <i className="fa-solid fa-calendar-check"></i>
-            </motion.button>
+              <NavLink
+                to="/bookingpage"
+                className="bg-white text-[#212121] px-8 py-3 rounded-lg text-lg hover:text-white hover:bg-[#0097A7] transition duration-300 shadow-md flex items-center gap-2"
+              >
+                احجز موعدك الآن <i className="fa-solid fa-calendar-check"></i>
+              </NavLink>
+            </motion.div>
 
-            <motion.button
+
+            <motion.a
+              href="tel:01144045412"
               whileHover={{
                 scale: 1.0,
                 backgroundColor: "#009688",
-                borderColor: "transparent"
+                borderColor: "transparent",
               }}
               whileTap={{ scale: 1 }}
-              className="bg-transparent border-2 text-white px-8 py-3 rounded-lg text-lg hover:bg-[#009688] hover:border-[#009688] transition duration-100 shadow-md"
+              className="bg-transparent border-2 text-white px-8 py-3 rounded-lg text-lg hover:bg-[#009688] hover:border-[#009688] transition duration-100 shadow-md inline-block text-center"
             >
               اتصل بنا <i className="fa-solid fa-phone"></i>
-            </motion.button>
+            </motion.a>
           </motion.div>
         </div>
       </div>

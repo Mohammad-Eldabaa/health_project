@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaWhatsapp } from 'react-icons/fa';
-import { FaPhone, FaEnvelope,  FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 import logo from '../../assets/img/logo.png'; // Adjust the path as necessary
 const Footer = () => {
   return (
@@ -27,12 +27,12 @@ const Footer = () => {
                 paddingLeft: 60,
               }} className=" text-2xl flex items-center">
                 Clinic
-                <img 
+                <img
                   src={logo}
-                  width={35} 
-                  height={35} 
-                  alt="Logo" 
-                  
+                  width={35}
+                  height={35}
+                  alt="Logo"
+
                 />
                 Smart
               </h3>
@@ -40,14 +40,14 @@ const Footer = () => {
             <p className="text-[#B2EBF2] mb-4">
               نقدم رعاية طبية متكاملة بمعايير عالمية في بيئة آمنة ومريحة.
             </p>
-            
+
             {/* Social Media */}
             <div className="flex space-x-4 space-x-reverse mt-6">
               {[
                 { icon: <FaFacebook className="text-xl" />, color: "hover:text-[#1877F2]" },
                 { icon: <FaTwitter className="text-xl" />, color: "hover:text-[#1DA1F2]" },
                 { icon: <FaInstagram className="text-xl" />, color: "hover:text-[#E1306C]" },
-               
+
                 { icon: <FaWhatsapp className="text-xl ms-3" />, color: "hover:text-[#25D366]" }
               ].map((social, index) => (
                 <motion.a
@@ -66,15 +66,20 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">روابط سريعة</h4>
             <ul className="space-y-2 text-[#B2EBF2]">
-              {['الرئيسية', 'عن العيادة', 'الخدمات', 'الأطباء', ].map((item, index) => (
-                <motion.li 
-                  key={index}
-                  whileHover={{ x: 5 }}
-                >
-                  <a href="#" className="hover:text-white transition">{item}</a>
+              {[
+                { label: 'الرئيسية', href: '#' },
+                { label: 'من نحن', href: '#HAbout' },
+                { label: 'الخدمات', href: '#HServices' },
+                { label: 'اتصل بنا', href: '#HContact' },
+              ].map((item, index) => (
+                <motion.li key={index} whileHover={{ x: 5 }}>
+                  <a href={item.href} className="hover:text-white transition">
+                    {item.label}
+                  </a>
                 </motion.li>
               ))}
             </ul>
+
           </div>
 
           {/* Contact Info */}
@@ -96,11 +101,11 @@ const Footer = () => {
             </ul>
           </div>
 
-          
-         
+
+
         </div>
 
-       
+
         <div className="border-t border-[#00BCD4] mt-8 pt-6 text-center text-[#B2EBF2]">
           <p>© {new Date().getFullYear()} ClinicSmart جميع الحقوق محفوظة</p>
         </div>
