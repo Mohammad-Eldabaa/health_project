@@ -51,6 +51,7 @@ const Home = () => {
         }),
         reason: app.reason,
         status: app.status,
+        type: app.type,
       };
     });
 
