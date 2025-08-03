@@ -17,9 +17,9 @@ export function VisitTypeInput() {
         style={{ direction: 'rtl' }}
       >
         <option value="">اختر نوع الزيارة</option>
-        <option value="general-checkup">فحص عام</option>
-        <option value="consultation">استشارة</option>
-        <option value="follow-up">زيارة متابعة</option>
+        <option value="فحص">فحص عام</option>
+        <option value="إستشارة">استشارة</option>
+        <option value="متابعة">زيارة متابعة</option>
       </Field>
       <ErrorMessage name="visitType" component="div" className="text-red-600 text-sm mt-1" />
     </div>

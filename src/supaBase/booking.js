@@ -7,7 +7,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const addPatient = async (patientData, resetForm) => {
   const { phoneNumber } = patientData;
-
   const { data: existingPhone } = await supabase
     .from('patients')
     .select('id')
@@ -25,7 +24,15 @@ export const addPatient = async (patientData, resetForm) => {
 
   const { error } = await supabase
     .from('appointments')
-    .insert([{ date: patientData.bookingDate, status: 'في الإنتظار', doctor_id: 1, time: now.toLocaleTimeString() }])
+    .insert([
+      {
+        date: patientData.bookingDate,
+        type: patientData.visitType,
+        status: 'في الإنتظار',
+        doctor_id: 1,
+        time: now.toLocaleTimeString(),
+      },
+    ])
     .select();
 
   if (error) {
