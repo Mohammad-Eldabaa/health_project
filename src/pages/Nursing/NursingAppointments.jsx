@@ -1072,7 +1072,7 @@ const NursingAppointments = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br w-full lg:pr-64 from-gray-50 to-blue-50" dir="rtl">
         <Helmet>
           <title>جدولة المواعيد - نظام المواعيد الطبية</title>
           <meta
@@ -1097,7 +1097,7 @@ const NursingAppointments = () => {
 
         <div className="flex flex-col md:flex-row">
           <NursingSidebar />
-          <main className="flex-1 p-4 md:p-6">
+          <main className="flex-1 p-4 md:p-6 w-full">
             <nav className="bg-white p-3 md:hidden mb-4 rounded-lg shadow-sm">
               <button
                 className="text-gray-700"

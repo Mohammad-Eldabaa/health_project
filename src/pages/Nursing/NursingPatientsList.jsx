@@ -233,7 +233,7 @@ const NursingPatientsList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-50" dir="rtl">
+    <div className="min-h-screen w-full bg-gradient-to-br from-cyan-50 to-blue-50" dir="rtl">
       <Helmet>
         <title>إدارة المرضى - نظام المواعيد الطبية</title>
         <meta
@@ -256,12 +256,12 @@ const NursingPatientsList = () => {
         <meta name="twitter:description" content="إدارة بيانات المرضى بسهولة وفعالية مع نظام المواعيد الطبية." />
       </Helmet>
 
-      <div className="flex flex-col md:flex-row">
-        <div className="md:w-64 md:min-h-screen">
+      <div className="flex flex-col lg:flex-row">
+        <div className="w-full lg:w-64 lg:min-h-screen">
           <NursingSidebar />
         </div>
-        <main className="flex-1 p-4 md:p-6">
-          <nav className="bg-white p-3 md:hidden mb-4 rounded-lg shadow-sm">
+        <main className="flex-1 p-4 sm:p-6 w-full">
+          <nav className="bg-white p-3 mb-4 rounded-lg shadow-sm lg:hidden">
             <button
               className="text-gray-700"
               type="button"
@@ -275,11 +275,11 @@ const NursingPatientsList = () => {
             </button>
           </nav>
 
-          <motion.div
+<motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white shadow-xl rounded-2xl p-4 md:p-6 border border-gray-100"
+            className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-100"
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div className="flex items-center gap-3">
@@ -396,22 +396,22 @@ const NursingPatientsList = () => {
               </motion.div>
             ) : (
               <>
-                <div className="hidden md:block overflow-x-auto">
+                <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead className="bg-gradient-to-r from-cyan-50 to-blue-50">
                       <tr>
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">رقم</th>
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">الإسم</th>
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">العمر</th>
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">رقم الهاتف</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">رقم</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الإسم</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">العمر</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">رقم الهاتف</th>
                         {!isTablet && (
                           <>
-                            <th className="px-6 py-4 text-right font-semibold text-cyan-800">العنوان</th>
-                            <th className="px-6 py-4 text-right font-semibold text-cyan-800">تاريخ اخر زيارة</th>
+                            <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">العنوان</th>
+                            <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">تاريخ اخر زيارة</th>
                           </>
                         )}
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">نوع الزيارة</th>
-                        <th className="px-6 py-4 text-right font-semibold text-cyan-800">الإجراءات</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">نوع الزيارة</th>
+                        <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -424,21 +424,21 @@ const NursingPatientsList = () => {
                           whileHover={{ scale: 1.01, backgroundColor: 'rgba(236, 253, 245, 0.5)' }}
                           className="hover:bg-teal-50 transition-colors duration-200"
                         >
-                          <td className="px-6 py-4 text-right font-medium text-gray-700">{patient.id}</td>
-                          <td className="px-6 py-4 text-right font-medium text-gray-800">{patient.fullName}</td>
-                          <td className="px-6 py-4 text-right text-gray-700">{patient.age}</td>
-                          <td className="px-6 py-4 text-right text-gray-700">{patient.phoneNumber}</td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-700 text-sm">{patient.id}</td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-800 text-sm">{patient.fullName}</td>
+                          <td className="px-4 py-3 text-right text-gray-700 text-sm">{patient.age}</td>
+                          <td className="px-4 py-3 text-right text-gray-700 text-sm">{patient.phoneNumber}</td>
                           {!isTablet && (
                             <>
-                              <td className="px-6 py-4 text-right text-gray-700">{patient.address}</td>
-                              <td className="px-6 py-4 text-right text-gray-700">
+                              <td className="px-4 py-3 text-right text-gray-700 text-sm">{patient.address}</td>
+                              <td className="px-4 py-3 text-right text-gray-700 text-sm">
                                 {new Date(patient.bookingDate).toLocaleDateString('ar-EG')}
                               </td>
                             </>
                           )}
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-4 py-3 text-right">
                             <span
-                              className={`px-3 py-1 rounded-full text-sm ${
+                              className={`px-3 py-1 rounded-full text-xs ${
                                 patient.visitType === 'فحص'
                                   ? 'bg-purple-100 text-purple-800'
                                   : patient.visitType === 'متابعة'
@@ -449,7 +449,7 @@ const NursingPatientsList = () => {
                               {patient.visitType}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right flex gap-2">
+                          <td className="px-4 py-3 text-right flex gap-2">
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
@@ -520,7 +520,7 @@ const NursingPatientsList = () => {
                   </table>
                 </div>
 
-                <div className="md:hidden flex flex-col gap-4">
+                <div className="lg:hidden flex flex-col gap-4">
                   {filteredPatients.map((patient, index) => (
                     <motion.div
                       key={patient.id}
@@ -546,22 +546,26 @@ const NursingPatientsList = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="col-span-2">
-                          <span className="font-semibold text-gray-600">الاسم:</span>
-                          <span className="text-gray-800 font-medium block">{patient.fullName}</span>
+                          <span className="font-semibold text-gray-600 text-sm">الاسم:</span>
+                          <span className="text-gray-800 font-medium block text-sm">{patient.fullName}</span>
                         </div>
                         <div>
-                          <span className="font-semibold text-gray-600">العمر:</span>
-                          <span className="text-gray-800 block">{patient.age}</span>
+                          <span className="font-semibold text-gray-600 text-sm">العمر:</span>
+                          <span className="text-gray-800 block text-sm">{patient.age}</span>
                         </div>
                         <div>
-                          <span className="font-semibold text-gray-600">رقم الهاتف:</span>
-                          <span className="text-gray-800 block dir-ltr text-left">{patient.phoneNumber}</span>
+                          <span className="font-semibold text-gray-600 text-sm">رقم الهاتف:</span>
+                          <span className="text-gray-800 block dir-ltr text-left text-sm">{patient.phoneNumber}</span>
                         </div>
                         <div className="col-span-2">
-                          <span className="font-semibold text-gray-600">تاريخ الحجز:</span>
-                          <span className="text-gray-800 block">
+                          <span className="font-semibold text-gray-600 text-sm">تاريخ الحجز:</span>
+                          <span className="text-gray-800 block text-sm">
                             {new Date(patient.bookingDate).toLocaleDateString('ar-EG')}
                           </span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="font-semibold text-gray-600 text-sm">العنوان:</span>
+                          <span className="text-gray-800 block text-sm">{patient.address}</span>
                         </div>
                       </div>
                       <div className="flex justify-around pt-3 border-t border-gray-200">
@@ -647,10 +651,10 @@ const NursingPatientsList = () => {
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0.9, y: 20 }}
-                    className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200"
+                    className="bg-white rounded-2xl p-6 w-full max-w-md sm:max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200"
                   >
                     <div className="flex justify-between items-center mb-6">
-                      <h5 className="text-xl font-bold text-cyan-800">
+                      <h5 className="text-lg sm:text-xl font-bold text-cyan-800">
                         {currentPatient ? 'تعديل بيانات المريض' : 'إضافة مريض جديد'}
                       </h5>
                       <motion.button
@@ -697,14 +701,14 @@ const NursingPatientsList = () => {
                             type="text"
                             className={`w-full p-3 border ${
                               formErrors.fullName ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="fullName"
                             name="fullName"
                             value={formData.fullName}
                             onChange={handleChange}
                             required
                           />
-                          {formErrors.fullName && <p className="text-red-600 text-sm mt-1">{formErrors.fullName}</p>}
+                          {formErrors.fullName && <p className="text-red-600 text-xs mt-1">{formErrors.fullName}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -718,14 +722,14 @@ const NursingPatientsList = () => {
                             type="number"
                             className={`w-full p-3 border ${
                               formErrors.age ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="age"
                             name="age"
                             value={formData.age}
                             onChange={handleChange}
                             required
                           />
-                          {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
+                          {formErrors.age && <p className="text-red-600 text-xs mt-1">{formErrors.age}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -739,7 +743,7 @@ const NursingPatientsList = () => {
                             type="tel"
                             className={`w-full p-3 border ${
                               formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="phoneNumber"
                             name="phoneNumber"
                             value={formData.phoneNumber}
@@ -747,7 +751,7 @@ const NursingPatientsList = () => {
                             required
                           />
                           {formErrors.phoneNumber && (
-                            <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>
+                            <p className="text-red-600 text-xs mt-1">{formErrors.phoneNumber}</p>
                           )}
                         </motion.div>
                         <motion.div
@@ -762,14 +766,14 @@ const NursingPatientsList = () => {
                             type="text"
                             className={`w-full p-3 border ${
                               formErrors.address ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="address"
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
                             required
                           />
-                          {formErrors.address && <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>}
+                          {formErrors.address && <p className="text-red-600 text-xs mt-1">{formErrors.address}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -783,7 +787,7 @@ const NursingPatientsList = () => {
                             type="date"
                             className={`w-full p-3 border ${
                               formErrors.bookingDate ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="bookingDate"
                             name="bookingDate"
                             value={formData.bookingDate}
@@ -791,7 +795,7 @@ const NursingPatientsList = () => {
                             required
                           />
                           {formErrors.bookingDate && (
-                            <p className="text-red-600 text-sm mt-1">{formErrors.bookingDate}</p>
+                            <p className="text-red-600 text-xs mt-1">{formErrors.bookingDate}</p>
                           )}
                         </motion.div>
                         <motion.div
@@ -805,7 +809,7 @@ const NursingPatientsList = () => {
                           <select
                             className={`w-full p-3 border ${
                               formErrors.visitType ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="visitType"
                             name="visitType"
                             value={formData.visitType}
@@ -817,7 +821,7 @@ const NursingPatientsList = () => {
                             <option value="متابعة">متابعة</option>
                             <option value="استشارة">استشارة</option>
                           </select>
-                          {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
+                          {formErrors.visitType && <p className="text-red-600 text-xs mt-1">{formErrors.visitType}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -830,7 +834,7 @@ const NursingPatientsList = () => {
                           <textarea
                             className={`w-full p-3 border ${
                               formErrors.notes ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-sm`}
                             id="notes"
                             name="notes"
                             rows="4"
@@ -838,7 +842,7 @@ const NursingPatientsList = () => {
                             onChange={handleChange}
                             placeholder="أضف ملاحظات (اختياري)..."
                           ></textarea>
-                          {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
+                          {formErrors.notes && <p className="text-red-600 text-xs mt-1">{formErrors.notes}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
@@ -854,7 +858,7 @@ const NursingPatientsList = () => {
                               setShowEditModal(false);
                               setFormErrors({});
                             }}
-                            className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-sm"
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-sm text-sm"
                           >
                             إلغاء
                           </motion.button>
@@ -862,7 +866,7 @@ const NursingPatientsList = () => {
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.98 }}
                             type="submit"
-                            className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-300 shadow-md"
+                            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-300 shadow-md text-sm"
                           >
                             {currentPatient ? 'حفظ التعديلات' : 'إضافة المريض'}
                           </motion.button>

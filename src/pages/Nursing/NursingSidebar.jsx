@@ -1,140 +1,137 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserNurse, faUsers, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserNurse, faUsers, faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
 import { useMediaQuery } from 'react-responsive';
 import { supabase } from '../../supaBase/NursingBooking';
 
 const NursingSidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true); // Default to collapsed on mobile
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out:', error.message);
         return;
       }
-
-      // Clear local storage (in case token is stored there)
-      localStorage.removeItem('auth_token'); // Adjust key if different
-
-      // Redirect to home page
+      localStorage.removeItem('auth_token');
       navigate('/');
     } catch (err) {
       console.error('Unexpected error during logout:', err);
     }
   };
 
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setIsCollapsed(true);
+    }
+  };
+
   return (
-    <nav
-      id="sidebarMenu"
-      className={`${
-        isCollapsed && isMobile ? 'w-16' : 'w-full md:w-64'
-      } bg-cyan-700 text-white h-full md:min-h-screen p-4 transition-all duration-300 ease-in-out`}
-    >
-      <div className="sticky top-0 pt-4">
-        <div className="flex justify-between items-center mb-4 px-2">
-          {!isCollapsed && (
-            <h2 className="flex items-center text-white text-lg font-medium">
-              <FontAwesomeIcon icon={faUserNurse} className="mr-2" />
-              <span>لوحة التمريض</span>
+    <>
+      {isMobile && (
+        <button
+          onClick={toggleSidebar}
+          className="fixed top-4 right-4 z-50 p-2 rounded-md bg-cyan-700 text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          aria-label="تفعيل القائمة الجانبية"
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+      )}
+      <nav
+        id="sidebarMenu"
+        className={`
+          ${isMobile ? (isCollapsed ? 'w-0' : 'w-64') : 'w-64 md:w-20 lg:w-64'}
+          bg-cyan-700 text-white
+          h-screen
+          fixed top-0 right-0
+          z-40
+          p-4
+          transition-all duration-300 ease-in-out
+          overflow-hidden
+          ${isMobile && isCollapsed ? 'translate-x-full' : 'translate-x-0'}
+          dir-rtl
+        `}
+      >
+        <div className="h-full flex flex-col">
+          <div className="flex justify-between items-center mb-4 px-2">
+            <h2
+              className={`flex items-center text-white text-lg font-medium ${
+                isMobile || !isCollapsed ? 'block' : 'hidden md:block'
+              }`}
+            >
+              <FontAwesomeIcon icon={faUserNurse} className="ml-2" />
+              <span className={`${isMobile || !isCollapsed ? 'block' : 'hidden md:block'}`}>لوحة التمريض</span>
             </h2>
-          )}
-          {isMobile && (
-            <button onClick={() => setIsCollapsed(!isCollapsed)} className="text-white p-1 rounded hover:bg-cyan-600">
-              {isCollapsed ? <i className="bi bi-chevron-right"></i> : <i className="bi bi-chevron-left"></i>}
-            </button>
-          )}
-        </div>
+            {isMobile && (
+              <button
+                onClick={toggleSidebar}
+                className="text-white p-1 rounded hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                aria-label="إغلاق القائمة الجانبية"
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            )}
+          </div>
 
-        {!isCollapsed && (
-          <>
-            <hr className="border-white opacity-30 mx-2 mb-4" />
-            <ul className="flex flex-col gap-2 px-2">
-              <li>
-                <NavLink
-                  to="/nursing-dashboard"
-                  className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600 bg-transparent'
-                    }`
-                  }
-                >
-                  <i className="bi bi-speedometer2 mr-2"></i>
-                  لوحة التحكم
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/nursing-dashboard/patients"
-                  className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600 bg-transparent'
-                    }`
-                  }
-                >
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  قائمة المرضى
-                </NavLink>
-              </li>
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-white hover:bg-cyan-600 bg-transparent"
-                >
-                  <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
-                  تسجيل الخروج
-                </button>
-              </li>
-            </ul>
-          </>
-        )}
-
-        {isCollapsed && (
-          <ul className="flex flex-col gap-2 px-0">
+          <hr className="border-white opacity-30 mx-2 mb-4" />
+          <ul className="flex flex-col gap-2 px-2 flex-grow">
             <li>
               <NavLink
                 to="/nursing-dashboard"
+                onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex justify-center p-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600 bg-transparent'
-                  }`
+                  } ${isMobile || !isCollapsed ? 'justify-start' : 'justify-center md:justify-start'}`
                 }
-                title="لوحة التحكم"
               >
-                <i className="bi bi-speedometer2"></i>
+                <i className="bi bi-speedometer2 ml-2"></i>
+                <span className={`${isMobile || !isCollapsed ? 'block' : 'hidden md:block'}`}>لوحة التحكم</span>
               </NavLink>
             </li>
             <li>
               <NavLink
                 to="/nursing-dashboard/patients"
+                onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex justify-center p-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive ? 'bg-white text-cyan-700' : 'text-white hover:bg-cyan-600 bg-transparent'
-                  }`
+                  } ${isMobile || !isCollapsed ? 'justify-start' : 'justify-center md:justify-start'}`
                 }
-                title="قائمة المرضى"
               >
-                <FontAwesomeIcon icon={faUsers} />
+                <FontAwesomeIcon icon={faUsers} className="ml-2" />
+                <span className={`${isMobile || !isCollapsed ? 'block' : 'hidden md:block'}`}>قائمة المرضى</span>
               </NavLink>
             </li>
-            <li>
+            <li className="mt-auto">
               <button
-                onClick={handleLogout}
-                className="flex justify-center p-2 rounded-md text-sm font-medium transition-all duration-200 text-white hover:bg-cyan-600 bg-transparent"
-                title="تسجيل الخروج"
+                onClick={() => {
+                  handleLogout();
+                  closeSidebar();
+                }}
+                className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-white hover:bg-cyan-600 bg-transparent ${
+                  isMobile || !isCollapsed ? 'justify-start' : 'justify-center md:justify-start'
+                }`}
               >
-                <FontAwesomeIcon icon={faSignOutAlt} />
+                <FontAwesomeIcon icon={faSignOutAlt} className="ml-2" />
+                <span className={`${isMobile || !isCollapsed ? 'block' : 'hidden md:block'}`}>تسجيل الخروج</span>
               </button>
             </li>
           </ul>
-        )}
-      </div>
-    </nav>
+        </div>
+      </nav>
+      {isMobile && !isCollapsed && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={closeSidebar} aria-hidden="true"></div>
+      )}
+    </>
   );
 };
 

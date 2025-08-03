@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 const NursingLayout = () => {
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50" dir="rtl">
       <Outlet />
     </div>
   );
