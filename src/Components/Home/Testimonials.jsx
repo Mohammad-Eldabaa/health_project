@@ -199,16 +199,23 @@ export default function Testimonials() {
                 </div>
 
                 <div>
-                  <label htmlFor="role" className="block text-[#0097A7] mb-1">الصفة (اختياري)</label>
-                  <input
-                    type="text"
+                  <label htmlFor="role" className="block text-[#0097A7] mb-1">
+                    الصفة (اختياري)
+                  </label>
+                  <select
+                  
                     id="role"
                     name="role"
                     value={newTestimonial.role}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-[#B2EBF2] focus:outline-none focus:ring-2 focus:ring-[#0097A7]"
-                  />
+                    className="w-full px-4 py-2 rounded-lg border border-[#B2EBF2] focus:outline-none focus:ring-2 focus:ring-[#0097A7] bg-white text-[#212121]"
+                  >
+                    <option value=""></option>
+                    <option value="مريض">مريض</option>
+                    <option value="مرافق مريض">مرافق مريض</option>
+                  </select>
                 </div>
+
               </div>
 
               <div>

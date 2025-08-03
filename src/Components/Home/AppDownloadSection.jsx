@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaMobileAlt, FaBell, FaCalendarAlt, FaDownload, FaApple, FaGooglePlay } from 'react-icons/fa';
+import { FaMobileAlt, FaHeadset, FaCalendarAlt, FaDownload, FaApple, FaGooglePlay } from 'react-icons/fa';
 import QRCode from "react-qr-code";
 
 const AppDownloadSection = () => {
@@ -30,16 +30,6 @@ const AppDownloadSection = () => {
               <div className="space-y-4 mb-8">
                 <div className="flex items-start">
                   <div className="bg-gradient-to-br from-[#00BCD4] to-[#009688] p-3 rounded-lg mr-4">
-                    <FaMobileAlt className="text-white text-2xl" />
-                  </div>
-                  <div className="px-2">
-                    <h3 className="font-bold text-[#212121]  text-lg">سهولة التواصل</h3>
-                    <p className="text-[#757575]">محادثة مباشرة مع الطبيب عبر التطبيق</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-gradient-to-br from-[#00BCD4] to-[#009688] p-3 rounded-lg mr-4">
                     <FaCalendarAlt className="text-white text-2xl" />
                   </div>
                   <div className="px-2">
@@ -50,13 +40,25 @@ const AppDownloadSection = () => {
 
                 <div className="flex items-start">
                   <div className="bg-gradient-to-br from-[#00BCD4] to-[#009688] p-3 rounded-lg mr-4">
-                    <FaBell className="text-white text-2xl" />
+                    <FaMobileAlt className="text-white text-2xl" />
                   </div>
                   <div className="px-2">
-                    <h3 className="font-bold text-[#212121] text-lg">متابعة مستمرة</h3>
-                    <p className="text-[#757575]">تذكيرات بالمواعيد والجرعات الدوائية</p>
+                    <h3 className="font-bold text-[#212121]  text-lg">سهولة الاستخدام</h3>
+                    <p className="text-[#757575]">سهولة استخدام التطبيق للمستخدمين</p>
                   </div>
                 </div>
+
+
+                <div className="flex items-start">
+                  <div className="bg-gradient-to-br from-[#00BCD4] to-[#009688] p-3 rounded-lg mr-4">
+                    <FaHeadset className="text-white text-2xl" />
+                  </div>
+                  <div className="px-2">
+                    <h3 className="font-bold text-[#212121] text-lg">دعم على مدار الساعة</h3>
+                    <p className="text-[#757575]">فريق الدعم متواجد 24/7 للإجابة على استفساراتك</p>
+                  </div>
+                </div>
+
               </div>
 
               <div className="flex flex-wrap gap-4">

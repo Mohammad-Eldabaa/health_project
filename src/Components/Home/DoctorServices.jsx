@@ -194,7 +194,7 @@ export default function DoctorServices() {
                     icon: <FaVideo className="text-2xl  xl:text-3xl" />,
                     desc: (
                       <span className="text-red-400 ">
-                        جاري العمل على توفير نظام استشارات عن بعد
+                        جاري العمل على توفير الخدمه قريبا
                         <FaWarning className="text-xl " />
                       </span>
                     )
@@ -202,14 +202,14 @@ export default function DoctorServices() {
                   {
                     title: 'متابعة النتائج',
                     icon: <FaFileMedicalAlt className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'>جاري العمل على توفير نظام متابعة النتائج
+                    desc: <span className='text-red-400'> جاري العمل على توفير الخدمه قريبا
                       <FaWarning className="text-xl " />
                     </span>,
                   },
                   {
                     title: 'تذكير بالمواعيد',
                     icon: <FaBell className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'>جاري العمل على توفير نظام تذكير بالمواعيد
+                    desc: <span className='text-red-400'> جاري العمل على توفير الخدمه قريبا
 
                       <FaWarning className="text-xl " /></span>,
                   },
