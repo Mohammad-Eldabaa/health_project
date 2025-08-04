@@ -193,6 +193,35 @@ const useDoctorDashboardStore = create(set => ({
     }
   },
 
+
+// أضف هذه الدوال داخل create في doctorDashboardStore.js
+fetchDrugCategories: async () => {
+  try {
+    const { data, error } = await supabase
+      .from('drug_categories')
+      .select(`
+        *,
+        medications:medications (*)
+      `);
+    
+    if (!error) set({ drug_categories: data });
+  } catch (error) {
+    console.error('Error fetching drug categories:', error);
+  }
+},
+
+fetchMedications: async () => {
+  try {
+    const { data, error } = await supabase
+      .from('medications')
+      .select('*');
+    
+    if (!error) set({ medications: data });
+  } catch (error) {
+    console.error('Error fetching medications:', error);
+  }
+},
+
   exetVisit: async appointmentId => {
     try {
       const { error } = await supabase.from('appointments').update({ status: 'ملغي' }).eq('id', appointmentId);

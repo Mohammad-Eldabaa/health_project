@@ -291,7 +291,7 @@ const Appointments = () => {
                         <p className="text-2xl font-bold text-gray-800 mt-1 ">{filteredAppointmentsByTab.length}</p>
                     </div>
                     <div className="bg-white p-2 rounded-lg shadow-sm ">
-                        <h3 className="text-sm font-medium text-green-800 bg-green-200 p-1 rounded-md">مواعيد مؤكدة</h3>
+                        <h3 className="text-sm font-medium text-green-800 bg-green-200 p-1 rounded-md">مواعيد تمت</h3>
                         <p className="text-2xl font-bold text-gray-800 mt-1">
                             {filteredAppointmentsByTab.filter(a => a.status === "تم").length}
                         </p>

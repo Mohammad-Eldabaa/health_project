@@ -35,6 +35,10 @@ export default function Prescription({ onClose }) {
     const printRef = useRef(null);
     const realtimeChannel = useRef(null);
 
+useEffect(() => {
+    useDoctorDashboardStore.getState().fetchDrugCategories();
+}, []);
+
 
 
     // إعداد اشتراكات الوقت الحقيقي
@@ -196,6 +200,7 @@ export default function Prescription({ onClose }) {
                 .select();
 
             if (error) throw error;
+        await useDoctorDashboardStore.getState().fetchDrugCategories(); // إضافة هذا السطر
 
             toast.success('تم إضافة التصنيف بنجاح');
             setNewCategory('');
@@ -225,12 +230,14 @@ export default function Prescription({ onClose }) {
 
             if (error) throw error;
 
+        await useDoctorDashboardStore.getState().fetchDrugCategories();
+
             toast.success('تم إضافة الدواء بنجاح');
-            setNewMedication({
+            setNewMedication(prev => ({
                 name: '',
+                category_id: prev.category_id, 
                 description: ''
-            });
-            // يمكنك هنا تحديث البيانات المحلية أو إعادة جلب البيانات من السيرفر
+            }));
         } catch (error) {
             console.error('Error adding medication:', error);
             toast.error(`حدث خطأ: ${error.message}`);
