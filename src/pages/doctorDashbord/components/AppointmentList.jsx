@@ -5,7 +5,6 @@ import usePatientStore from "../../../store/patientStore";
 
 export function AppointmentList({ appointmentss }) {
     const { startVisit, endVisit, exetVisit } = useDoctorDashboardStore();
-    console.log(appointmentss);
 
     const navigate = useNavigate();
     const setSelectedPatientName = usePatientStore((state) => state.setSelectedPatientName);

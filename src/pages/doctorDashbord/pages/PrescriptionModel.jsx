@@ -5,7 +5,6 @@ import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 import { supabase } from '../../../supaBase/booking';
 import { usePrescriptionStore } from '../../../store/prescriptionStore';
 import { setupRealtimePatients, removeRealtimeChannel } from "../../../lib/supabaseRealtime";
-import PrintPrescription from '../components/PrintPrescription';
 import { toast } from 'react-toastify';
 
 export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) {
@@ -20,26 +19,12 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
   const [showDosageModal, setShowDosageModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const printRef = useRef();
   const realtimeChannel = useRef(null);
 
   const { drug_categories: medicationsData, dosage_options: dosageOptionsData, 
           duration_options: durationOptionsData } = useDoctorDashboardStore();
   const prescriptionStore = usePrescriptionStore();
 
-  // دالة الطباعة المحسنة
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    pageStyle: `
-      @page { size: A4; margin: 10mm; }
-      body { direction: rtl; font-family: 'Arial', sans-serif; }
-      @media print { .no-print { display: none !important; } }
-    `,
-    onBeforePrint: () => toast.info('جاري إعداد الطباعة...'),
-    onAfterPrint: () => toast.success('تمت الطباعة بنجاح'),
-    removeAfterPrint: false,
-    documentTitle: `روشتة_طبية_${patientName}_${today.replace(/\//g, '-')}`,
-  });
 
   // إعداد اشتراكات الوقت الحقيقي
   useEffect(() => {
@@ -207,15 +192,7 @@ await fetchData();
   return (
     <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center z-50">
       {/* مكون الطباعة المخفي */}
-      <div style={{ display: 'none' }}>
-        <PrintPrescription
-          ref={printRef}
-          patientName={patientName}
-          today={today}
-          notes={notes}
-          selectedMeds={selectedMeds}
-        />
-      </div>
+
 
       {/* نافذة الجرعة */}
       {showDosageModal && (
@@ -266,7 +243,6 @@ await fetchData();
             selectedMeds={selectedMeds}
             removeMedication={removeMedication}
             handleSubmit={handleSubmit}
-            handlePrint={handlePrint}
             isSubmitting={isSubmitting}
           />
         </div>
