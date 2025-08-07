@@ -1,4 +1,3 @@
-
 import { v4 } from 'uuid';
 import {
   Login,
@@ -25,7 +24,6 @@ import {
   NursingPatientsList,
 } from './lazy';
 import NursingLayout from '../pages/Nursing/NursingLayout';
-
 
 export const RoutesArray = [
   { id: v4(), element: <Login />, path: '/login' },

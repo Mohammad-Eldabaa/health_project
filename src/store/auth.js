@@ -36,7 +36,7 @@ const useAuthStore = create(
           set({ current_user: data.user?.user_metadata || null });
           get().showAlert('success', 'تم تسجيل الدخول بنجاح', 'مرحباً بعودتك!');
           if (data.user?.user_metadata.role == 'doctor') navigate('/DoctorDashboard');
-          else if (data.user?.user_metadata.role == 'nurse') navigate('/DoctorDashboard');
+          else if (data.user?.user_metadata.role == 'nurse') navigate('/nursing-dashboard');
           else navigate('/');
         } catch (error) {
           get().showAlert('error', 'خطأ في تسجيل الدخول', 'يوجد خطأ فى الايميل أو كلمة السر');

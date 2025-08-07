@@ -24,7 +24,7 @@ const DoctorExperience = ({ editMode, variants, cardVariants, experiences, setEx
 
   const addAnotherExperience = () => {
     if (newExperience.position.trim()) {
-      const updatedExperiences = [...experiences, { ...newExperience, id: Date.now() }];
+      const updatedExperiences = [...allExperiences, { ...newExperience, id: Date.now() }];
       setExperiences(updatedExperiences);
       addExperience(newExperience);
       setNewExperience({ position: '', hospital: '', period: '', description: '' });
@@ -34,7 +34,7 @@ const DoctorExperience = ({ editMode, variants, cardVariants, experiences, setEx
 
   const removeExperience = id => {
     deleteExperience(id);
-    setExperiences(experiences.filter(exp => exp.id !== id));
+    setExperiences(allExperiences.filter(exp => exp.id !== id));
   };
 
   const expandVariants = {
@@ -135,7 +135,7 @@ const DoctorExperience = ({ editMode, variants, cardVariants, experiences, setEx
       </AnimatePresence>
 
       <div className="space-y-4">
-        {experiences.map((exp, index) => (
+        {allExperiences.map((exp, index) => (
           <motion.div
             key={exp.id}
             className="bg-[#E0F7FA] p-4 rounded-lg border border-gray-200"

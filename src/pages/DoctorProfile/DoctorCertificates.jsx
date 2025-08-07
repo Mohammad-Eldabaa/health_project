@@ -29,7 +29,7 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
         if (field === 'newCertificate') {
           setNewCertificate({ ...newCertificate, image: imageData });
         } else {
-          setCertificates(certificates.map(cert => (cert.id === field ? { ...cert, image: imageData } : cert)));
+          setCertificates(allCertificates.map(cert => (cert.id === field ? { ...cert, image: imageData } : cert)));
         }
       };
       reader.readAsDataURL(file);
@@ -38,7 +38,7 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
 
   const addAnotherCertificate = () => {
     if (newCertificate.name.trim()) {
-      const updatedCertificates = [...certificates, { ...newCertificate, id: Date.now() }];
+      const updatedCertificates = [...allCertificates, { ...newCertificate, id: Date.now() }];
       setCertificates(updatedCertificates);
       addCertificate(newCertificate);
       setNewCertificate({ name: '', institution: '', year: '', image: null });
@@ -51,7 +51,7 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
 
   const removeCertificate = id => {
     deleteCertificate(id);
-    setCertificates(certificates.filter(cert => cert.id !== id));
+    setCertificates(allCertificates.filter(cert => cert.id !== id));
   };
 
   const expandVariants = {
@@ -171,7 +171,7 @@ const DoctorCertificates = ({ editMode, setExpandedImage, variants, cardVariants
       </AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {certificates.map((cert, index) => (
+        {allCertificates.map((cert, index) => (
           <motion.div
             key={cert.id}
             className="bg-[#E0F7FA] p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
