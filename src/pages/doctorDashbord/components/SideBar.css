@@ -1,9 +1,14 @@
 .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
     background-color: var(--color-primary-dark);
     min-width: 240px;
     max-width: 250px;
     min-height: 100vh;
     color: var(--color-text-white);
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar-content {
@@ -101,6 +106,7 @@
 
 
 }
+
 @media (max-width: 768px) {
     .close-btn {
         display: inline;
@@ -111,4 +117,3 @@
         cursor: pointer;
     }
 }
-

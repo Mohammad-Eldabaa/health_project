@@ -20,13 +20,26 @@ export default function Prescription({ onClose }) {
         duration: '',
     });
     const [showDosageModal, setShowDosageModal] = useState(false);
+    const [showManageMedicationsModal, setShowManageMedicationsModal] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+    const [newMedication, setNewMedication] = useState({
+        name: '',
+        category_id: '',
+        description: ''
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
-    
+
     const { drug_categories: medicationsData, dosage_options: dosageOptionsData, duration_options: durationOptionsData } = useDoctorDashboardStore();
     const prescriptionStore = usePrescriptionStore();
     const printRef = useRef(null);
     const realtimeChannel = useRef(null);
+
+useEffect(() => {
+    useDoctorDashboardStore.getState().fetchDrugCategories();
+}, []);
+
+
 
     // إعداد اشتراكات الوقت الحقيقي
     useEffect(() => {
@@ -136,7 +149,7 @@ export default function Prescription({ onClose }) {
             if (selectedPatient?.appointment_id) {
                 await supabase
                     .from('appointments')
-                    .update({ status: 'completed' })
+                    .update({ status: 'تم' })
                     .eq('id', selectedPatient.appointment_id);
             }
 
@@ -171,10 +184,76 @@ export default function Prescription({ onClose }) {
         documentTitle: `روشتة_${formData.patientName}_${today.replace(/\//g, '-')}`,
     });
 
+
+
+
+    const addCategory = async () => {
+        if (!newCategory.trim()) {
+            toast.warn('الرجاء إدخال اسم التصنيف');
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('drug_categories')
+                .insert([{ name: newCategory }])
+                .select();
+
+            if (error) throw error;
+        await useDoctorDashboardStore.getState().fetchDrugCategories(); // إضافة هذا السطر
+
+            toast.success('تم إضافة التصنيف بنجاح');
+            setNewCategory('');
+            // يمكنك هنا تحديث البيانات المحلية أو إعادة جلب البيانات من السيرفر
+        } catch (error) {
+            console.error('Error adding category:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        }
+    };
+
+    // دالة لإضافة دواء جديد
+    const addMedicationToDB = async () => {
+        if (!newMedication.name.trim() || !newMedication.category_id) {
+            toast.warn('الرجاء إدخال اسم الدواء واختيار التصنيف');
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('medications')
+                .insert([{
+                    name: newMedication.name,
+                    category_id: newMedication.category_id,
+                    description: newMedication.description
+                }])
+                .select();
+
+            if (error) throw error;
+
+        await useDoctorDashboardStore.getState().fetchDrugCategories();
+
+            toast.success('تم إضافة الدواء بنجاح');
+            setNewMedication(prev => ({
+                name: '',
+                category_id: prev.category_id, 
+                description: ''
+            }));
+        } catch (error) {
+            console.error('Error adding medication:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        }
+    };
+
+
     return (
         <>
-            <div className="flex items-center gap-3 justify-between">
+            <div className="flex items-center gap-3 justify-between pt-5 px-2 md:px-8">
                 <span className="text-base sm:text-lg lg:text-xl px-3">كتابة الروشتة</span>
+                <button
+                    onClick={() => setShowManageMedicationsModal(true)}
+                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg"
+                >
+                    إضافة أدوية </button>
             </div>
             <div className="bg-gray-100 rounded-2xl mx-2 sm:mx-4 lg:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-5">
                 <div className="min-h-screen bg-gray-100 p-1">
@@ -184,7 +263,7 @@ export default function Prescription({ onClose }) {
                             <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
                             {/* Categories */}
-                            <div className="bg-gray-100 p-1 rounded-lg mb-4">
+                            <div className="bg-gray-100 p-2 rounded-lg mb-4">
                                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
                                     {medicationsData?.map(cat => (
                                         <button
@@ -291,9 +370,8 @@ export default function Prescription({ onClose }) {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${
-                                        isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
-                                    }`}
+                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
+                                        }`}
                                     style={{ backgroundColor: isSubmitting ? undefined : "var(--color-accent)" }}
                                 >
                                     {isSubmitting ? 'جاري الحفظ...' : 'حفظ الروشتة'}
@@ -309,9 +387,8 @@ export default function Prescription({ onClose }) {
                                         });
                                     }}
                                     disabled={formData.selectedMeds.length === 0}
-                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${
-                                        formData.selectedMeds.length === 0 ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-                                    }`}
+                                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${formData.selectedMeds.length === 0 ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
                                     style={{ backgroundColor: formData.selectedMeds.length === 0 ? undefined : "var(--color-accent)" }}
                                 >
                                     طباعة الروشتة
@@ -416,6 +493,87 @@ export default function Prescription({ onClose }) {
                     selectedMeds={formData.selectedMeds}
                 />
             </div>
+
+
+            {showManageMedicationsModal && (
+                <div className="fixed inset-0 flex justify-center items-center z-50 overflow-auto bg-gray-500/60">
+                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl border border-gray-200">
+                        <h3 className="text-xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>
+                            إدارة الأدوية والتصنيفات
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Add Category Section */}
+                            <div className="border p-4 rounded-lg">
+                                <h4 className="font-bold mb-3">إضافة تصنيف جديد</h4>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={newCategory}
+                                        onChange={(e) => setNewCategory(e.target.value)}
+                                        placeholder="اسم التصنيف الجديد"
+                                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
+                                    />
+                                    <button
+                                        onClick={addCategory}
+                                        className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg"
+                                    >
+                                        إضافة
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Add Medication Section */}
+                            <div className="border p-4 rounded-lg">
+                                <h4 className="font-bold mb-3">إضافة دواء جديد</h4>
+                                <div className="space-y-3">
+                                    <input
+                                        type="text"
+                                        value={newMedication.name}
+                                        onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
+                                        placeholder="اسم الدواء"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                    />
+                                    <select
+                                        value={newMedication.category_id}
+                                        onChange={(e) => setNewMedication({ ...newMedication, category_id: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                    >
+                                        <option value="">اختر التصنيف</option>
+                                        {medicationsData?.map(category => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <textarea
+                                        value={newMedication.description}
+                                        onChange={(e) => setNewMedication({ ...newMedication, description: e.target.value })}
+                                        placeholder="وصف الدواء (اختياري)"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                        rows="2"
+                                    />
+                                    <button
+                                        onClick={addMedicationToDB}
+                                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg"
+                                    >
+                                        إضافة دواء
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setShowManageMedicationsModal(false)}
+                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                            >
+                                إغلاق
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

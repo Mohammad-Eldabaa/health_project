@@ -18,7 +18,7 @@ export default function PatientSearch({ onPatientSelect }) {
 
       const filtered = patients.filter(patient =>
         patient.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.phoneNumber?.includes(searchTerm)
+        patient.phoneNumber?.toString().includes(searchTerm)
       ).slice(0, 20); 
       
       setFilteredPatients(filtered);

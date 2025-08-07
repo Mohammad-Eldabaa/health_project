@@ -21,10 +21,10 @@ const Home = () => {
     const channel = setupRealtimePatients();
     return () => channel.unsubscribe();
   }, []);
-
+  
   const patients = useDoctorDashboardStore(state => state.patients);
   const appointments = useDoctorDashboardStore(state => state.appointments);
-  
+
   const navigate = useNavigate();
   const goToPatientFile = () => navigate("./Appointments");
 
@@ -51,6 +51,7 @@ const Home = () => {
         }),
         reason: app.reason,
         status: app.status,
+        type: app.type,
       };
     });
 
@@ -62,13 +63,25 @@ const Home = () => {
     },
     {
       title: "المواعيد",
-      value: appointments.length,
+      value: appointments.filter(app => app.status === 'في الإنتظار').length,
       icon: <CalendarCheck className="text-green-500" />,
     },
+  ];
+  const reson = [
     {
-      title: "الحالات الطارئة",
-      value: patients.filter(p => p.status === "حالة حرجة").length,
-      icon: <AlertCircle className="text-red-500" />,
+      title: "كشف",
+      value: appointments.filter(app => app.type === 'فحص' && app.status === 'في الإنتظار').length,
+      icon: <UserPlus className="text-blue-500" />,
+    },
+    {
+      title: "متابعه",
+      value: appointments.filter(app => app.type === 'متابعة'&& app.status === 'في الإنتظار').length,
+      icon: <CalendarCheck className="text-yellow-500" />,
+    },
+    {
+      title: "إستشاره",
+      value: appointments.filter(app => app.type === 'إستشارة'&& app.status === 'في الإنتظار').length,
+      icon: <AlertCircle className="text-green-500" />,
     },
   ];
 
@@ -79,7 +92,7 @@ const Home = () => {
       </div>
 
       <div className="container mx-auto p-4">
-        <StatsCards stats={stats} />
+        <StatsCards stats={stats} reson={reson} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-gray-100 rounded-2xl shadow-lg p-6">

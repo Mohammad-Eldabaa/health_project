@@ -1,16 +1,19 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import useAppointmentStore from '../../store/appointmentStore';
-import { supabase } from '../../supaBase/booking';
-import { Schema } from '../bookingPage/schema';
+import { supabase } from '../../supaBase/NursingBooking';
+import { Schema } from './nursingBookingSchema';
 import NursingSidebar from './NursingSidebar';
 import axios from 'axios';
 import * as Yup from 'yup';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Payment, Delete, Add, Close, Visibility } from '@mui/icons-material';
+import { Payment, Delete, Add, Close, Visibility, Search } from '@mui/icons-material';
+import Chart from 'chart.js/auto';
+import Swal from 'sweetalert2';
+import { useMediaQuery } from 'react-responsive';
 
 // Simple Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -39,14 +42,15 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    date: appt.date || '',
-    time: appt.time || '',
+    appointmentDateTime: appt.date && appt.time ? `${appt.date}T${appt.time}` : '',
     status: appt.status || 'في الإنتظار',
-    reason: appt.reason || '',
+    type: appt.type || '',
+    payment: appt.payment || false,
     amount: appt.amount || null,
     doctor_id: appt.doctor_id || '',
   });
   const [doctors, setDoctors] = useState([]);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -93,11 +97,23 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
       if (response.data.success) {
         window.location.href = response.data.url;
       } else {
-        alert(`فشل في بدء الدفع: ${response.data.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'فشل في بدء الدفع',
+          text: response.data.message,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
       }
     } catch (error) {
       console.error('Payment initiation error:', error);
-      alert('حدث خطأ أثناء بدء الدفع. حاول مرة أخرى أو اتصل بالدعم.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ في الدفع',
+        text: 'حدث خطأ أثناء بدء الدفع. حاول مرة أخرى أو اتصل بالدعم.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
     setShowPaymentModal(false);
   };
@@ -105,32 +121,70 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
   const handleEditSubmit = async e => {
     e.preventDefault();
     try {
+      const [date, time] = editFormData.appointmentDateTime.split('T');
       const updatedData = {
-        date: editFormData.date,
-        time: editFormData.time,
+        date,
+        time,
         status: editFormData.status,
-        reason: editFormData.reason || null,
+        type: editFormData.type || null,
+        payment: editFormData.payment,
         amount: editFormData.amount ? parseFloat(editFormData.amount) : null,
         doctor_id: editFormData.doctor_id || null,
       };
       await updateAppointment(appt.id, updatedData);
       setIsEditing(false);
       setIsExpanded(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'تم التحديث',
+        text: 'تم تحديث الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       console.error('Error updating appointment:', err);
-      alert('حدث خطأ أثناء تحديث الموعد.');
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'حدث خطأ أثناء تحديث الموعد.',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#d33',
+      });
     }
   };
 
   const handleEditChange = e => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setEditFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
       ...(name === 'doctor_id' && {
         amount: doctors.find(d => String(d.id) === value)?.fees || null,
       }),
     }));
+  };
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: 'تأكيد الحذف',
+      text: 'هل أنت متأكد من حذف هذا الموعد؟',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'نعم، احذف',
+      cancelButtonText: 'إلغاء',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+    });
+    if (result.isConfirmed) {
+      await deleteAppointment(appt.id);
+      Swal.fire({
+        icon: 'success',
+        title: 'تم الحذف',
+        text: 'تم حذف الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
+    }
   };
 
   return (
@@ -149,12 +203,14 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
           isDragging ? 'opacity-50 bg-gray-100 shadow-lg' : 'opacity-100 hover:bg-gray-50'
         }`}
       >
-        <td className="cursor-move py-4">
-          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} className="inline-block">
-            <i className="bi bi-grip-vertical me-2 text-gray-400"></i>
-          </motion.div>
-          <span className="font-medium bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-sm">{index + 1}</span>
-        </td>
+        {!isMobile && (
+          <td className="cursor-move py-4">
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} className="inline-block">
+              <i className="bi bi-grip-vertical me-2 text-gray-400"></i>
+            </motion.div>
+            <span className="font-medium bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-sm">{index + 1}</span>
+          </td>
+        )}
         <td className="py-4">
           <motion.div whileHover={{ x: -3 }} className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
@@ -163,15 +219,17 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
             <span className="font-medium text-gray-800">{appt.patientName || 'غير متوفر'}</span>
           </motion.div>
         </td>
-        <td className="py-4">
-          <motion.span
-            whileHover={{ scale: 1.05 }}
-            className="badge bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm shadow-sm flex items-center gap-1"
-          >
-            <i className="bi bi-heart-pulse text-blue-500"></i>
-            {appt.doctorName || 'غير محدد'}
-          </motion.span>
-        </td>
+        {!isMobile && (
+          <td className="py-4">
+            <motion.span
+              whileHover={{ scale: 1.05 }}
+              className="badge bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm shadow-sm flex items-center gap-1"
+            >
+              <i className="bi bi-heart-pulse text-blue-500"></i>
+              {appt.doctorName || 'غير محدد'}
+            </motion.span>
+          </td>
+        )}
         <td className="py-4">
           <motion.span
             whileHover={{ scale: 1.05 }}
@@ -191,19 +249,33 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
             {appt.status || 'غير محدد'}
           </motion.span>
         </td>
-        <td className="py-4">
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
-              {appt.date ? new Date(appt.date).toLocaleDateString('ar-EG') : 'غير متوفر'}
-            </span>
-          </motion.div>
-        </td>
-        <td className="py-4">
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">{appt.time || 'غير متوفر'}</span>
-          </motion.div>
-        </td>
-        <td className="py-4">{appt.reason || <span className="text-gray-400 italic">لا توجد ملاحظات</span>}</td>
+        {!isMobile && (
+          <td className="py-4">
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                {appt.date ? new Date(appt.date).toLocaleDateString('ar-EG') : 'غير متوفر'}
+              </span>
+            </motion.div>
+          </td>
+        )}
+        {!isMobile && (
+          <td className="py-4">
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                {appt.time || 'غير متوفر'}
+              </span>
+            </motion.div>
+          </td>
+        )}
+        {!isMobile && (
+          <td className="py-4">
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                {appt.type || 'غير محدد'}
+              </span>
+            </motion.div>
+          </td>
+        )}
         <td className="py-4">
           <motion.span
             whileHover={{ scale: 1.05 }}
@@ -227,47 +299,30 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
             >
               <Visibility fontSize="small" />
             </motion.button>
-            {!appt.payment && !appt.cancelled && (
+            {!appt.payment && (
               <>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowPaymentModal(true)}
-                  className="btn btn-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm flex items-center gap-1"
-                >
-                  <Payment fontSize="small" />
-                  دفع أونلاين
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    if (window.confirm('هل أنت متأكد من حذف هذا الموعد؟')) {
-                      deleteAppointment(appt.id);
-                    }
-                  }}
-                  className="btn btn-sm bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-sm flex items-center gap-1"
-                >
-                  <Delete fontSize="small" />
-                  حذف
-                </motion.button>
+                {!isMobile && (
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowPaymentModal(true)}
+                    className="btn btn-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm flex items-center gap-1"
+                  >
+                    <Payment fontSize="small" />
+                    دفع أونلاين
+                  </motion.button>
+                )}
               </>
             )}
-            {(appt.payment || appt.cancelled) && (
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (window.confirm('هل أنت متأكد من حذف هذا الموعد؟')) {
-                    deleteAppointment(appt.id);
-                  }
-                }}
-                className="btn btn-sm bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-sm flex items-center gap-1"
-              >
-                <Delete fontSize="small" />
-                حذف
-              </motion.button>
-            )}
+            <motion.button
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDelete}
+              className="btn btn-sm bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-sm flex items-center gap-1"
+            >
+              <Delete fontSize="small" />
+              {isMobile ? '' : 'حذف'}
+            </motion.button>
           </div>
         </td>
       </motion.tr>
@@ -280,27 +335,16 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <td colSpan="9" className="p-4 bg-gray-50">
+            <td colSpan={isMobile ? 4 : 9} className="p-4 bg-gray-50">
               <ErrorBoundary>
                 {isEditing ? (
                   <form onSubmit={handleEditSubmit} className="grid grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">التاريخ</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">التاريخ والوقت</label>
                       <input
-                        type="date"
-                        name="date"
-                        value={editFormData.date}
-                        onChange={handleEditChange}
-                        className="w-full p-3 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">الوقت</label>
-                      <input
-                        type="time"
-                        name="time"
-                        value={editFormData.time}
+                        type="datetime-local"
+                        name="appointmentDateTime"
+                        value={editFormData.appointmentDateTime}
                         onChange={handleEditChange}
                         className="w-full p-3 border border-gray-300 rounded-lg"
                         required
@@ -338,14 +382,30 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">الملاحظات</label>
-                      <textarea
-                        name="reason"
-                        value={editFormData.reason}
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">نوع الزيارة</label>
+                      <select
+                        name="type"
+                        value={editFormData.type}
                         onChange={handleEditChange}
                         className="w-full p-3 border border-gray-300 rounded-lg"
-                        rows="4"
+                        required
+                      >
+                        <option value="">اختر نوع الزيارة</option>
+                        <option value="فحص">فحص</option>
+                        <option value="متابعة">متابعة</option>
+                        <option value="استشارة">استشارة</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">حالة الدفع</label>
+                      <input
+                        type="checkbox"
+                        name="payment"
+                        checked={editFormData.payment}
+                        onChange={handleEditChange}
+                        className="p-3 border border-gray-300 rounded-lg"
                       />
+                      <span className="ml-2">{editFormData.payment ? 'مدفوع' : 'غير مدفوع'}</span>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">المبلغ</label>
@@ -416,8 +476,8 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
                       <span className="text-gray-800 font-medium">{appt.time || 'غير متوفر'}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
-                      <span className="font-semibold text-gray-700">السبب:</span>
-                      <span className="text-gray-800 font-medium">{appt.reason || 'لا توجد ملاحظات'}</span>
+                      <span className="font-semibold text-gray-700">نوع الزيارة:</span>
+                      <span className="text-gray-800 font-medium">{appt.type || 'غير محدد'}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
                       <span className="font-semibold text-gray-700">حالة الدفع:</span>
@@ -513,19 +573,24 @@ const NursingAppointments = () => {
     address: '',
     age: '',
     phoneNumber: '',
-    bookingDate: '',
-    visitType: '',
+    type: '',
     notes: '',
     doctor_id: '',
-    date: '',
-    time: '',
+    appointmentDateTime: '',
     status: 'في الإنتظار',
     amount: null,
+    payment: false,
   });
   const [formErrors, setFormErrors] = useState({});
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAppointments, setFilteredAppointments] = useState(appointments);
+  const lineChartRef = useRef(null);
+  const typeChartRef = useRef(null);
+  const doctorChartRef = useRef(null);
+  const paymentChartRef = useRef(null);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const isTablet = useMediaQuery({ query: '(max-width: 1024px)' });
 
   useEffect(() => {
     fetchAppointments();
@@ -533,6 +598,13 @@ const NursingAppointments = () => {
       const { data, error } = await supabase.from('doctors').select('id, name, fees');
       if (error) {
         console.error('Error fetching doctors:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: 'فشل في جلب قائمة الأطباء. حاول مرة أخرى.',
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
       } else {
         setDoctors(data || []);
       }
@@ -551,6 +623,266 @@ const NursingAppointments = () => {
     };
   }, [fetchAppointments]);
 
+  const getChartData = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const dailyCounts = {};
+    const completedCounts = {};
+    const pendingCounts = {};
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toLocaleDateString('ar-EG');
+      dailyCounts[dateStr] = 0;
+      completedCounts[dateStr] = 0;
+      pendingCounts[dateStr] = 0;
+    }
+    appointments.forEach(appt => {
+      if (appt.date) {
+        const dateStr = new Date(appt.date).toLocaleDateString('ar-EG');
+        if (dailyCounts[dateStr] !== undefined) {
+          dailyCounts[dateStr]++;
+          if (appt.status === 'تم') {
+            completedCounts[dateStr]++;
+          } else if (appt.status === 'في الإنتظار') {
+            pendingCounts[dateStr]++;
+          }
+        }
+      }
+    });
+
+    const typeCounts = {
+      فحص: { paid: 0, unpaid: 0 },
+      متابعة: { paid: 0, unpaid: 0 },
+      استشارة: { paid: 0, unpaid: 0 },
+    };
+    appointments.forEach(appt => {
+      if (appt.type && typeCounts[appt.type] !== undefined) {
+        if (appt.payment) {
+          typeCounts[appt.type].paid++;
+        } else {
+          typeCounts[appt.type].unpaid++;
+        }
+      }
+    });
+
+    const doctorCounts = {};
+    doctors.forEach(doctor => {
+      doctorCounts[doctor.name] = 0;
+    });
+    appointments.forEach(appt => {
+      if (appt.doctorName) {
+        doctorCounts[appt.doctorName] = (doctorCounts[appt.doctorName] || 0) + 1;
+      }
+    });
+
+    const paymentCounts = {
+      paid: 0,
+      unpaid: 0,
+    };
+    appointments.forEach(appt => {
+      if (appt.payment) {
+        paymentCounts.paid++;
+      } else {
+        paymentCounts.unpaid++;
+      }
+    });
+
+    const todayCount = appointments.filter(
+      appt => appt.date && new Date(appt.date).toDateString() === today.toDateString()
+    ).length;
+    const weekCount = appointments.filter(
+      appt => appt.date && new Date(appt.date) >= startOfWeek && new Date(appt.date) <= endOfWeek
+    ).length;
+    const monthCount = appointments.filter(
+      appt => appt.date && new Date(appt.date) >= startOfMonth && new Date(appt.date) <= endOfMonth
+    ).length;
+
+    return {
+      dailyCounts,
+      completedCounts,
+      pendingCounts,
+      typeCounts,
+      doctorCounts,
+      paymentCounts,
+      todayCount,
+      weekCount,
+      monthCount,
+    };
+  };
+
+  const {
+    dailyCounts,
+    completedCounts,
+    pendingCounts,
+    typeCounts,
+    doctorCounts,
+    paymentCounts,
+    todayCount,
+    weekCount,
+    monthCount,
+  } = getChartData();
+
+  useEffect(() => {
+    if (lineChartRef.current && typeChartRef.current && doctorChartRef.current && paymentChartRef.current) {
+      const lineChart = new Chart(lineChartRef.current, {
+        type: 'line',
+        data: {
+          labels: Object.keys(dailyCounts),
+          datasets: [
+            {
+              label: 'جميع المواعيد',
+              data: Object.values(dailyCounts),
+              borderColor: '#0097A7',
+              backgroundColor: 'rgba(0, 151, 167, 0.2)',
+              fill: true,
+              tension: 0.4,
+            },
+            {
+              label: 'المواعيد المكتملة',
+              data: Object.values(completedCounts),
+              borderColor: '#4CAF50',
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              fill: true,
+              tension: 0.4,
+            },
+            {
+              label: 'المواعيد في الانتظار',
+              data: Object.values(pendingCounts),
+              borderColor: '#FFC107',
+              backgroundColor: 'rgba(255, 193, 7, 0.2)',
+              fill: true,
+              tension: 0.4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: isMobile ? 'bottom' : 'top',
+              labels: { color: '#333' },
+            },
+            title: { display: false },
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'التاريخ', color: '#333' },
+              ticks: { color: '#333' },
+            },
+            y: {
+              title: { display: true, text: 'عدد المواعيد', color: '#333' },
+              ticks: { color: '#333' },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      const typeChart = new Chart(typeChartRef.current, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(typeCounts).flatMap(type => [`${type} (مدفوع)`, `${type} (غير مدفوع)`]),
+          datasets: [
+            {
+              label: 'عدد المواعيد',
+              data: Object.values(typeCounts).flatMap(counts => [counts.paid, counts.unpaid]),
+              backgroundColor: ['#00BCD4', '#B2EBF2', '#4DD0E1', '#B2DFDB', '#26A69A', '#80CBC4'],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: isMobile ? 'bottom' : 'top',
+              labels: { color: '#333' },
+            },
+            title: { display: false },
+          },
+        },
+      });
+
+      const doctorChart = new Chart(doctorChartRef.current, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(doctorCounts),
+          datasets: [
+            {
+              label: 'عدد المواعيد لكل طبيب',
+              data: Object.values(doctorCounts),
+              backgroundColor: 'rgba(0, 151, 167, 0.6)',
+              borderColor: '#0097A7',
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: isMobile ? 'bottom' : 'top',
+              labels: { color: '#333' },
+            },
+            title: { display: false },
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'الطبيب', color: '#333' },
+              ticks: { color: '#333' },
+            },
+            y: {
+              title: { display: true, text: 'عدد المواعيد', color: '#333' },
+              ticks: { color: '#333' },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      const paymentChart = new Chart(paymentChartRef.current, {
+        type: 'doughnut',
+        data: {
+          labels: ['مدفوع', 'غير مدفوع'],
+          datasets: [
+            {
+              label: 'حالة الدفع',
+              data: [paymentCounts.paid, paymentCounts.unpaid],
+              backgroundColor: ['#4CAF50', '#F44336'],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: isMobile ? 'bottom' : 'top',
+              labels: { color: '#333' },
+            },
+            title: { display: false },
+          },
+        },
+      });
+
+      return () => {
+        lineChart.destroy();
+        typeChart.destroy();
+        doctorChart.destroy();
+        paymentChart.destroy();
+      };
+    }
+  }, [appointments, doctors, isMobile]);
+
   useEffect(() => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -564,12 +896,13 @@ const NursingAppointments = () => {
 
     let filtered = appointments;
 
-    // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(appt => appt.patientName?.toLowerCase().includes(searchQuery.toLowerCase()));
+      filtered = filtered.filter(
+        appt =>
+          appt.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) || appt.phoneNumber?.includes(searchQuery)
+      );
     }
 
-    // Apply date filter
     switch (filter) {
       case 'today':
         filtered = filtered.filter(appt => appt.date && new Date(appt.date).toDateString() === today.toDateString());
@@ -610,18 +943,19 @@ const NursingAppointments = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
+      const [date, time] = formData.appointmentDateTime.split('T');
       const extendedSchema = Schema.shape({
         doctor_id: Yup.string().required('الطبيب مطلوب'),
-        date: Yup.string().required('التاريخ مطلوب'),
-        time: Yup.string().required('الوقت مطلوب'),
+        appointmentDateTime: Yup.string().required('تاريخ ووقت الموعد مطلوب'),
       });
 
-      await extendedSchema.validate(formData, { abortEarly: false });
+      await extendedSchema.validate({ ...formData, date, time }, { abortEarly: false });
       setFormErrors({});
 
+      // Check if patient exists by phone number
       const { data: existingPatient, error: patientCheckError } = await supabase
         .from('patients')
-        .select('id')
+        .select('id, fullName, age, address')
         .eq('phoneNumber', formData.phoneNumber)
         .single();
 
@@ -629,20 +963,53 @@ const NursingAppointments = () => {
 
       if (patientCheckError && patientCheckError.code !== 'PGRST116') {
         console.error('Error checking patient:', patientCheckError);
-        alert('فشل في التحقق من وجود المريض.');
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: `فشل في التحقق من وجود المريض: ${patientCheckError.message}`,
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
         return;
       }
 
       if (existingPatient) {
         patientId = existingPatient.id;
+        // Update patient details if they differ
+        if (
+          existingPatient.fullName !== formData.fullName ||
+          existingPatient.age !== parseInt(formData.age) ||
+          existingPatient.address !== formData.address
+        ) {
+          const { error: updateError } = await supabase
+            .from('patients')
+            .update({
+              fullName: formData.fullName,
+              age: parseInt(formData.age),
+              address: formData.address,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', patientId);
+          if (updateError) {
+            console.error('Error updating patient:', updateError);
+            Swal.fire({
+              icon: 'error',
+              title: 'خطأ',
+              text: `فشل في تحديث بيانات المريض: ${updateError.message}`,
+              confirmButtonText: 'حسناً',
+              confirmButtonColor: '#d33',
+            });
+            return;
+          }
+        }
       } else {
         const patientData = {
           fullName: formData.fullName,
           age: parseInt(formData.age),
           phoneNumber: formData.phoneNumber,
           address: formData.address,
-          bookingDate: formData.bookingDate,
-          visitType: formData.visitType,
+          bookingDate: date,
+          type: formData.type,
         };
 
         const { data: newPatient, error: patientError } = await supabase
@@ -653,7 +1020,17 @@ const NursingAppointments = () => {
 
         if (patientError) {
           console.error('Error adding patient:', patientError);
-          alert('فشل في إضافة المريض.');
+          let errorMessage = 'فشل في إضافة المريض.';
+          if (patientError.code === '23505') {
+            errorMessage = 'رقم الهاتف موجود بالفعل. يرجى استخدام رقم هاتف آخر أو التحقق من المريض.';
+          }
+          Swal.fire({
+            icon: 'error',
+            title: 'خطأ',
+            text: errorMessage,
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#d33',
+          });
           return;
         }
 
@@ -661,10 +1038,11 @@ const NursingAppointments = () => {
       }
 
       const appointmentData = {
-        date: formData.date,
-        time: formData.time,
+        date,
+        time,
         status: formData.status,
-        reason: formData.notes || null,
+        type: formData.type || null,
+        payment: formData.payment,
         amount: formData.amount ? parseFloat(formData.amount) : null,
         patient_id: patientId,
         doctor_id: formData.doctor_id || null,
@@ -677,16 +1055,22 @@ const NursingAppointments = () => {
         address: '',
         age: '',
         phoneNumber: '',
-        bookingDate: '',
-        visitType: '',
+        type: '',
         notes: '',
         doctor_id: '',
-        date: '',
-        time: '',
+        appointmentDateTime: '',
         status: 'في الإنتظار',
         amount: null,
+        payment: false,
       });
       setShowModal(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'تمت الإضافة',
+        text: 'تم إضافة الموعد بنجاح!',
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: '#3085d6',
+      });
     } catch (err) {
       if (err.name === 'ValidationError') {
         const errors = {};
@@ -696,7 +1080,13 @@ const NursingAppointments = () => {
         setFormErrors(errors);
       } else {
         console.error('Error submitting appointment:', err);
-        alert('حدث خطأ أثناء إضافة الموعد.');
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: 'حدث خطأ غير متوقع أثناء إضافة الموعد.',
+          confirmButtonText: 'حسناً',
+          confirmButtonColor: '#d33',
+        });
       }
     }
   };
@@ -707,7 +1097,7 @@ const NursingAppointments = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br w-full lg:pr-64 from-gray-50 to-blue-50" dir="rtl">
         <Helmet>
           <title>جدولة المواعيد - نظام المواعيد الطبية</title>
           <meta
@@ -732,7 +1122,7 @@ const NursingAppointments = () => {
 
         <div className="flex flex-col md:flex-row">
           <NursingSidebar />
-          <main className="flex-1 p-4 md:p-6">
+          <main className="flex-1 p-4 md:p-6 w-full">
             <nav className="bg-white p-3 md:hidden mb-4 rounded-lg shadow-sm">
               <button
                 className="text-gray-700"
@@ -746,6 +1136,57 @@ const NursingAppointments = () => {
                 <span className="inline-block w-6 h-6 bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 30 30%27%3E%3Cpath stroke=%27rgba(0, 0, 0, 0.5)%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-miterlimit=%2710%27 d=%27M4 7h22M4 15h22M4 23h22%27/%3E%3C/svg%3E')] bg-no-repeat bg-center" />
               </button>
             </nav>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white shadow-xl rounded-2xl p-4 md:p-6 border border-gray-100 mb-6"
+            >
+              <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <i className="bi bi-graph-up"></i> إحصائيات المواعيد
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 text-center gap-6 mb-6">
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات اليوم</h6>
+                  <p className="text-blue-600 text-xl font-semibold">{todayCount}</p>
+                </div>
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات الأسبوعية</h6>
+                  <p className="text-cyan-600 text-xl font-semibold">{weekCount}</p>
+                </div>
+                <div>
+                  <h6 className="text-sm font-medium">الزيارات الشهرية</h6>
+                  <p className="text-green-600 text-xl font-semibold">{monthCount}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow p-6 h-[300px]">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-graph-up"></i> المواعيد اليومية
+                  </h5>
+                  <canvas ref={lineChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6 h-[300px]">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-pie-chart"></i> أنواع المواعيد حسب حالة الدفع
+                  </h5>
+                  <canvas ref={typeChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6 h-[300px]">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-bar-chart"></i> المواعيد حسب الطبيب
+                  </h5>
+                  <canvas ref={doctorChartRef}></canvas>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6 h-[300px]">
+                  <h5 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i className="bi bi-pie-chart"></i> حالة الدفع
+                  </h5>
+                  <canvas ref={paymentChartRef}></canvas>
+                </div>
+              </div>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -796,15 +1237,23 @@ const NursingAppointments = () => {
                 </motion.button>
               </div>
 
-              <div className="mb-6">
-                <input
-                  type="text"
-                  placeholder="ابحث عن مواعيد المرضى بالاسم..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-6"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="ابحث بالاسم أو رقم الهاتف..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </motion.div>
 
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
@@ -871,7 +1320,9 @@ const NursingAppointments = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <h4 className="text-lg font-semibold mb-1">لا توجد مواعيد مجدولة بعد</h4>
+                  <h4 className="text-lg font-semibold mb-1">
+                    {searchQuery ? 'لا توجد نتائج مطابقة للبحث.' : 'لا توجد مواعيد مجدولة بعد'}
+                  </h4>
                   <p className="text-sm text-blue-700">اضغط على زر "إضافة موعد" لبدء جدولة المواعيد</p>
                 </motion.div>
               ) : (
@@ -880,27 +1331,29 @@ const NursingAppointments = () => {
                     <thead className="bg-gradient-to-r from-cyan-50 to-blue-50">
                       <tr>
                         {[
-                          'الرقم',
+                          !isMobile && 'الرقم',
                           'المريض',
-                          'الطبيب',
+                          !isMobile && 'الطبيب',
                           'الحالة',
-                          'التاريخ',
-                          'الوقت',
-                          'السبب',
+                          !isMobile && 'التاريخ',
+                          !isMobile && 'الوقت',
+                          !isMobile && 'نوع الزيارة',
                           'حالة الدفع',
                           'الإجراءات',
-                        ].map((header, idx) => (
-                          <motion.th
-                            key={idx}
-                            initial={{ y: -20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: idx * 0.05 + 0.2 }}
-                            scope="col"
-                            className="px-6 py-3 text-right font-semibold text-cyan-800"
-                          >
-                            {header}
-                          </motion.th>
-                        ))}
+                        ]
+                          .filter(Boolean)
+                          .map((header, idx) => (
+                            <motion.th
+                              key={idx}
+                              initial={{ y: -20, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ delay: idx * 0.05 + 0.2 }}
+                              scope="col"
+                              className="px-6 py-3 text-right font-semibold text-cyan-800"
+                            >
+                              {header}
+                            </motion.th>
+                          ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -1034,22 +1487,25 @@ const NursingAppointments = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3 }}
                         >
-                          <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-700 mb-2">
-                            تاريخ الحجز
+                          <label
+                            htmlFor="appointmentDateTime"
+                            className="block text-sm font-semibold text-gray-700 mb-2"
+                          >
+                            تاريخ ووقت الموعد
                           </label>
                           <input
-                            type="date"
+                            type="datetime-local"
                             className={`w-full p-3 border ${
-                              formErrors.bookingDate ? 'border-red-300' : 'border-gray-300'
+                              formErrors.appointmentDateTime ? 'border-red-300' : 'border-gray-300'
                             } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                            id="bookingDate"
-                            name="bookingDate"
-                            value={formData.bookingDate}
+                            id="appointmentDateTime"
+                            name="appointmentDateTime"
+                            value={formData.appointmentDateTime}
                             onChange={handleChange}
                             required
                           />
-                          {formErrors.bookingDate && (
-                            <p className="text-red-600 text-sm mt-1">{formErrors.bookingDate}</p>
+                          {formErrors.appointmentDateTime && (
+                            <p className="text-red-600 text-sm mt-1">{formErrors.appointmentDateTime}</p>
                           )}
                         </motion.div>
                         <motion.div
@@ -1057,16 +1513,16 @@ const NursingAppointments = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.35 }}
                         >
-                          <label htmlFor="visitType" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="type" className="block text-sm font-semibold text-gray-700 mb-2">
                             نوع الزيارة
                           </label>
                           <select
                             className={`w-full p-3 border ${
-                              formErrors.visitType ? 'border-red-300' : 'border-gray-300'
+                              formErrors.type ? 'border-red-300' : 'border-gray-300'
                             } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                            id="visitType"
-                            name="visitType"
-                            value={formData.visitType}
+                            id="type"
+                            name="type"
+                            value={formData.type}
                             onChange={handleChange}
                             required
                           >
@@ -1075,7 +1531,7 @@ const NursingAppointments = () => {
                             <option value="متابعة">متابعة</option>
                             <option value="استشارة">استشارة</option>
                           </select>
-                          {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
+                          {formErrors.type && <p className="text-red-600 text-sm mt-1">{formErrors.type}</p>}
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -1129,69 +1585,6 @@ const NursingAppointments = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.5 }}
                         >
-                          <label htmlFor="date" className="block text-sm font-semibold text-gray-700 mb-2">
-                            التاريخ
-                          </label>
-                          <input
-                            type="date"
-                            className={`w-full p-3 border ${
-                              formErrors.date ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                            id="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleChange}
-                            required
-                          />
-                          {formErrors.date && <p className="text-red-600 text-sm mt-1">{formErrors.date}</p>}
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.55 }}
-                        >
-                          <label htmlFor="time" className="block text-sm font-semibold text-gray-700 mb-2">
-                            الوقت
-                          </label>
-                          <input
-                            type="time"
-                            className={`w-full p-3 border ${
-                              formErrors.time ? 'border-red-300' : 'border-gray-300'
-                            } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                            id="time"
-                            name="time"
-                            value={formData.time}
-                            onChange={handleChange}
-                            required
-                          />
-                          {formErrors.time && <p className="text-red-600 text-sm mt-1">{formErrors.time}</p>}
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.6 }}
-                        >
-                          <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
-                            الحالة
-                          </label>
-                          <select
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option value="في الإنتظار">في الإنتظار</option>
-                            <option value="ملغى">ملغى</option>
-                            <option value="تم">تم</option>
-                          </select>
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.65 }}
-                        >
                           <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
                             الملاحظات
                           </label>
@@ -1209,9 +1602,27 @@ const NursingAppointments = () => {
                           {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
                         </motion.div>
                         <motion.div
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.55 }}
+                        >
+                          <label htmlFor="payment" className="block text-sm font-semibold text-gray-700 mb-2">
+                            حالة الدفع
+                          </label>
+                          <input
+                            type="checkbox"
+                            className="p-3 border border-gray-300 rounded-lg"
+                            id="payment"
+                            name="payment"
+                            checked={formData.payment}
+                            onChange={e => setFormData(prev => ({ ...prev, payment: e.target.checked }))}
+                          />
+                          <span className="ml-2">{formData.payment ? 'مدفوع' : 'غير مدفوع'}</span>
+                        </motion.div>
+                        <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7 }}
+                          transition={{ delay: 0.6 }}
                           className="flex justify-end gap-3 pt-4"
                         >
                           <motion.button
