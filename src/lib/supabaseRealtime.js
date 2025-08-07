@@ -1,4 +1,5 @@
 
+// lib/supabaseRealtime.js - Updated Version
 import { supabase } from '../supaBase/booking';
 import useDoctorDashboardStore from '../store/doctorDashboardStore';
 import { usePrescriptionStore } from '../store/prescriptionStore';
@@ -9,40 +10,32 @@ const handleTableUpdate = (tableName, currentData, payload, setter) => {
     const { eventType, new: newItem, old: oldItem } = payload;
     console.log(`🔁 Realtime [${tableName}]:`, payload);
 
+    let updatedData = [...(currentData || [])];
+
     switch (eventType) {
         case 'INSERT':
-            setter([...currentData, newItem]);
+            // تجنب الإدراج المكرر
+            if (!updatedData.find(item => item.id === newItem.id)) {
+                updatedData.push(newItem);
+            }
             break;
         case 'UPDATE':
-            setter(currentData.map(item => (item.id === newItem.id ? newItem : item)));
+            updatedData = updatedData.map(item => 
+                item.id === newItem.id ? { ...item, ...newItem } : item
+            );
             break;
         case 'DELETE':
-            setter(currentData.filter(item => item.id !== oldItem.id));
+            updatedData = updatedData.filter(item => item.id !== oldItem.id);
             break;
         default:
             break;
     }
+
+    setter(updatedData);
 };
 
+// دالة محسنة لإعداد realtime للمرضى
 export const setupRealtimePatients = (patientId = null) => {
-    // إذا كان هناك قناة نشطة لنفس المريض، نعيدها
-    if (patientId && activeChannels.has(`patient-${patientId}`)) {
-        return activeChannels.get(`patient-${patientId}`);
-    }
-
-    const {
-        setPatients,
-        setAppointments,
-        setVisits,
-        setPrescriptionMedications,
-        setTests,
-        setTestRequests,
-        setDrugCategories,
-        setTestCategories
-    } = useDoctorDashboardStore.getState();
-
-    const { fetchPatientPrescriptions } = usePrescriptionStore.getState();
-
     const channelName = patientId 
         ? `clinic-patient-${patientId}`
         : `clinic-global-${Math.random().toString(36).substr(2, 9)}`;
@@ -51,6 +44,20 @@ export const setupRealtimePatients = (patientId = null) => {
     if (activeChannels.has(channelName)) {
         return activeChannels.get(channelName);
     }
+
+    const {
+        setPatients,
+        setAppointments,
+        setVisits,
+        setPrescriptions,
+        setPrescriptionMedications,
+        setTests,
+        setTestRequests,
+        setDrugCategories,
+        fetchData
+    } = useDoctorDashboardStore.getState();
+
+    const { fetchPatientPrescriptions } = usePrescriptionStore.getState();
 
     const channel = supabase.channel(channelName);
 
@@ -63,24 +70,16 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'patients',
             ...(patientId && { filter: `id=eq.${patientId}` }),
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().patients || [];
-            handleTableUpdate('patients', current, payload, setPatients);
-        }
-    );
-
-    // --- appointments ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'appointments',
-            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().appointments || [];
-            handleTableUpdate('appointments', current, payload, setAppointments);
+        async (payload) => {
+            console.log('🔁 Patients update:', payload);
+            
+            // إعادة جلب البيانات الكاملة للمرضى مع العلاقات
+            await fetchData();
+            
+            // إشعار المكونات بالتحديث
+            if (window.onPatientsUpdate) {
+                window.onPatientsUpdate(payload);
+            }
         }
     );
 
@@ -93,9 +92,16 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'visits',
             ...(patientId && { filter: `patient_id=eq.${patientId}` }),
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().visits || [];
-            handleTableUpdate('visits', current, payload, setVisits);
+        async (payload) => {
+            console.log('🔁 Visits update:', payload);
+            
+            // إعادة جلب البيانات الكاملة
+            await fetchData();
+            
+            // إشعار المكونات بالتحديث
+            if (window.onVisitsUpdate) {
+                window.onVisitsUpdate(payload);
+            }
         }
     );
 
@@ -108,11 +114,21 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'prescriptions',
             ...(patientId && { filter: `patient_id=eq.${patientId}` }),
         },
-        async payload => {
-            console.log('🔁 Realtime [prescriptions]:', payload);
+        async (payload) => {
+            console.log('🔁 Prescriptions update:', payload);
+            
+            // إعادة جلب البيانات الكاملة
+            await fetchData();
+            
+            // جلب روشتات المريض إذا كان محدد
             const { new: newPrescription } = payload;
             if (newPrescription?.patient_id) {
                 await fetchPatientPrescriptions(newPrescription.patient_id);
+            }
+            
+            // إشعار المكونات بالتحديث
+            if (window.onPrescriptionsUpdate) {
+                window.onPrescriptionsUpdate(payload);
             }
         }
     );
@@ -125,9 +141,55 @@ export const setupRealtimePatients = (patientId = null) => {
             schema: 'public',
             table: 'prescription_medications',
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().prescription_medications || [];
-            handleTableUpdate('prescription_medications', current, payload, setPrescriptionMedications);
+        async (payload) => {
+            console.log('🔁 Prescription medications update:', payload);
+            
+            // إعادة جلب البيانات الكاملة
+            await fetchData();
+            
+            // إشعار المكونات بالتحديث
+            if (window.onPrescriptionMedicationsUpdate) {
+                window.onPrescriptionMedicationsUpdate(payload);
+            }
+        }
+    );
+
+    // --- test_requests ---
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'test_requests',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        async (payload) => {
+            console.log('🔁 Test requests update:', payload);
+            
+            // إعادة جلب البيانات الكاملة
+            await fetchData();
+            
+            // إشعار المكونات بالتحديث
+            if (window.onTestRequestsUpdate) {
+                window.onTestRequestsUpdate(payload);
+            }
+        }
+    );
+
+    // --- appointments ---
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'appointments',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        async (payload) => {
+            console.log('🔁 Appointments update:', payload);
+            
+            const current = useDoctorDashboardStore.getState().appointments || [];
+            handleTableUpdate('appointments', current, payload, setAppointments);
         }
     );
 
@@ -142,35 +204,6 @@ export const setupRealtimePatients = (patientId = null) => {
         payload => {
             const current = useDoctorDashboardStore.getState().tests || [];
             handleTableUpdate('tests', current, payload, setTests);
-        }
-    );
-
-    // --- test_requests ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'test_requests',
-            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().test_requests || [];
-            handleTableUpdate('test_requests', current, payload, setTestRequests);
-        }
-    );
-
-    // --- test_cat ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'test_cat',
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().test_categories || [];
-            handleTableUpdate('test_categories', current, payload, setTestCategories);
         }
     );
 
@@ -195,14 +228,15 @@ export const setupRealtimePatients = (patientId = null) => {
             activeChannels.delete(channelName);
         } else {
             activeChannels.set(channelName, channel);
-            console.log(`Realtime channel [${channelName}] status:`, status);
+            console.log(`✅ Realtime channel [${channelName}] status:`, status);
         }
     });
 
     return channel;
 };
 
-export const removeRealtimeChannel = async channel => {
+// دالة محسنة لإزالة القناة
+export const removeRealtimeChannel = async (channel) => {
     if (!channel) return;
 
     try {
@@ -211,11 +245,28 @@ export const removeRealtimeChannel = async channel => {
         
         if (error) {
             console.error('Error removing channel:', error);
-        } else {
+        } else {  
             activeChannels.delete(channelName);
-            console.log('Channel removed successfully');
+            console.log('✅ Channel removed successfully:', channelName);
         }
     } catch (err) {
         console.error('Exception while removing channel:', err);
     }
+};
+
+// دالة للحصول على جميع القنوات النشطة
+export const getActiveChannels = () => {
+    return Array.from(activeChannels.keys());
+};
+
+// دالة لتنظيف جميع القنوات
+export const cleanupAllChannels = async () => {
+    const channels = Array.from(activeChannels.values());
+    
+    for (const channel of channels) {
+        await removeRealtimeChannel(channel);
+    }
+    
+    activeChannels.clear();
+    console.log('✅ All channels cleaned up');
 };

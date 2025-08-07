@@ -21,7 +21,7 @@ const Home = () => {
     const channel = setupRealtimePatients();
     return () => channel.unsubscribe();
   }, []);
-  
+
   const patients = useDoctorDashboardStore(state => state.patients);
   const appointments = useDoctorDashboardStore(state => state.appointments);
 
@@ -31,7 +31,11 @@ const Home = () => {
   const today = new Date().toISOString().split("T")[0];
 
   if (loading) {
-    return <div className="p-4 text-blue-600">جاري التحميل...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-600"></div>
+      </div>
+    );
   }
 
   if (!appointments.length || !patients.length) {
@@ -75,12 +79,12 @@ const Home = () => {
     },
     {
       title: "متابعه",
-      value: appointments.filter(app => app.type === 'متابعة'&& app.status === 'في الإنتظار').length,
+      value: appointments.filter(app => app.type === 'متابعة' && app.status === 'في الإنتظار').length,
       icon: <CalendarCheck className="text-yellow-500" />,
     },
     {
       title: "إستشاره",
-      value: appointments.filter(app => app.type === 'إستشارة'&& app.status === 'في الإنتظار').length,
+      value: appointments.filter(app => app.type === 'إستشارة' && app.status === 'في الإنتظار').length,
       icon: <AlertCircle className="text-green-500" />,
     },
   ];

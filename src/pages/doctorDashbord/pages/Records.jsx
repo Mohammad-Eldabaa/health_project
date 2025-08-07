@@ -1,115 +1,240 @@
-import { useState, useRef, useEffect } from 'react';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import AddIcon from '@mui/icons-material/Add';
+
+
+
+// Records.jsx (الملف الرئيسي المحدث)
+import { useState, useEffect } from 'react';
 import PrescriptionSheet from "../components/PrescriptionSheet";
 import PrescriptionModel from "../pages/PrescriptionModel";
+import PatientSearch from "../components/recordes/PatientSearch";
+import PatientInfo from "../components/recordes/PatientInfo";
+import VisitsHistory from "../components/recordes/VisitsHistory";
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
 import usePatientStore from "../../../store/patientStore";
 
 export default function Records() {
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [selectedPrescription, setSelectedPrescription] = useState(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
-    const searchRef = useRef(null);
 
     const { selectedPatientName } = usePatientStore();
-    const { loading, patients, doctors, fetchData } = useDoctorDashboardStore();
+    const {
+        loading,
+        error,
+        patients,
+        doctors,
+        fetchData,
+        setPatients,
+        setVisits,
+        setPrescriptions
+    } = useDoctorDashboardStore();
 
-
+    // Setup realtime updates
     useEffect(() => {
-        fetchData();
+    if (!patients.length || !doctors.length) {
+        fetchData(); // هنجلب البيانات فقط لو مش موجودة
+    }
+
+        // إعداد الـ realtime للمرضى العامة
         const channel = setupRealtimePatients();
 
+        // إضافة مستمع خاص للتحديثات
         channel.on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-            if (payload.table === 'prescriptions' || payload.table === 'visits' || payload.table === 'medical_records') {
-                fetchData().then(() => {
-                    // تحديث المريض المحدد إذا كان موجودًا
-                    if (selectedPatient?.id) {
-                        const updatedPatient = patients.find(p => p.id === selectedPatient.id);
-                        if (updatedPatient) {
-                            setSelectedPatient({
-                                ...updatedPatient,
-                                visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-                            });
-                        }
-                    }
-                });
+            console.log('Realtime update:', payload);
+
+            // التعامل مع تحديثات الجداول المختلفة
+            switch (payload.table) {
+                case 'patients':
+                    handlePatientsUpdate(payload);
+                    break;
+                case 'visits':
+                    handleVisitsUpdate(payload);
+                    break;
+                case 'prescriptions':
+                    handlePrescriptionsUpdate(payload);
+                    break;
+                case 'prescription_medications':
+                    handlePrescriptionMedicationsUpdate(payload);
+                    break;
+                case 'test_requests':
+                    handleTestRequestsUpdate(payload);
+                    break;
+                default:
+                    // إعادة جلب البيانات للتحديثات الأخرى
+                    fetchData();
+                    break;
             }
         });
 
-        return () => channel.unsubscribe();
-    }, [fetchData, selectedPatient?.id]);
+        return () => {
+            channel.unsubscribe();
+        };
+    }, []);
 
+    // التعامل مع تحديثات المرضى
+    const handlePatientsUpdate = (payload) => {
+        const { eventType, new: newItem, old: oldItem } = payload;
+        const currentPatients = useDoctorDashboardStore.getState().patients;
 
+        let updatedPatients = [...currentPatients];
 
+        switch (eventType) {
+            case 'INSERT':
+                updatedPatients.push(newItem);
+                break;
+            case 'UPDATE':
+                updatedPatients = updatedPatients.map(p => p.id === newItem.id ? newItem : p);
+                // تحديث المريض المحدد إذا كان نفس المريض
+                if (selectedPatient?.id === newItem.id) {
+                    setSelectedPatient(prev => ({
+                        ...prev,
+                        ...newItem,
+                        visits: prev.visits // الحفاظ على الزيارات
+                    }));
+                }
+                break;
+            case 'DELETE':
+                updatedPatients = updatedPatients.filter(p => p.id !== oldItem.id);
+                // إلغاء تحديد المريض إذا تم حذفه
+                if (selectedPatient?.id === oldItem.id) {
+                    setSelectedPatient(null);
+                }
+                break;
+        }
 
+        setPatients(updatedPatients);
+    };
+
+    // التعامل مع تحديثات الزيارات
+    const handleVisitsUpdate = async (payload) => {
+        const { eventType, new: newItem } = payload;
+
+        // إعادة جلب بيانات المريض إذا كانت الزيارة متعلقة به
+        if (selectedPatient && newItem?.patient_id === selectedPatient.id) {
+            await refreshSelectedPatient();
+        }
+    };
+
+    // التعامل مع تحديثات الروشتات
+    const handlePrescriptionsUpdate = async (payload) => {
+        const { eventType, new: newItem } = payload;
+
+        // إعادة جلب بيانات المريض إذا كانت الروشتة متعلقة به
+        if (selectedPatient) {
+            await refreshSelectedPatient();
+        }
+    };
+
+    // التعامل مع تحديثات أدوية الروشتات
+    const handlePrescriptionMedicationsUpdate = async (payload) => {
+        if (selectedPatient) {
+            await refreshSelectedPatient();
+        }
+    };
+
+    // التعامل مع تحديثات طلبات التحاليل
+    const handleTestRequestsUpdate = async (payload) => {
+        const { eventType, new: newItem } = payload;
+
+        if (selectedPatient && newItem?.patient_id === selectedPatient.id) {
+            await refreshSelectedPatient();
+        }
+    };
+
+    // دالة لتحديث بيانات المريض المحدد
+    const refreshSelectedPatient = async () => {
+        if (!selectedPatient?.id) return;
+
+        // await fetchData();
+        const updatedPatients = useDoctorDashboardStore.getState().patients;
+        const updatedPatient = updatedPatients.find(p => p.id === selectedPatient.id);
+
+        if (updatedPatient) {
+            setSelectedPatient({
+                ...updatedPatient,
+                visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+            });
+        }
+    };
+
+    // Handle selected patient from store
     useEffect(() => {
         if (selectedPatientName && patients.length > 0) {
+            let targetPatient = null;
+
             if (typeof selectedPatientName === 'object' && selectedPatientName.id) {
-                const updatedPatient = patients.find(p => p.id === selectedPatientName.id);
-                if (updatedPatient) {
-                    setSelectedPatient({
-                        ...updatedPatient,
-                        visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-                    });
-                    setSearchTerm(updatedPatient.fullName);
-                }
-            }
-            else if (typeof selectedPatientName === 'string') {
-                const found = patients.find(p =>
+                targetPatient = patients.find(p => p.id === selectedPatientName.id);
+            } else if (typeof selectedPatientName === 'string') {
+                targetPatient = patients.find(p =>
                     p.fullName?.toLowerCase() === selectedPatientName.toLowerCase()
-                );
-                if (found) {
-                    setSelectedPatient({
-                        ...found,
-                        visits: found.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-                    });
-                    setSearchTerm(found.fullName);
-                }
+                ); // ← هذا القوس كان ناقص
+            }
+
+            if (targetPatient) {
+                setSelectedPatient({
+                    ...targetPatient,
+                    visits: targetPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
+                });
             }
         }
     }, [patients, selectedPatientName]);
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (searchRef.current && !searchRef.current.contains(e.target)) {
-                setIsSearchOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     const handlePatientSelect = (patient) => {
-        setSelectedPatient({
+        const patientWithSortedVisits = {
             ...patient,
             visits: patient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-        });
-        setSearchTerm(patient.fullName);
-        setIsSearchOpen(false);
+        };
+        setSelectedPatient(patientWithSortedVisits);
     };
 
+    const handleNewPrescription = () => {
+        setIsPrescriptionOpen(true);
+    };
+
+    const handleViewPrescription = (prescription) => {
+        setSelectedPrescription(prescription);
+        setIsViewModalOpen(true);
+    };
+
+    const handlePrescriptionClose = async (shouldRefresh = false) => {
+        setIsPrescriptionOpen(false);
+        if (shouldRefresh && selectedPatient?.id) {
+            await refreshSelectedPatient();
+        }
+    };
+
+    // Loading state
     if (loading) {
-        return <div className="p-4 text-blue-600">جاري التحميل...</div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-600"></div>
+            </div>
+        );
     }
 
+    if (error) {
+        return (
+            <div className="p-6 bg-white min-h-screen">
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                    <p>حدث خطأ في تحميل البيانات:</p>
+                    <p>{error.message}</p>
+                    <button onClick={() => window.location.reload()} className="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg">
+                        إعادة المحاولة
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // No data state
     if (!patients.length) {
         return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
     }
 
-    const filteredPatients = patients.filter((patient) =>
-        patient.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
         <>
+            {/* Modals */}
             <PrescriptionSheet
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
@@ -119,308 +244,34 @@ export default function Records() {
             />
             <PrescriptionModel
                 isOpen={isPrescriptionOpen}
-                onClose={(shouldRefresh = false) => {
-                    setIsPrescriptionOpen(false);
-                    if (shouldRefresh && selectedPatient?.id) {
-                        fetchData().then(() => {
-                            const updatedPatient = patients.find(p => p.id === selectedPatient.id);
-                            if (updatedPatient) {
-                                setSelectedPatient({
-                                    ...updatedPatient,
-                                    visits: updatedPatient.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
-                                });
-                            }
-                        });
-                    }
-                }}
+                onClose={handlePrescriptionClose}
                 selectedPatient={selectedPatient}
             />
 
+            {/* Main Content */}
             <div className="flex flex-col mx-2 sm:mx-4 lg:mx-6 my-3 px-4">
+                {/* Header */}
                 <div className="flex items-center gap-3 justify-between">
                     <span className="font-bold sm:text-lg lg:text-xl mb-5">سجل المريض</span>
                 </div>
-                <div className="flex justify-between items-center mb-5 gap-2">
-                    <div className="relative w-full" ref={searchRef}>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="ابحث باسم المريض"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setIsSearchOpen(e.target.value.length > 0);
-                                }}
-                                onFocus={() => searchTerm.length > 0 && setIsSearchOpen(true)}
-                                className="w-full border border-gray-300 rounded-2xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                            />
-                            <div
-                                className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-                                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                            >
-                                <svg
-                                    className={`w-5 h-5 text-gray-400 transition-transform ${isSearchOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                        {isSearchOpen && (
-                            <ul className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-300 max-h-60 overflow-auto">
-                                {filteredPatients.length > 0 ? (
-                                    filteredPatients.map((patient, index) => (
-                                        <li
-                                            key={index}
-                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition"
-                                            onClick={() => handlePatientSelect(patient)}
-                                        >
-                                            {patient.fullName}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li className="px-4 py-2 text-gray-500 text-center">لا يوجد نتائج مطابقة</li>
-                                )}
-                            </ul>
-                        )}
-                    </div>
-                    <button
-                        className="flex items-center gap-1 text-white rounded-2xl px-3 py-2.5 bg-teal-600 hover:bg-teal-700 transition text-xs sm:text-sm whitespace-nowrap"
-                        onClick={() => setIsPrescriptionOpen(true)}
-                    >
-                        <AddIcon fontSize="small" />
-                        <span>روشتة جديدة</span>
-                    </button>
-                </div>
-                {selectedPatient ? (
-                    <div className="flex flex-col lg:flex-row gap-5">
-                        <div className="flex-1 min-w-0 bg-gray-50 rounded-2xl p-3 lg:w-3/5">
-                            <h2 className="text-md font-bold mb-2 text-gray-800 mx-3">بيانات المريض</h2>
-                            <div className="bg-white rounded-3xl p-5 flex md:flex-row gap-5 justify-between items-center md:items-start">
-                                <table className="table-auto border-collapse w-full md:w-auto border-gray-300">
-                                    <tbody>
-                                        <tr>
-                                            <td>الاسم</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.fullName}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>العمر</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.age}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>العنوان</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.address}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>التلفون</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.phoneNumber}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>النوع</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.gender}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>فصيله الدم</td>
-                                            <td className='px-0 md:px-5'>{selectedPatient.blood}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <span className="hidden md:inline">
-                                    <AccountCircleIcon style={{ fontSize: "100px", color: "#59B8D0FF" }} />
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-3 lg:w-2/5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-0 md:min-h-30">
-                                <div className="bg-gray-100 rounded-xl p-3">
-                                    <h2 className="text-sm font-bold mb-2 text-gray-800">الأمراض المزمنة</h2>
-                                    {selectedPatient?.chronic_diseases?.length > 0 ? (
-                                        <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                            {selectedPatient.chronic_diseases.map((disease, index) => (
-                                                <li key={index}>{disease}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <div className="text-center py-0 lg:py-3">
-                                            <p className="text-gray-500 text-lg">لا توجد</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="bg-gray-100 rounded-xl p-3">
-                                    <h2 className="text-sm font-bold mb-2 text-gray-800">الأدوية الحالية</h2>
-                                    {selectedPatient?.visits?.length > 0 ? (
-                                        <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                            {selectedPatient.visits[0]?.prescriptions?.flatMap(prescription =>
-                                                prescription.prescription_medications?.map((med, index) => (
-                                                    <li key={index}>
-                                                        {med.medication?.name || 'غير متوفر'} - {med.dosage}
-                                                    </li>
-                                                )) || []
-                                            ).slice(0, 5)}
-                                        </ul>
-                                    ) : (
-                                        <div className="text-center py-0 lg:py-3">
-                                            <p className="text-gray-500 text-lg">لا توجد</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="bg-gray-100 rounded-xl p-3">
-                                <h2 className="text-sm font-bold mb-2 text-gray-800">التحاليل والفحوصات</h2>
-                                {selectedPatient?.test_requests?.length > 0 ? (
-                                    <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                        {selectedPatient.test_requests
-                                            .filter(req => req.status !== 'تم')
-                                            .slice(0, 5)
-                                            .map((req, index) => (
-                                                <li key={index} className="flex justify-between items-center">
-                                                    <div>
-                                                        <strong>{req.test?.name || 'تحليل غير معروف'}</strong>
-                                                        {req.test?.description && ` - ${req.test.description}`}
-                                                    </div>
-                                                    <span className={`px-2 py-1 rounded text-xs ${req.status === 'قيد التنفيذ' ? 'bg-yellow-100 text-yellow-800' :
-                                                            req.status === 'جاهز' ? 'bg-blue-100 text-blue-800' :
-                                                                'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {req.status || 'غير محدد'}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                            
-                                    </ul>
-                                ) : (
-                                    <div className="text-center py-3">
-                                        <p className="text-gray-500 text-lg">لا توجد تحاليل معلقة</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="bg-gray-100 rounded-2xl p-4 text-center text-gray-500">
-                        يرجى اختيار مريض لعرض سجله الطبي
-                    </div>
-                )}
 
-                {selectedPatient && (
-                    <div className="bg-gray-100 rounded-2xl my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-10  max-h-[50vh] overflow-y-auto">
-                        <h3 className="text-base sm:text-lg font-semibold m-0">الزيارات السابقة</h3>
+                {/* Search and New Prescription */}
+                <PatientSearch
+                    patients={patients}
+                    onPatientSelect={handlePatientSelect}
+                    onNewPrescription={handleNewPrescription}
+                    selectedPatient={selectedPatient}
+                />
 
-                        <div className="hidden sm:block overflow-auto bg-white rounded-2xl shadow-md">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="bg-white text-sm text-gray-700 text-center">
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">رقم الزيارة</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">تاريخ الزيارة</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">التشخيص</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عدد الأدوية</th>
-                                        <th className="p-3 text-gray-700 font-medium border-b border-gray-200">عرض</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedPatient.visits?.map((visit, index) => {
-                                        const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
-                                        return (
-                                            <tr key={visit.id} className="hover:bg-gray-50 bg-white text-center">
-                                                <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
-                                                <td className="p-3 border-b border-gray-100 text-gray-600">
-                                                    {new Date(visit.date).toLocaleDateString('ar-EG')}
-                                                </td>
-                                                <td className="p-3 border-b border-gray-100 text-gray-600">
-                                                    {lastPrescription?.diagnosis || 'لا يوجد'}
-                                                </td>
-                                                <td className="p-3 border-b border-gray-200">
-                                                    {lastPrescription?.prescription_medications?.length || 0}
-                                                </td>
-                                                <td className="p-3 border-b border-gray-100">
-                                                    <button
-                                                        className="text-cyan-500 hover:text-cyan-700 transition-colors"
-                                                        onClick={() => {
-                                                            setSelectedPrescription({
-                                                                date: visit.date,
-                                                                diagnosis: lastPrescription?.diagnosis,
-                                                                notes: lastPrescription?.notes || "لا توجد ملاحظات",
-                                                                medications: lastPrescription?.prescription_medications?.map((med, idx) => ({
-                                                                    id: idx,
-                                                                    name: med.medication?.name || 'غير متوفر',
-                                                                    dosage: med.dosage || "غير محدد",
-                                                                    duration: med.duration || "غير محدد"
-                                                                })) || []
-                                                            });
-                                                            setIsViewModalOpen(true);
-                                                        }}
-                                                    >
-                                                        <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                {/* Patient Information */}
+                <PatientInfo patient={selectedPatient} />
 
-                        <div className="sm:hidden space-y-3  max-h-[50vh] overflow-y-auto">
-                            {selectedPatient.visits?.map((visit, index) => {
-                                const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
-                                return (
-                                    <div key={visit.id} className="bg-white rounded-2xl p-3 shadow">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="font-bold">الزيارة #{index + 1}</p>
-                                                <p className="text-sm">
-                                                    {new Date(visit.date).toLocaleDateString('ar-EG')}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                                    {lastPrescription?.prescription_medications?.length || 0} أدوية
-                                                </span>
-                                                <button
-                                                    className="bg-cyan-500 text-white p-1 rounded hover:bg-cyan-600 transition"
-                                                    onClick={() => {
-                                                        setSelectedPrescription({
-                                                            date: visit.date,
-                                                            diagnosis: lastPrescription?.diagnosis,
-                                                            notes: lastPrescription?.notes || "لا توجد ملاحظات",
-                                                            medications: lastPrescription?.prescription_medications?.map((med, idx) => ({
-                                                                id: idx,
-                                                                name: med.medication?.name || 'غير متوفر',
-                                                                dosage: med.dosage || "غير محدد",
-                                                                duration: med.duration || "غير محدد"
-                                                            })) || []
-                                                        });
-                                                        setIsViewModalOpen(true);
-                                                    }}
-                                                >
-                                                    <VisibilityIcon fontSize="small" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {lastPrescription?.diagnosis && (
-                                            <div className="mt-2 text-sm text-gray-600">
-                                                <strong>التشخيص:</strong> {lastPrescription.diagnosis}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+                {/* Visits History */}
+                <VisitsHistory
+                    patient={selectedPatient}
+                    onViewPrescription={handleViewPrescription}
+                />
             </div>
         </>
     );
 }
-
-
-
-
-
-
-
-
-
-

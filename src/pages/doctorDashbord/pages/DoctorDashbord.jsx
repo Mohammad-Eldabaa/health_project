@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import SideBar from "../components/SideBar";
 import Topbar from "../components/Topbar";
@@ -13,12 +13,22 @@ import Tests from "./Tests";
 import Statistics from "./Statistics";
 import DoctorDashProfile from "../../DoctorProfile/DoctorDashProfile";
 
+import { setupRealtimePatients } from '../../../lib/supabaseRealtime';
+
 
 
 function DoctorDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+
+  useEffect(() => {
+    const channel = setupRealtimePatients(); 
+    return () => {
+      channel?.unsubscribe();
+    };
+  }, []);
 
   return (
     <div className="doctor-dashboard">

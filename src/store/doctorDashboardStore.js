@@ -10,7 +10,7 @@ const removeDuplicates = (data, key = 'id') => {
   });
 };
 
-const useDoctorDashboardStore = create(set => ({
+const useDoctorDashboardStore = create((set,get) => ({
   appointments: [],
   patients: [],
   currentVisit: null,
@@ -43,6 +43,9 @@ const useDoctorDashboardStore = create(set => ({
   setRecords: records => set({ records: removeDuplicates(records) }),
 
   fetchData: async () => {
+        const state = get(); 
+    if (state.patients.length && state.doctors.length) return;
+
     set({ loading: true, error: null });
 
     try {
@@ -252,6 +255,27 @@ fetchMedications: async () => {
           : state.currentVisit,
     }));
   },
+
+
+
+
+
+
+statistics: {
+  monthlyPatients: [],
+  visitTypes: [],
+  revenue: [],
+  topMedications: [],
+  quickStats: [],
+},
+setStatistics: newStats =>
+  set(state => ({
+    statistics: {
+      ...state.statistics,
+      ...newStats,
+    },
+  })),
+
 }));
 
 export default useDoctorDashboardStore;
