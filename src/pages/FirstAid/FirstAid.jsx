@@ -73,7 +73,7 @@ export default function FirstAid() {
 
       {/* Cards */}
       <div className="max-w-7xl mx-auto px-8 mt-40">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-5">
           {filteredTitles.map((title, index) => (
             <Card key={index} title={title.name || title} id={title.key} />
           ))}
