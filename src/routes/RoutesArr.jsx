@@ -17,8 +17,6 @@ import {
   Forget,
   Reset,
   PatientView,
-  // DoctorProfile,
-  // PatientProfile,
   MedicalArticles,
   NursingAppointments,
   NursingPatientsList,
@@ -35,11 +33,7 @@ export const RoutesArray = [
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <PatientView />, path: '/profile' },
-  // { id: v4(), element: <PatientProfile />, path: '/patientProfile' },
   { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
-
-  // Zezo Route
-  // { id: v4(), element: <DoctorProfile />, path: '/profile' },
   {
     id: v4(),
     element: <NursingLayout />,

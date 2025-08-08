@@ -25,7 +25,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .order('created_at', { ascending: true });
@@ -54,7 +54,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: appt.patients?.fullName || 'غير محدد',
         doctor_id: appt.doctor_id,
         doctorName: appt.doctors?.name || 'غير محدد',
-        type: appt.type || 'غير محدد',
+        visitType: appt.visitType || 'غير محدد',
       }));
 
       set({ appointments: formattedAppointments || [], error: null });
@@ -80,7 +80,7 @@ const useAppointmentStore = create((set, get) => ({
         cancelled: false,
         patient_id: appointment.patient_id || null,
         doctor_id: appointment.doctor_id || null,
-        type: appointment.type || null,
+        visitType: appointment.visitType || null,
       };
 
       const { data, error } = await supabase
@@ -101,7 +101,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -136,7 +136,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -192,7 +192,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -231,7 +231,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -286,7 +286,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -321,7 +321,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -376,7 +376,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -411,7 +411,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -510,7 +510,7 @@ const useAppointmentStore = create((set, get) => ({
         amount: appt.amount,
         patient_id: appt.patient_id,
         doctor_id: appt.doctor_id,
-        type: appt.type,
+        visitType: appt.visitType,
       }));
 
       const { error } = await supabase.from('appointments').upsert(updates, {

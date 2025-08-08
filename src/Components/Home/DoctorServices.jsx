@@ -14,11 +14,13 @@ import {
   FaBell,
   FaExclamationTriangle as FaWarning,
 } from 'react-icons/fa';
+import { useProfileStore } from '../../store/profile';
 
 export default function DoctorServices() {
+  const { doctorProfile } = useProfileStore();
   const doctor = {
-    name: 'د. أحمد عبد العزيز',
-    specialty: 'استشاري باطنة وأمراض قلب',
+    name: doctorProfile.name,
+    specialty: doctorProfile.specialty,
     image: '/src/assets/img/doctor-ahmed.jpg',
     bio: 'طبيب استشاري بأمراض الباطنة والقلب، حاصل على البورد الأمريكي في الطب الباطني والزمالة البريطانية في أمراض القلب. يتمتع بخبرة تزيد عن 15 عاماً في تشخيص وعلاج الحالات الحرجة والمزمنة.',
     services: [
@@ -52,7 +54,7 @@ export default function DoctorServices() {
       //   icon: <FaBrain className="text-3xl" />,
       //   description: "استشارات طبية متخصصة عن بعد لمتابعة الحالات"
       // }
-    ]
+    ],
   };
   const navigate = useNavigate();
   const PatientView = () => {
@@ -197,21 +199,29 @@ export default function DoctorServices() {
                         جاري العمل على توفير الخدمه قريبا
                         <FaWarning className="text-xl " />
                       </span>
-                    )
+                    ),
                   },
                   {
                     title: 'متابعة النتائج',
                     icon: <FaFileMedicalAlt className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'> جاري العمل على توفير الخدمه قريبا
-                      <FaWarning className="text-xl " />
-                    </span>,
+                    desc: (
+                      <span className="text-red-400">
+                        {' '}
+                        جاري العمل على توفير الخدمه قريبا
+                        <FaWarning className="text-xl " />
+                      </span>
+                    ),
                   },
                   {
                     title: 'تذكير بالمواعيد',
                     icon: <FaBell className="text-2xl xl:text-3xl" />,
-                    desc: <span className='text-red-400'> جاري العمل على توفير الخدمه قريبا
-
-                      <FaWarning className="text-xl " /></span>,
+                    desc: (
+                      <span className="text-red-400">
+                        {' '}
+                        جاري العمل على توفير الخدمه قريبا
+                        <FaWarning className="text-xl " />
+                      </span>
+                    ),
                   },
                 ].map((feature, index) => (
                   <motion.div

@@ -1,30 +1,30 @@
-import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
-import SideBar from "../components/SideBar";
-import Topbar from "../components/Topbar";
-import "./DoctorDashbord.css";
+import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import SideBar from '../components/SideBar';
+import Topbar from '../components/Topbar';
+import './DoctorDashbord.css';
 
-import Home from "./Home";
-import Appointments from "./Appointments";
-import Patients from "./Patients";
-import Records from "./Records";
-import Prescription from "./Prescription";
-import Tests from "./Tests";
-import Statistics from "./Statistics";
-import DoctorDashProfile from "../../DoctorProfile/DoctorDashProfile";
+import Home from './Home';
+import Appointments from './Appointments';
+import Patients from './Patients';
+import Records from './Records';
+import Prescription from './Prescription';
+import Tests from './Tests';
+import Statistics from './Statistics';
+import DoctorDashProfile from '../../DoctorProfile/DoctorDashProfile';
 
 import { setupRealtimePatients } from '../../../lib/supabaseRealtime';
-
-
+import useAuthStore from '../../../store/auth';
 
 function DoctorDashboard() {
+  const { CUrole } = useAuthStore();
+  if (CUrole() != 'doctor') location.replace('/notFound');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-
   useEffect(() => {
-    const channel = setupRealtimePatients(); 
+    const channel = setupRealtimePatients();
     return () => {
       channel?.unsubscribe();
     };
@@ -32,7 +32,7 @@ function DoctorDashboard() {
 
   return (
     <div className="doctor-dashboard">
-      <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}  />
+      <SideBar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="content">
         <Topbar toggleSidebar={toggleSidebar} />
         <Routes>
@@ -50,6 +50,4 @@ function DoctorDashboard() {
   );
 }
 
-
 export default DoctorDashboard;
-
