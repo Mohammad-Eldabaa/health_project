@@ -74,17 +74,17 @@ const Home = () => {
   const reson = [
     {
       title: "كشف",
-      value: appointments.filter(app => app.type === 'فحص' && app.status === 'في الإنتظار').length,
+      value: appointments.filter(app => app.visitType === 'فحص' && app.status === 'في الإنتظار').length,
       icon: <UserPlus className="text-blue-500" />,
     },
     {
       title: "متابعه",
-      value: appointments.filter(app => app.type === 'متابعة' && app.status === 'في الإنتظار').length,
+      value: appointments.filter(app => app.visitType === 'متابعة' && app.status === 'في الإنتظار').length,
       icon: <CalendarCheck className="text-yellow-500" />,
     },
     {
       title: "إستشاره",
-      value: appointments.filter(app => app.type === 'إستشارة' && app.status === 'في الإنتظار').length,
+      value: appointments.filter(app => app.visitType === 'إستشارة' && app.status === 'في الإنتظار').length,
       icon: <AlertCircle className="text-green-500" />,
     },
   ];

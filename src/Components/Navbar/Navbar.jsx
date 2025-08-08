@@ -4,6 +4,8 @@ import logo from '../../assets/img/logo.png';
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/auth';
 import ProfileModal from './ProfileModal';
+import PatientMedicalRecord from './PatientMedicalRecord';
+
 
 export default function Navbar() {
   const { CUname, logout } = useAuthStore();
@@ -200,6 +202,17 @@ export default function Navbar() {
                   </NavLink>
                 </li>
               </ul>
+              <div>
+  <NavLink
+    className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
+    to="/patient-record"
+    onClick={handleNavClick}
+  >
+    <i className="fa-solid fa-file-medical ml-3"></i>
+    السجل المرضي
+  </NavLink>
+</div>
+
             </div>
             <div>
               <ul className="flex flex-col lg:flex-row items-center mb-0">
@@ -261,6 +274,7 @@ export default function Navbar() {
                             <i className="fa-solid fa-right-to-bracket me-2"></i>
                             تسجيل الدخول
                           </NavLink>
+
                         )}
                       </div>
                     </div>
