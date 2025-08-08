@@ -55,11 +55,6 @@ const Tests = () => {
         p.fullName.toLowerCase().includes(searchTermpatient.toLowerCase())
     );
 
-
-
-
-
-
     const [newTest, setNewTest] = useState({
         name: "",
         durationValue: "",
@@ -67,9 +62,6 @@ const Tests = () => {
         urgent: false,
         category: ""
     });
-
-
-
 
 
     useEffect(() => {
@@ -200,6 +192,28 @@ const Tests = () => {
 
     const handleDeleteTest = async () => {
         if (!testToDelete) return;
+
+        // التحقق من وجود طلبات مرتبطة بهذا التحليل
+        const { data: relatedRequests, error: checkError } = await supabase
+            .from('test_requests')
+            .select('id')
+            .eq('test_id', testToDelete.id)
+            .limit(1);
+
+        if (checkError) {
+            alert("حدث خطأ أثناء التحقق من الطلبات المرتبطة");
+            console.error(checkError);
+            return;
+        }
+
+        if (relatedRequests && relatedRequests.length > 0) {
+            alert("لا يمكن حذف هذا التحليل لأنه مرتبط بطلب تحليل لمريض");
+            setDeleteDialogOpen(false);
+            setTestToDelete(null);
+            return;
+        }
+
+        // إذا لم يكن هناك طلبات مرتبطة، تابع الحذف
         const { error } = await supabase.from("tests").delete().eq("id", testToDelete.id);
 
         if (error) {
@@ -503,6 +517,9 @@ const Tests = () => {
                 <DialogTitle>تأكيد الحذف</DialogTitle>
                 <DialogContent>
                     هل أنت متأكد أنك تريد حذف التحليل: <strong>{testToDelete?.name}</strong>؟
+                    <div className="mt-2 text-sm text-gray-600">
+                        ملاحظة: لا يمكن حذف التحاليل المرتبطة بطلبات تحاليل للمرضى
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDeleteDialogOpen(false)}>إلغاء</Button>

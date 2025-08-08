@@ -1,7 +1,7 @@
-// components/PatientInfo.jsx
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
-export default function PatientInfo({ patient }) {
+
+export default function PatientInfo({ patient, onOpenTestsModal }) {
     if (!patient) {
         return (
             <div className="bg-gray-100 rounded-2xl p-4 text-center text-gray-500">
@@ -10,9 +10,10 @@ export default function PatientInfo({ patient }) {
         );
     }
 
+
     return (
         <div className="flex flex-col lg:flex-row gap-5">
-            <div className="flex-1 min-w-0 bg-gray-50 rounded-2xl p-3 lg:w-3/5">
+            <div className="flex-1 min-w-0 bg-gray-100 rounded-2xl p-3 lg:w-3/5">
                 <h2 className="text-md font-bold mb-2 text-gray-800 mx-3">بيانات المريض</h2>
                 <div className="bg-white rounded-3xl p-5 flex md:flex-row gap-5 justify-between items-center md:items-start">
                     <table className="table-auto border-collapse w-full md:w-auto border-gray-300">
@@ -48,10 +49,10 @@ export default function PatientInfo({ patient }) {
                     </span>
                 </div>
             </div>
-            
+
             <div className="flex flex-col gap-3 lg:w-2/5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-0 md:min-h-30">
-                    {/* الأمراض المزمنة */}
+
                     <div className="bg-gray-100 rounded-xl p-3">
                         <h2 className="text-sm font-bold mb-2 text-gray-800">الأمراض المزمنة</h2>
                         {patient?.chronic_diseases?.length > 0 ? (
@@ -66,19 +67,22 @@ export default function PatientInfo({ patient }) {
                             </div>
                         )}
                     </div>
-                    
-                    {/* الأدوية الحالية */}
+
+
                     <div className="bg-gray-100 rounded-xl p-3">
                         <h2 className="text-sm font-bold mb-2 text-gray-800">الأدوية الحالية</h2>
                         {patient?.visits?.length > 0 ? (
                             <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
-                                {patient.visits[0]?.prescriptions?.flatMap(prescription =>
-                                    prescription.prescription_medications?.map((med, index) => (
-                                        <li key={index}>
-                                            {med.medication?.name || 'غير متوفر'} - {med.dosage}
-                                        </li>
-                                    )) || []
-                                ).slice(0, 5)}
+                                {[...patient.visits]
+                                    .sort((a, b) => new Date(b.time) - new Date(a.time))[0]
+                                    ?.prescriptions?.flatMap(prescription =>
+                                        prescription.prescription_medications?.map((med, index) => (
+                                            <li key={index}>
+                                                {med.medication?.name || 'غير متوفر'} - {med.dosage}
+                                            </li>
+                                        )) || []
+                                    )
+                                    .slice(0, 5)}
                             </ul>
                         ) : (
                             <div className="text-center py-0 lg:py-3">
@@ -87,26 +91,33 @@ export default function PatientInfo({ patient }) {
                         )}
                     </div>
                 </div>
-                
-                {/* التحاليل والفحوصات */}
+
+
                 <div className="bg-gray-100 rounded-xl p-3">
-                    <h2 className="text-sm font-bold mb-2 text-gray-800">التحاليل والفحوصات</h2>
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-sm font-bold text-gray-800">التحاليل والفحوصات</h2>
+                        <button
+                            onClick={() => onOpenTestsModal()}
+                            className="text-white text-sm font-medium bg-teal-600 py-1 px-2 rounded-md"
+                        >
+                            عرض جميع التحاليل
+                        </button>
+                    </div>
                     {patient?.test_requests?.length > 0 ? (
                         <ul className="space-y-1 text-gray-700 text-xs sm:text-sm">
                             {patient.test_requests
-                                .filter(req => req.status !== 'تم')
-                                .slice(0, 5)
+
+                                .slice(0, 3)
                                 .map((req, index) => (
                                     <li key={index} className="flex justify-between items-center">
                                         <div>
-                                            <strong>{req.test?.name || 'تحليل غير معروف'}</strong>
+                                            <strong>{req.tests?.name || 'تحليل غير معروف'}</strong>
                                             {req.test?.description && ` - ${req.test.description}`}
                                         </div>
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            req.status === 'قيد التنفيذ' ? 'bg-yellow-100 text-yellow-800' :
+                                        <span className={`px-2 py-1 rounded text-xs ${req.status === 'قيد التنفيذ' ? 'bg-yellow-100 text-yellow-800' :
                                             req.status === 'جاهز' ? 'bg-blue-100 text-blue-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
+                                                'bg-green-100 text-gray-800'
+                                            }`}>
                                             {req.status || 'غير محدد'}
                                         </span>
                                     </li>
@@ -122,3 +133,5 @@ export default function PatientInfo({ patient }) {
         </div>
     );
 }
+
+

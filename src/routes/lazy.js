@@ -24,3 +24,5 @@ export const Booking = lazy(() => import('../Components/Booking/Booking'));
 export const Footer = lazy(() => import('../Components/Footer/Footer'));
 export const Layout = lazy(() => import('../Components/Layout/Layout'));
 export const Notfound = lazy(() => import('../Components/Notfound/Notfound'));
+export const PatientMedicalRecord = lazy(() => import('../Components/Navbar/PatientMedicalRecord.jsx'));
+

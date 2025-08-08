@@ -10,7 +10,9 @@ const PrescriptionForm = ({
     notes,
     onNotesChange,
     onSubmit,
+    onPrint,
     isSubmitting
+
 }) => {
     return (
         <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-5">
@@ -78,9 +80,9 @@ const PrescriptionForm = ({
                     {isSubmitting ? 'جاري الحفظ...' : 'حفظ الروشتة'}
                 </button>
                 <button
-                    disabled={selectedMeds.length === 0}
-                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${selectedMeds.length === 0 ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-                    style={{ backgroundColor: selectedMeds.length === 0 ? undefined : "var(--color-accent)" }}
+                    onClick={onPrint}
+                    disabled={selectedMeds.length === 0 || !selectedPatient}
+                    className={`flex-1 text-white px-6 py-3 rounded-lg font-medium transition justify-center ${selectedMeds.length === 0 || !selectedPatient ? 'bg-gray-400' : 'bg-teal-600 hover:bg-teal-700'}`}
                 >
                     طباعة الروشتة
                 </button>

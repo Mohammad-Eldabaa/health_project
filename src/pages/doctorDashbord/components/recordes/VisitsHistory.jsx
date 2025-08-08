@@ -1,3 +1,5 @@
+
+
 // components/VisitsHistory.jsx
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
@@ -8,10 +10,17 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
 
     const handleViewClick = (visit) => {
         const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
+
+        // الحصول على التشخيص من medical_records أو notes الزيارة
+        const diagnosis = visit.medical_records?.[0]?.diagnosis ||
+            lastPrescription?.notes ||
+            visit.notes ||
+            "لا يوجد تشخيص";
+
         const prescriptionData = {
             date: visit.date,
-            diagnosis: lastPrescription?.diagnosis,
-            notes: lastPrescription?.notes || "لا توجد ملاحظات",
+            diagnosis: diagnosis,
+            notes: lastPrescription?.notes || visit.notes || "لا توجد ملاحظات",
             medications: lastPrescription?.prescription_medications?.map((med, idx) => ({
                 id: idx,
                 name: med.medication?.name || 'غير متوفر',
@@ -19,6 +28,7 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
                 duration: med.duration || "غير محدد"
             })) || []
         };
+
         onViewPrescription(prescriptionData);
     };
 
@@ -39,31 +49,40 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {patient.visits.map((visit, index) => {
-                            const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
-                            return (
-                                <tr key={visit.id} className="hover:bg-gray-50 bg-white text-center">
-                                    <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
-                                    <td className="p-3 border-b border-gray-100 text-gray-600">
-                                        {new Date(visit.date).toLocaleDateString('ar-EG')}
-                                    </td>
-                                    <td className="p-3 border-b border-gray-100 text-gray-600">
-                                        {lastPrescription?.diagnosis || 'لا يوجد'}
-                                    </td>
-                                    <td className="p-3 border-b border-gray-200">
-                                        {lastPrescription?.prescription_medications?.length || 0}
-                                    </td>
-                                    <td className="p-3 border-b border-gray-100">
-                                        <button
-                                            className="text-cyan-500 hover:text-cyan-700 transition-colors"
-                                            onClick={() => handleViewClick(visit, index)}
-                                        >
-                                            <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                        {[...patient.visits]
+                            .sort((a, b) => new Date(b.time) - new Date(a.time))
+                            .map((visit, index) => {
+                                const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
+                                const diagnosis =
+                                    visit.medical_records?.[0]?.diagnosis ||
+                                    lastPrescription?.notes ||
+                                    visit.notes ||
+                                    'لا يوجد';
+
+                                return (
+                                    <tr key={visit.id} className="hover:bg-gray-50 bg-white text-center">
+                                        <td className="p-3 border-b border-gray-100 text-gray-600">{index + 1}</td>
+                                        <td className="p-3 border-b border-gray-100 text-gray-600">
+                                            {new Date(visit.date).toLocaleDateString('ar-EG')}
+                                        </td>
+                                        <td className="p-3 border-b border-gray-100 text-gray-600">
+                                            {diagnosis}
+                                        </td>
+                                        <td className="p-3 border-b border-gray-200">
+                                            {lastPrescription?.prescription_medications?.length || 0}
+                                        </td>
+                                        <td className="p-3 border-b border-gray-100">
+                                            <button
+                                                className="text-cyan-500 hover:text-cyan-700 transition-colors"
+                                                onClick={() => handleViewClick(visit, index)}
+                                            >
+                                                <VisibilityIcon fontSize="small" className="hover:scale-110 transition-transform" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+
                     </tbody>
                 </table>
             </div>
@@ -72,6 +91,11 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
             <div className="sm:hidden space-y-3 max-h-[50vh] overflow-y-auto">
                 {patient.visits.map((visit, index) => {
                     const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
+                    const diagnosis = visit.medical_records?.[0]?.diagnosis ||
+                        lastPrescription?.notes ||
+                        visit.notes ||
+                        'لا يوجد';
+
                     return (
                         <div key={visit.id} className="bg-white rounded-2xl p-3 shadow">
                             <div className="flex justify-between items-start">
@@ -93,9 +117,9 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
                                     </button>
                                 </div>
                             </div>
-                            {lastPrescription?.diagnosis && (
+                            {diagnosis && (
                                 <div className="mt-2 text-sm text-gray-600">
-                                    <strong>التشخيص:</strong> {lastPrescription.diagnosis}
+                                    <strong>التشخيص:</strong> {diagnosis}
                                 </div>
                             )}
                         </div>

@@ -1,9 +1,12 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../supaBase/booking';
 import { toast } from 'react-toastify';
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 import { usePrescriptionStore } from '../../../store/prescriptionStore';
 import { setupRealtimePatients, removeRealtimeChannel } from "../../../lib/supabaseRealtime";
+import { printPrescriptionDirectly } from '../components/Prescription/PrintPrescriptionData';
+
 
 import PatientSearch from '../components/PatientSearchPrescription';
 import MedicationsList from '../components/Prescription/MedicationsList';
@@ -25,6 +28,7 @@ export default function Prescription({ onClose }) {
     });
     const [showDosageModal, setShowDosageModal] = useState(false);
     const [showManageMedicationsModal, setShowManageMedicationsModal] = useState(false);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
 
@@ -35,6 +39,7 @@ export default function Prescription({ onClose }) {
     useEffect(() => {
         if (!selectedPatient?.id) return;
 
+        // Initialize real-time updates for selected patient prescriptions
         const initRealtime = async () => {
             try {
                 realtimeChannel.current = setupRealtimePatients(selectedPatient.id);
@@ -47,6 +52,7 @@ export default function Prescription({ onClose }) {
 
         initRealtime();
 
+        // Cleanup realtime subscription on component unmount or patient change
         return () => {
             if (realtimeChannel.current) {
                 removeRealtimeChannel(realtimeChannel.current);
@@ -54,11 +60,25 @@ export default function Prescription({ onClose }) {
         };
     }, [selectedPatient?.id]);
 
+    // Function to check if medication is already added to the prescription list
+    const isMedAlreadyAdded = useCallback((medName) => {
+        return formData.selectedMeds.some(med => med.name === medName);
+    }, [formData.selectedMeds]);
+
+    // Handler for clicking on a medication item
     const handleMedClick = useCallback((med) => {
+        if (isMedAlreadyAdded(med)) {
+            toast.info('هذا الدواء مضاف مسبقاً للروشتة', {
+                autoClose: 3000,
+                hideProgressBar: true,
+            });
+            return;
+        }
         setFormData(prev => ({ ...prev, currentMed: med }));
         setShowDosageModal(true);
-    }, []);
+    }, [isMedAlreadyAdded]);
 
+    // Add medication to the selected medications list
     const addMedication = useCallback(() => {
         const newMed = {
             name: formData.currentMed,
@@ -75,6 +95,7 @@ export default function Prescription({ onClose }) {
         toast.success('تم إضافة الدواء');
     }, [formData.currentMed, formData.dosage, formData.duration]);
 
+    // Remove medication from the selected medications list by index
     const removeMedication = useCallback((index) => {
         setFormData(prev => {
             const updated = [...prev.selectedMeds];
@@ -84,6 +105,7 @@ export default function Prescription({ onClose }) {
         toast.info('تم إزالة الدواء');
     }, []);
 
+    // Handle form submission to save prescription and related data
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedPatient || formData.selectedMeds.length === 0) {
@@ -93,8 +115,9 @@ export default function Prescription({ onClose }) {
 
         setIsSubmitting(true);
         try {
-            const currentDoctorId = 1; // استبدال برقم الطبيب الفعلي
+            const currentDoctorId = 1;
 
+            // 1. Insert a new visit
             const { data: visit, error: visitError } = await supabase
                 .from('visits')
                 .insert([{
@@ -109,6 +132,7 @@ export default function Prescription({ onClose }) {
 
             if (visitError) throw visitError;
 
+            // 2. Insert medical record with diagnosis and notes
             const { data: medicalRecord, error: recordError } = await supabase
                 .from('medical_records')
                 .insert([{
@@ -123,17 +147,46 @@ export default function Prescription({ onClose }) {
 
             if (recordError) throw recordError;
 
-            await prescriptionStore.savePrescription(selectedPatient.id, visit.id, {
+            // 3. Save the prescription
+            const savedPrescription = await prescriptionStore.savePrescription(selectedPatient.id, visit.id, {
                 notes: formData.notes,
                 medications: formData.selectedMeds
             });
 
+            // 4. Update appointment status if exists
             if (selectedPatient?.appointment_id) {
                 await supabase
                     .from('appointments')
                     .update({ status: 'تم' })
                     .eq('id', selectedPatient.appointment_id);
             }
+
+            // 5. Refresh local data state
+            await useDoctorDashboardStore.getState().fetchSelectedPatient(selectedPatient.id);
+            await useDoctorDashboardStore.getState().fetchData();
+
+            // 6. Dispatch realtime event for other pages
+            if (window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('prescriptionSaved', {
+                    detail: {
+                        patientId: selectedPatient.id,
+                        visitId: visit.id,
+                        prescription: savedPrescription
+                    }
+                }));
+            }
+
+            // 7. Clear form and selection
+            setFormData({
+                patientName: '',
+                notes: '',
+                selectedMeds: [],
+                activeCategory: 'مسكنات',
+                currentMed: '',
+                dosage: '',
+                duration: '',
+            });
+            setSelectedPatient(null);
 
             toast.success('تم حفظ الروشتة بنجاح!');
             if (typeof onClose === 'function') onClose(true);
@@ -145,6 +198,28 @@ export default function Prescription({ onClose }) {
         }
     };
 
+    // Handle printing the prescription
+    const handlePrint = () => {
+        if (!selectedPatient || formData.selectedMeds.length === 0) {
+            toast.warn('الرجاء اختيار مريض وإضافة أدوية أولاً');
+            return;
+        }
+
+        const prescriptionData = {
+            date: new Date().toLocaleDateString('ar-EG'),
+            patientName: selectedPatient.fullName,
+            age: selectedPatient.age,
+            phone: selectedPatient.phone,
+            gender: selectedPatient.gender === 'male' ? 'ذكر' : 'أنثى',
+            doctorName: 'د/ محمود خالد',
+            medications: formData.selectedMeds,
+            notes: formData.notes
+        };
+
+        printPrescriptionDirectly(prescriptionData);
+    };
+
+    // Add a new drug category
     const addCategory = async () => {
         if (!newCategory.trim()) {
             toast.warn('الرجاء إدخال اسم التصنيف');
@@ -167,6 +242,7 @@ export default function Prescription({ onClose }) {
         }
     };
 
+    // Add a new medication to database
     const addMedicationToDB = async () => {
         if (!newMedication.name.trim() || !newMedication.category_id) {
             toast.warn('الرجاء إدخال اسم الدواء واختيار التصنيف');
@@ -197,6 +273,146 @@ export default function Prescription({ onClose }) {
         }
     };
 
+    // Delete a category after checking if it's not in use
+    const deleteCategory = async (categoryId) => {
+        try {
+            const inUse = await isCategoryInUse(categoryId);
+            if (inUse) {
+                toast.warn('لا يمكن حذف هذا التصنيف لأنه يحتوي على أدوية مرتبطة بسجلات وصفات طبية.');
+                return;
+            }
+
+            if (!window.confirm('هل أنت متأكد من حذف هذا التصنيف؟ سيتم حذف جميع الأدوية التابعة له.')) return;
+
+            setIsSubmitting(true);
+
+            // Delete medications linked to this category
+            const { error: deleteMedsError } = await supabase
+                .from('medications')
+                .delete()
+                .eq('category_id', categoryId);
+
+            if (deleteMedsError) throw deleteMedsError;
+
+            // Delete the category itself
+            const { error: deleteCategoryError } = await supabase
+                .from('drug_categories')
+                .delete()
+                .eq('id', categoryId);
+
+            if (deleteCategoryError) throw deleteCategoryError;
+
+            await useDoctorDashboardStore.getState().fetchDrugCategories();
+            toast.success('تم حذف التصنيف بنجاح');
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Delete a medication after checking if it's not in use
+    const deleteMedication = async (medicationId) => {
+        try {
+            const inUse = await isMedicationInUse(medicationId);
+            if (inUse) {
+                toast.warn('لا يمكن حذف هذا الدواء لأنه مرتبط بسجل وصفة طبية.');
+                return;
+            }
+
+            if (!window.confirm('هل أنت متأكد من حذف هذا الدواء؟')) return;
+
+            setIsSubmitting(true);
+
+            const { error } = await supabase
+                .from('medications')
+                .delete()
+                .eq('id', medicationId);
+
+            if (error) throw error;
+
+            await useDoctorDashboardStore.getState().fetchDrugCategories();
+            toast.success('تم حذف الدواء بنجاح');
+        } catch (error) {
+            console.error('Error deleting medication:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Function to check if a category is in use
+    const isCategoryInUse = async (categoryId) => {
+        const { data, error } = await supabase
+            .from('medications')
+            .select('id')
+            .eq('category_id', categoryId);
+
+        if (error) throw error;
+
+        for (const med of data) {
+            if (await isMedicationInUse(med.id)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // Function to check if a medication is in use
+    const isMedicationInUse = async (medicationId) => {
+        const { data, error } = await supabase
+            .from('prescription_medications')
+            .select('prescription_id')
+            .eq('medication_id', medicationId)
+            .limit(1);
+
+        if (error) throw error;
+        return data.length > 0;
+    };
+
+    // Function to update a category
+    const updateCategory = async (categoryId, newData) => {
+        try {
+            setIsSubmitting(true);
+            const { error } = await supabase
+                .from('drug_categories')
+                .update(newData)
+                .eq('id', categoryId);
+
+            if (error) throw error;
+
+            await useDoctorDashboardStore.getState().fetchDrugCategories();
+            toast.success('تم تعديل التصنيف بنجاح');
+        } catch (error) {
+            console.error('Error updating category:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Function to update a medication
+    const updateMedication = async (medicationId, newData) => {
+        try {
+            setIsSubmitting(true);
+            const { error } = await supabase
+                .from('medications')
+                .update(newData)
+                .eq('id', medicationId);
+
+            if (error) throw error;
+
+            await useDoctorDashboardStore.getState().fetchDrugCategories();
+            toast.success('تم تعديل الدواء بنجاح');
+        } catch (error) {
+            console.error('Error updating medication:', error);
+            toast.error(`حدث خطأ: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const [newCategory, setNewCategory] = useState('');
     const [newMedication, setNewMedication] = useState({
         name: '',
@@ -212,18 +428,29 @@ export default function Prescription({ onClose }) {
                     onClick={() => setShowManageMedicationsModal(true)}
                     className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg"
                 >
-                    إضافة أدوية
+                    إدارة الأدوية والتصنيفات
                 </button>
             </div>
 
             <div className="bg-gray-100 rounded-2xl mx-2 sm:mx-4 lg:mx-6 my-3 p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 mt-5">
-                <div className="min-h-screen bg-gray-100 p-1">
-                    <div className="flex flex-col lg:flex-row gap-3">
+                <div className="h-170 bg-gray-100 p-1">
+                    <div className="flex flex-col lg:flex-row gap-3 h-165">
                         <MedicationsList
                             activeCategory={formData.activeCategory}
                             onCategoryChange={(category) => setFormData(prev => ({ ...prev, activeCategory: category }))}
-                            onMedClick={handleMedClick}
+                            onMedClick={(medName) => {
+                                if (isMedAlreadyAdded(medName)) {
+                                    toast.info('هذا الدواء مضاف مسبقاً للروشتة', {
+                                        autoClose: 3000,
+                                        hideProgressBar: true,
+                                    });
+                                    return;
+                                }
+                                setFormData(prev => ({ ...prev, currentMed: medName }));
+                                setShowDosageModal(true);
+                            }}
                             medicationsData={medicationsData}
+                            isMedAlreadyAdded={isMedAlreadyAdded}
                         />
 
                         <PrescriptionForm
@@ -238,11 +465,15 @@ export default function Prescription({ onClose }) {
                             notes={formData.notes}
                             onNotesChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                             onSubmit={handleSubmit}
+                            onPrint={handlePrint}
                             isSubmitting={isSubmitting}
                         />
                     </div>
                 </div>
             </div>
+
+
+
 
             <DosageModal
                 show={showDosageModal}
@@ -259,7 +490,6 @@ export default function Prescription({ onClose }) {
                 dosageOptions={dosageOptionsData}
                 durationOptions={durationOptionsData}
             />
-
             <ManageMedicationsModal
                 show={showManageMedicationsModal}
                 onClose={() => setShowManageMedicationsModal(false)}
@@ -270,6 +500,11 @@ export default function Prescription({ onClose }) {
                 onNewMedicationChange={setNewMedication}
                 onAddCategory={addCategory}
                 onAddMedication={addMedicationToDB}
+                onDeleteCategory={deleteCategory}
+                onDeleteMedication={deleteMedication}
+                onUpdateCategory={updateCategory}
+                onUpdateMedication={updateMedication}
+                prescriptionsData={prescriptionStore.prescriptions}
             />
 
             <LoadingOverlay show={isSubmitting} />

@@ -45,7 +45,7 @@ function Topbar({ toggleSidebar }) {
                             style={{ width: "35px", height: "35px", borderRadius: "50%" }}
                         />
                         <span className="user-name">
-                            {doctors.length > 0 ? `د/${doctors[0].name}` : 'د/مجهول'}
+                            {doctors.length > 0 ? `${doctors[0].name}` : 'د/مجهول'}
                         </span>
                     </button>
 
