@@ -45,7 +45,6 @@ export const RoutesArray = [
       { id: v4(), element: <NursingPatientsList />, path: 'patients' },
     ],
   },
-  // ZEZO
   {
     id: v4(),
     element: <Layout />,
