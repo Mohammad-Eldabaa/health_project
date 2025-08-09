@@ -20,7 +20,6 @@ export const AppointmentTable = ({ filteredAppointments, isMobile, isTablet, reo
             {!isMobile && <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الطبيب</th>}
             <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الحالة</th>
             {!isMobile && <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">التاريخ</th>}
-            {!isMobile && <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الوقت</th>}
             {!isMobile && <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">نوع الزيارة</th>}
             <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">حالة الدفع</th>
             <th className="px-4 py-3 text-right font-semibold text-cyan-800 text-sm">الإجراءات</th>

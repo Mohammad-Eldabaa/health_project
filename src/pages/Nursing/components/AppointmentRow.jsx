@@ -100,13 +100,6 @@ export const AppointmentRow = ({ appt, index, isDragging, drag, drop, isMobile, 
       {!isMobile && (
         <td className="py-4">
           <motion.div whileHover={{ scale: 1.05 }}>
-            <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">{appt.time || 'غير متوفر'}</span>
-          </motion.div>
-        </td>
-      )}
-      {!isMobile && (
-        <td className="py-4">
-          <motion.div whileHover={{ scale: 1.05 }}>
             <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
               {appt.visitType || 'غير محدد'}
             </span>

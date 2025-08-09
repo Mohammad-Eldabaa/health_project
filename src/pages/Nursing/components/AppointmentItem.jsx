@@ -11,7 +11,7 @@ const AppointmentItem = memo(({ appt, index, moveAppointment }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    appointmentDateTime: appt.date && appt.time ? `${appt.date}T${appt.time}` : '',
+    appointmentDateTime: appt.date || '',
     status: appt.status || 'في الإنتظار',
     visitType: appt.visitType || '',
     payment: appt.payment || false,
