@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useFirstAidStore from '../../store/firstaid';
 import styles from './FADetails.module.css';
-import Navbar from '../../components/Navbar/Navbar';
+import Navbar from '../../Components/Navbar/Navbar';
 
 export default function FirstAidDetails() {
   const [htmlContent, setHtmlContent] = useState('');
