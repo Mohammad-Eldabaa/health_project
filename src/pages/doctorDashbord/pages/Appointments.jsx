@@ -3,7 +3,7 @@ import { setupRealtimePatients } from "../../../lib/supabaseRealtime";
 import useDoctorDashboardStore from "../../../store/doctorDashboardStore";
 
 
-// Import all the child components
+
 import AppointmentTabs from "../components/appointments/AppointmentTabs.jsx";
 import AppointmentFilters from "../components/appointments/AppointmentFilters.jsx";
 import AppointmentTable from "../components/appointments/AppointmentTable.jsx";
@@ -13,25 +13,25 @@ import AppointmentModal from "../components/appointments/AppointmentModal.jsx";
 import EmptyState from "../components/appointments/EmptyState.jsx";
 
 const Appointments = () => {
-    // State management
+
     const [activeTab, setActiveTab] = useState("today");
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("الكل");
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Store data
+
     const loading = useDoctorDashboardStore((state) => state.loading);
     const patients = useDoctorDashboardStore((state) => state.patients);
     const appointments = useDoctorDashboardStore((state) => state.appointments);
 
-    // Setup realtime connection
+
     useEffect(() => {
         const channel = setupRealtimePatients();
         return () => channel.unsubscribe();
     }, []);
 
-    // Helper functions
+
     const today = new Date().toISOString().split("T")[0];
 
     const openAppointmentDetails = (appointment) => {
@@ -44,17 +44,17 @@ const Appointments = () => {
         setSelectedAppointment(null);
     };
 
-    // Loading state
+
     if (loading) {
         return <div className="p-4 text-blue-600">جاري التحميل...</div>;
     }
 
-    // No data state
+
     if (!appointments.length || !patients.length) {
         return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
     }
 
-    // Filter appointments by tab
+
     const filteredAppointmentsByTab = appointments.filter((app) => {
         if (activeTab === "today") return app.date === today;
         if (activeTab === "upcoming") return app.date > today;
@@ -62,7 +62,7 @@ const Appointments = () => {
         return false;
     });
 
-    // Apply status filter and search
+
     const filteredAppointments = filteredAppointmentsByTab
         .filter((app) => {
             if (statusFilter === "الكل") return true;
@@ -101,7 +101,7 @@ const Appointments = () => {
 
             {/* Main Content Container */}
             <div className="bg-gray-100 rounded-lg shadow-sm p-4 mb-6">
-                {/* Tabs and Filters */}
+
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <AppointmentTabs 
                         activeTab={activeTab} 

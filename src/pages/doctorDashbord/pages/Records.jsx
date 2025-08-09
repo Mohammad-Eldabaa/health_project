@@ -10,6 +10,7 @@ import { setupRealtimePatients, removeRealtimeChannel } from "../../../lib/supab
 import PatientProfile from "../components/recordes/PatientProfile";
 import usePatientStore from "../../../store/patientStore";
 
+
 export default function Records() {
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [selectedPrescription, setSelectedPrescription] = useState(null);
@@ -27,95 +28,92 @@ export default function Records() {
         fetchSelectedPatient,
     } = useDoctorDashboardStore();
 
-    // Setup realtime updates
+
     useEffect(() => {
         if (!patients.length || !doctors.length) {
             fetchData();
         }
 
-        // إعداد الـ realtime للمرضى العامة
+
         realtimeChannel.current = setupRealtimePatients();
 
-        // إضافة مستمع للـ custom events
-        const handlePrescriptionSaved = async (event) => {
-            console.log('📋 Prescription saved event received:', event.detail);
 
-            // إعادة تحميل البيانات
+        const handlePrescriptionSaved = async (event) => {
+            console.log(' Prescription saved event received:', event.detail);
+
+
             await fetchData();
 
-            // تحديث المريض المحدد إذا كان نفس المريض
+
             if (selectedPatient?.id === event.detail.patientId) {
                 await refreshSelectedPatient();
             }
         };
 
         const handleTestRequestUpdated = async (event) => {
-            console.log('🧪 Test request updated event received:', event.detail);
+            console.log(' Test request updated event received:', event.detail);
 
-            // إعادة تحميل البيانات
+
             await fetchData();
 
-            // تحديث المريض المحدد إذا كان نفس المريض
+
             if (selectedPatient?.id === event.detail.patientId) {
                 await refreshSelectedPatient();
             }
         };
 
         const handleTestRequestDeleted = async (event) => {
-            console.log('🗑️ Test request deleted event received:', event.detail);
+            console.log(' Test request deleted event received:', event.detail);
 
-            // إعادة تحميل البيانات
+
             await fetchData();
 
-            // تحديث المريض المحدد إذا كان نفس المريض
+
             if (selectedPatient?.id === event.detail.patientId) {
                 await refreshSelectedPatient();
             }
         };
 
-        // إضافة مستمعين للـ window events
+
         window.addEventListener('prescriptionSaved', handlePrescriptionSaved);
         window.addEventListener('testRequestUpdated', handleTestRequestUpdated);
         window.addEventListener('testRequestDeleted', handleTestRequestDeleted);
 
-        // إعداد global handlers للـ realtime updates
+
         window.onPatientsUpdate = async (payload) => {
-            console.log('🧑‍⚕️ Patients realtime update:', payload);
+            console.log(' Patients realtime update:', payload);
             await handlePatientsUpdate(payload);
         };
 
         window.onVisitsUpdate = async (payload) => {
-            console.log('🏥 Visits realtime update:', payload);
+            console.log(' Visits realtime update:', payload);
             await handleVisitsUpdate(payload);
         };
 
         window.onPrescriptionsUpdate = async (payload) => {
-            console.log('💊 Prescriptions realtime update:', payload);
+            console.log(' Prescriptions realtime update:', payload);
             await handlePrescriptionsUpdate(payload);
         };
 
         window.onPrescriptionMedicationsUpdate = async (payload) => {
-            console.log('💉 Prescription medications realtime update:', payload);
+            console.log(' Prescription medications realtime update:', payload);
             await handlePrescriptionMedicationsUpdate(payload);
         };
 
         window.onTestRequestsUpdate = async (payload) => {
-            console.log('🧪 Test requests realtime update:', payload);
+            console.log(' Test requests realtime update:', payload);
             await handleTestRequestsUpdate(payload);
         };
 
         return () => {
-            // تنظيف الـ realtime channel
             if (realtimeChannel.current) {
                 removeRealtimeChannel(realtimeChannel.current);
             }
 
-            // إزالة المستمعين
             window.removeEventListener('prescriptionSaved', handlePrescriptionSaved);
             window.removeEventListener('testRequestUpdated', handleTestRequestUpdated);
             window.removeEventListener('testRequestDeleted', handleTestRequestDeleted);
 
-            // تنظيف الـ global handlers
             delete window.onPatientsUpdate;
             delete window.onVisitsUpdate;
             delete window.onPrescriptionsUpdate;
@@ -124,16 +122,13 @@ export default function Records() {
         };
     }, []);
 
-    // التعامل مع تحديثات المرضى
     const handlePatientsUpdate = async (payload) => {
         const { eventType, new: newItem, old: oldItem } = payload;
 
-        console.log('🔄 Handling patients update:', { eventType, newItem, oldItem });
+        console.log(' Handling patients update:', { eventType, newItem, oldItem });
 
-        // إعادة تحميل البيانات
         await fetchData();
 
-        // تحديث المريض المحدد إذا كان متأثراً
         if (selectedPatient) {
             switch (eventType) {
                 case 'UPDATE':
@@ -150,39 +145,31 @@ export default function Records() {
         }
     };
 
-    // التعامل مع تحديثات الزيارات
     const handleVisitsUpdate = async (payload) => {
         const { eventType, new: newItem } = payload;
 
-        console.log('🔄 Handling visits update:', { eventType, newItem });
+        console.log(' Handling visits update:', { eventType, newItem });
 
-        // إعادة تحميل البيانات
         await fetchData();
 
-        // إعادة جلب بيانات المريض إذا كانت الزيارة متعلقة به
         if (selectedPatient && newItem?.patient_id === selectedPatient.id) {
             await refreshSelectedPatient();
         }
     };
 
-    // التعامل مع تحديثات الروشتات
     const handlePrescriptionsUpdate = async (payload) => {
-        console.log('🔄 Handling prescriptions update:', payload);
+        console.log(' Handling prescriptions update:', payload);
 
-        // إعادة تحميل البيانات
         await fetchData();
 
-        // إعادة جلب بيانات المريض المحدد
         if (selectedPatient) {
             await refreshSelectedPatient();
         }
     };
 
-    // التعامل مع تحديثات أدوية الروشتات
     const handlePrescriptionMedicationsUpdate = async (payload) => {
-        console.log('🔄 Handling prescription medications update:', payload);
+        console.log(' Handling prescription medications update:', payload);
 
-        // إعادة تحميل البيانات
         await fetchData();
 
         if (selectedPatient) {
@@ -190,13 +177,11 @@ export default function Records() {
         }
     };
 
-    // التعامل مع تحديثات طلبات التحاليل
     const handleTestRequestsUpdate = async (payload) => {
         const { eventType, new: newItem } = payload;
 
-        console.log('🔄 Handling test requests update:', { eventType, newItem });
+        console.log(' Handling test requests update:', { eventType, newItem });
 
-        // إعادة تحميل البيانات
         await fetchData();
 
         if (selectedPatient && newItem?.patient_id === selectedPatient.id) {
@@ -204,12 +189,11 @@ export default function Records() {
         }
     };
 
-    // دالة لتحديث بيانات المريض المحدد
     const refreshSelectedPatient = async () => {
         if (!selectedPatient?.id) return;
 
         try {
-            console.log('🔄 Refreshing selected patient:', selectedPatient.id);
+            console.log(' Refreshing selected patient:', selectedPatient.id);
 
             const updatedPatientData = await fetchSelectedPatient(selectedPatient.id);
 
@@ -218,14 +202,13 @@ export default function Records() {
                     ...updatedPatientData,
                     visits: updatedPatientData.visits?.sort((a, b) => new Date(b.date) - new Date(a.date)) || []
                 });
-                console.log('✅ Selected patient refreshed successfully');
+                console.log('Selected patient refreshed successfully');
             }
         } catch (error) {
-            console.error('❌ Error refreshing selected patient:', error);
+            console.error(' Error refreshing selected patient:', error);
         }
     };
 
-    // Handle selected patient from store
     useEffect(() => {
         if (selectedPatientName && patients.length > 0) {
             let targetPatient = null;
@@ -267,7 +250,6 @@ export default function Records() {
     const handlePrescriptionClose = async (shouldRefresh = true) => {
         setIsPrescriptionOpen(false);
         if (shouldRefresh && selectedPatient?.id) {
-            // انتظار قليل للتأكد من حفظ البيانات
             setTimeout(async () => {
                 await refreshSelectedPatient();
             }, 500);
@@ -320,7 +302,6 @@ export default function Records() {
 
             {/* Main Content */}
             <div className="flex flex-col mx-2 sm:mx-4 lg:mx-6 my-3 px-4">
-                {/* Header */}
                 <div className="flex items-center gap-3 justify-between">
                     <span className="font-bold sm:text-lg lg:text-xl mb-5">سجل المريض</span>
                 </div>

@@ -21,11 +21,11 @@ const renderCustomizedLabel = ({
 }) => {
   const RADIAN = Math.PI / 180;
 
-  // تخصيص حسب الاسم
+
   const config = {
-    'استشارة': { offset: 50, color: '#8884D8', fontWeight: 'bold' },
-    'متابعة': { offset: 50, color: '#00C49F', fontWeight: 'bold' },
-    'فحص': { offset: 20, color: '#FFBB28', fontWeight: 'bold' },
+    'إستشارة': { offset: 50, color: '#8884D8', fontWeight: 'bold' },
+    'متابعة': { offset: 50, color: '#FFBB28', fontWeight: 'bold' },
+    'فحص': { offset: 50, color: '#00C49F', fontWeight: 'bold' },
   };
 
   const { offset = 20, color = '#333', fontWeight = 'normal' } = config[name] || {};

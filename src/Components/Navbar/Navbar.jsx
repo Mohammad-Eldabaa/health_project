@@ -86,9 +86,8 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
-                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
-              } hover:scale-105`}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
+                } hover:scale-105`}
               onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
@@ -155,9 +154,8 @@ export default function Navbar() {
                     </NavLink>
                     <button onClick={toggleServicesDropdown} className="text-white text-sm focus:outline-none ml-1">
                       <i
-                        className={`fa-solid fa-chevron-${
-                          servicesDropdown ? 'up' : 'down'
-                        } transition-transform duration-300`}
+                        className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
+                          } transition-transform duration-300`}
                       ></i>
                     </button>
                   </div>
@@ -203,15 +201,8 @@ export default function Navbar() {
                 </li>
               </ul>
               <div>
-  <NavLink
-    className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
-    to="/patient-record"
-    onClick={handleNavClick}
-  >
-    <i className="fa-solid fa-file-medical ml-3"></i>
-    السجل المرضي
-  </NavLink>
-</div>
+
+              </div>
 
             </div>
             <div>
@@ -246,6 +237,14 @@ export default function Navbar() {
                             >
                               <i className="fa-solid fa-user me-2"></i>
                               الملف الشخصي
+                            </NavLink>
+                            <NavLink
+                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                              to="/patient-record"
+                              onClick={handleNavClick}
+                            >
+                              <i className="fa-solid fa-file-medical ml-3"></i>
+                              السجل المرضي
                             </NavLink>
 
                             <NavLink
@@ -352,9 +351,8 @@ export default function Navbar() {
 
                   <button onClick={() => setServicesDropdown(!servicesDropdown)} className="text-white px-3">
                     <i
-                      className={`fa-solid fa-chevron-${
-                        servicesDropdown ? 'up' : 'down'
-                      } transition-transform duration-300`}
+                      className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
+                        } transition-transform duration-300`}
                     ></i>
                   </button>
                 </div>

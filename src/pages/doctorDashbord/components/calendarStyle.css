@@ -9,7 +9,7 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* رأس التقويم */
+
 .react-calendar__navigation {
   display: flex;
   justify-content: space-between;
@@ -31,7 +31,7 @@
   color: #00796B;
 }
 
-/* أيام الأسبوع */
+
 .react-calendar__month-view__weekdays {
   text-align: center;
   font-weight: 500;
@@ -44,7 +44,7 @@
   padding: 0.5rem 0;
 }
 
-/* البلاطات */
+
 .react-calendar__tile {
   border-radius: 8px;
   padding: 0.75rem 0;
@@ -57,21 +57,21 @@
   cursor: pointer;
 }
 
-/* اليوم النشط */
+
 .react-calendar__tile--active {
   background: var(--color-accent, #009688) !important;
   color: #fff !important;
   border-radius: 8px;
 }
 
-/* اليوم الحالي */
+
 .react-calendar__tile--now {
   background: rgba(0, 150, 136, 0.15);
   color: #009688;
   border-radius: 8px;
 }
 
-/* تعطيل التاريخ */
+
 .react-calendar__tile:disabled {
   background-color: transparent;
   color: #ccc;

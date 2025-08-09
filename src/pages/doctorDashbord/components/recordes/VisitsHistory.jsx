@@ -1,6 +1,5 @@
 
 
-// components/VisitsHistory.jsx
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 export default function VisitsHistory({ patient, onViewPrescription }) {
@@ -11,7 +10,7 @@ export default function VisitsHistory({ patient, onViewPrescription }) {
     const handleViewClick = (visit) => {
         const lastPrescription = visit.prescriptions?.[visit.prescriptions.length - 1];
 
-        // الحصول على التشخيص من medical_records أو notes الزيارة
+
         const diagnosis = visit.medical_records?.[0]?.diagnosis ||
             lastPrescription?.notes ||
             visit.notes ||

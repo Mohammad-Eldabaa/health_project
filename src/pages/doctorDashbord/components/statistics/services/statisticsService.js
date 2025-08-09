@@ -79,6 +79,5 @@ export const fetchQuickStats = async () => {
     { key: 'monthlyVisits', title: 'الزيارات هذا الشهر', value: monthlyVisits.count || 0, change: '+8%' },
     { key: 'testRequests', title: 'التحاليل هذا الشهر', value: testRequests.count || 0, change: '+5%' },
     { key: 'prescriptions', title: 'وصفات طبية', value: prescriptionsCount.count || 0, change: '+10%' },
-    { key: 'averageDuration', title: 'متوسط مدة الكشف', value: '12 دقيقة', change: '0%' },
   ];
 };

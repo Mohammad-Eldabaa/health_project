@@ -7,14 +7,13 @@ const ICON_MAP = {
     monthlyVisits: <Stethoscope className="w-6 h-6 text-cyan-600" />,
     testRequests: <Droplet className="w-6 h-6 text-cyan-600" />,
     prescriptions: <Pill className="w-6 h-6 text-cyan-600" />,
-    averageDuration: <Clock className="w-6 h-6 text-cyan-600" />,
 };
 
 const QuickStats = () => {
     const quickStats = useDoctorDashboardStore(state => state.statistics.quickStats);
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {quickStats.map((stat, index) => (
                 <div key={index} className="bg-gray-50 p-4 rounded-xl shadow-md ">
                     <div className="flex items-center justify-between">
