@@ -8,15 +8,20 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState(null);
     const [error, setError] = useState(null);
+    const [initialQueuePosition, setInitialQueuePosition] = useState(null);
 
     const fetchQueueInfo = async () => {
         if (!patientId) return;
-
         try {
             setLoading(true);
             setError(null);
             const info = await getQueuePosition(patientId, doctorId);
             setQueueInfo(info);
+
+            if (initialQueuePosition === null && info.queuePosition > 0) {
+                setInitialQueuePosition(info.queuePosition);
+            }
+
             setLastUpdate(new Date());
         } catch (err) {
             console.error('Error fetching queue info:', err);
@@ -65,8 +70,8 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
 
     if (!queueInfo?.nextAppointment) {
         return (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 ">
-                <div className="text-center text-yellow-700 flex items-center gap-2">
+            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4 ">
+                <div className="text-center text-cyan-700 flex items-center gap-2">
                     <EventIcon fontSize="large" className="mb-2" />
                     <p>لا توجد مواعيد حجز قادمة</p>
                 </div>
@@ -75,7 +80,7 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
     }
 
     const { nextAppointment, queuePosition, totalQueue } = queueInfo;
-    const estimatedWaitTime = Math.max(0, queuePosition * 15);
+    const estimatedWaitTime = Math.max(0, queuePosition * 10);
 
     return (
         <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-lg p-4">
@@ -113,14 +118,14 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
             </div>
 
             {/* Queue Status */}
-            {queuePosition > 0 ? (
+            {queuePosition > 1 ? (
                 <>
                     <div className="grid grid-cols-3 gap-3 mt-3">
                         <div className="text-center bg-white rounded-lg p-3 shadow-sm">
                             <div className="text-2xl font-bold text-orange-600">
                                 {queuePosition}
                             </div>
-                            <div className="text-sm text-gray-600 font-medium">مواعيد في الانتظار</div>
+                            <div className="text-sm text-gray-600 font-medium">مواعيد قبلك في الانتظار</div>
                         </div>
                         <div className="text-center bg-white rounded-lg p-3 shadow-sm">
                             <div className="text-2xl font-bold text-blue-600">
@@ -132,7 +137,7 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
                             <div className="text-2xl font-bold text-teal-600">
                                 {estimatedWaitTime} دقيقة
                             </div>
-                            <div className="text-sm text-gray-600 font-medium">الوقت المتوقع</div>
+                            <div className="text-sm text-gray-600 font-medium">المعاد المتوقع بعد</div>
                         </div>
                     </div>
 
@@ -140,12 +145,19 @@ function QueueStatus({ patientId, doctorId = null, refreshInterval = 30000 }) {
                     <div className="mt-4">
                         <div className="flex justify-between text-sm text-teal-700 mb-1">
                             <span>تقدم الدور</span>
-                            <span>{totalQueue - queuePosition} من {totalQueue}</span>
+                            <span>
+                                {initialQueuePosition ? (initialQueuePosition - queuePosition) : 0}
+                                من {initialQueuePosition}
+                            </span>
                         </div>
                         <div className="w-full bg-teal-200 rounded-full h-3">
                             <div
                                 className="bg-gradient-to-r from-teal-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
-                                style={{ width: `${((totalQueue - queuePosition) / totalQueue) * 100}%` }}
+                                style={{
+                                    width: `${initialQueuePosition
+                                        ? ((initialQueuePosition - queuePosition) / initialQueuePosition) * 100
+                                        : 0}%`
+                                }}
                             ></div>
                         </div>
                     </div>
