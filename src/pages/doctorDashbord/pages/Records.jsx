@@ -279,7 +279,7 @@ export default function Records() {
         );
     }
 
-    // No data state
+
     if (!patients.length) {
         return <div className="p-4 text-red-600">لا توجد بيانات متاحة</div>;
     }
