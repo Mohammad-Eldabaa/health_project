@@ -15,13 +15,26 @@ import {
   FaExclamationTriangle as FaWarning,
 } from 'react-icons/fa';
 import { useProfileStore } from '../../store/profile';
+import { useEffect, useState } from 'react';
 
 export default function DoctorServices() {
-  const { doctorProfile } = useProfileStore();
+  const { getDoctorProfile, getDoctorImage } = useProfileStore();
+  const [profile, setProfile] = useState({});
+  const [image, setImage] = useState({});
+  const addProfile = async () => {
+    const profileData = await getDoctorProfile();
+    const img = await getDoctorImage(profileData.image);
+    setImage(img);
+    setProfile(profileData);
+  };
+  useEffect(() => {
+    addProfile();
+  }, []);
+
   const doctor = {
-    name: doctorProfile.name,
-    specialty: doctorProfile.specialty,
-    image: '/src/assets/img/doctor-ahmed.jpg',
+    name: profile.name,
+    specialty: profile.specialty,
+    image: image,
     bio: 'طبيب استشاري بأمراض الباطنة والقلب، حاصل على البورد الأمريكي في الطب الباطني والزمالة البريطانية في أمراض القلب. يتمتع بخبرة تزيد عن 15 عاماً في تشخيص وعلاج الحالات الحرجة والمزمنة.',
     services: [
       {
