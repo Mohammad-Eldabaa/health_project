@@ -399,21 +399,21 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                             />
                         </div>
 
-                        <div className="border border-gray-200 rounded-lg mb-6 h-60 overflow-y-auto">
-                            <div className="p-3 grid grid-cols-12 gap-1 font-medium text-blue-800"
+                        <div className="border border-gray-200 rounded-lg mb-6 h-50 overflow-y-auto">
+                            <div className="p-2 grid grid-cols-12 gap-1 font-medium text-blue-800"
                                 style={{ backgroundColor: "var(--color-primary-light)", color: "var(--color-text-primary)" }}>
                                 <span className="col-span-5">الدواء</span>
-                                <span className="col-span-3">الجرعة</span>
-                                <span className="col-span-3">المدة</span>
+                                <span className="col-span-4">الجرعة</span>
+                                <span className="col-span-2">المدة</span>
                                 <span className="col-span-1">إزالة</span>
                             </div>
                             <div className="max-h-64">
                                 {formData.selectedMeds.length > 0 ? (
                                     formData.selectedMeds.map((med, index) => (
-                                        <div key={index} className="border-b border-gray-200 p-3 grid grid-cols-12 gap-1 items-center hover:bg-gray-50">
+                                        <div key={index} className="border-b border-gray-200 p-2 grid grid-cols-12 gap-1 items-center hover:bg-gray-50">
                                             <span className="col-span-5 font-medium">{med.name}</span>
-                                            <span className="col-span-3 text-gray-600">{med.dosage}</span>
-                                            <span className="col-span-3 text-gray-600">{med.duration}</span>
+                                            <span className="col-span-4 text-gray-600">{med.dosage}</span>
+                                            <span className="col-span-2 text-gray-600">{med.duration}</span>
                                             <button
                                                 onClick={() => removeMedication(index)}
                                                 className="col-span-1 text-red-500 hover:text-red-700"
@@ -430,13 +430,13 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                             </div>
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-4">
                             <label className="block mb-2 font-medium text-gray-700">ملاحظات الطبيب</label>
                             <textarea
                                 value={formData.notes}
                                 onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                rows="4"
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                rows="3"
                                 placeholder="التشخيص أو أي تعليمات إضافية..."
                             />
                         </div>
