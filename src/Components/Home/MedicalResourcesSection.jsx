@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { FaBookMedical, FaFirstAid, FaArrowLeft, FaHeartbeat, FaBriefcaseMedical } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const MedicalResourcesSection = () => {
+  const navigate = useNavigate();
   const resources = [
     {
       title: 'المكتبة الطبية',
@@ -81,7 +83,8 @@ const MedicalResourcesSection = () => {
                   <motion.a
                     whileHover={{ x: 5 }}
                     whileTap={{ scale: 0.95 }}
-                    href={resource.link}
+                    // href={resource.link}
+                    onClick={() => navigate(`/${resource.link}`)}
                     className={`inline-flex items-center rounded-md border-1 p-2 ${
                       index === 0 ? 'text-[#009688]' : 'text-[#009688]'
                     } font-semibold`}
