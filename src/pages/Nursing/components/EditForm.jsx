@@ -1,8 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 export const EditForm = ({ editFormData, handleEditChange, handleEditSubmit, setIsEditing, doctors }) => (
-  <form onSubmit={handleEditSubmit} className="grid grid-cols-1 gap-4">
+  <form
+    onSubmit={e => {
+      e.preventDefault();
+      const [date, time] = editFormData.appointmentDateTime.split('T');
+      const updatedData = {
+        date,
+        time,
+        status: editFormData.status,
+        visitType: editFormData.visitType || null,
+        payment: editFormData.payment,
+        amount: editFormData.amount ? parseFloat(editFormData.amount) : null,
+        doctor_id: editFormData.doctor_id || null,
+      };
+      handleEditSubmit(e, updatedData);
+    }}
+    className="grid grid-cols-1 gap-4"
+  >
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-2">التاريخ والوقت</label>
       <input

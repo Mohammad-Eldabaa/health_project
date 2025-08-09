@@ -6,9 +6,8 @@ import useAuthStore from '../../store/auth';
 import ProfileModal from './ProfileModal';
 import PatientMedicalRecord from './PatientMedicalRecord';
 
-
 export default function Navbar() {
-  const { CUname, logout } = useAuthStore();
+  const { CUname, logout, CUrole } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -86,8 +85,9 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
-                } hover:scale-105`}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
+                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
+              } hover:scale-105`}
               onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
@@ -154,8 +154,9 @@ export default function Navbar() {
                     </NavLink>
                     <button onClick={toggleServicesDropdown} className="text-white text-sm focus:outline-none ml-1">
                       <i
-                        className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
-                          } transition-transform duration-300`}
+                        className={`fa-solid fa-chevron-${
+                          servicesDropdown ? 'up' : 'down'
+                        } transition-transform duration-300`}
                       ></i>
                     </button>
                   </div>
@@ -200,10 +201,7 @@ export default function Navbar() {
                   </NavLink>
                 </li>
               </ul>
-              <div>
-
-              </div>
-
+              <div></div>
             </div>
             <div>
               <ul className="flex flex-col lg:flex-row items-center mb-0">
@@ -227,25 +225,38 @@ export default function Navbar() {
                       <div className="py-1">
                         {CUname() ? (
                           <div>
-                            <NavLink
-                              to="/login"
-                              onClick={e => {
-                                e.preventDefault();
-                                setIsModalOpen(true);
-                              }}
-                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                            >
-                              <i className="fa-solid fa-user me-2"></i>
-                              الملف الشخصي
-                            </NavLink>
-                            <NavLink
-                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                              to="/patient-record"
-                              onClick={handleNavClick}
-                            >
-                              <i className="fa-solid fa-file-medical ml-3"></i>
-                              السجل المرضي
-                            </NavLink>
+                            {CUrole() != 'doctor' && (
+                              <NavLink
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setIsModalOpen(true);
+                                }}
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                              >
+                                <i className="fa-solid fa-user me-2"></i>
+                                الملف الشخصي
+                              </NavLink>
+                            )}
+
+                            {CUrole() == 'doctor' ? (
+                              <NavLink
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                                to="/DoctorDashboard"
+                                onClick={handleNavClick}
+                              >
+                                <i className="fa-solid fa-file-medical ml-3"></i>
+                                صفحة الدكتور
+                              </NavLink>
+                            ) : (
+                              <NavLink
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                                to="/patient-record"
+                                onClick={handleNavClick}
+                              >
+                                <i className="fa-solid fa-file-medical ml-3"></i>
+                                السجل المرضي
+                              </NavLink>
+                            )}
 
                             <NavLink
                               to="/login"
@@ -273,7 +284,6 @@ export default function Navbar() {
                             <i className="fa-solid fa-right-to-bracket me-2"></i>
                             تسجيل الدخول
                           </NavLink>
-
                         )}
                       </div>
                     </div>
@@ -351,8 +361,9 @@ export default function Navbar() {
 
                   <button onClick={() => setServicesDropdown(!servicesDropdown)} className="text-white px-3">
                     <i
-                      className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
-                        } transition-transform duration-300`}
+                      className={`fa-solid fa-chevron-${
+                        servicesDropdown ? 'up' : 'down'
+                      } transition-transform duration-300`}
                     ></i>
                   </button>
                 </div>

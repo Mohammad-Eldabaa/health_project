@@ -24,7 +24,7 @@ export const NursingTopBar = ({ toggleSidebar }) => {
       }
       logout();
       localStorage.removeItem('auth_token');
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       console.error('Unexpected error during logout:', err);
     }
