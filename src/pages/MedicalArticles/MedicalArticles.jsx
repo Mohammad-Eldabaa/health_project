@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Calendar, User, Stethoscope, Mic } from 'lucide-react';
 import medicalArticlesData from './medicalArticlesData.json';
-import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
+import Navbar from '../../Components/Navbar/Navbar';
+import Footer from '../../Components/Footer/Footer';
 
 
 const MedicalArticlesPage = () => {
