@@ -26,7 +26,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
     const prescriptionStore = usePrescriptionStore();
     const realtimeChannel = useRef(null);
 
-    // إعداد اشتراكات الوقت الحقيقي
+
     useEffect(() => {
         if (!isOpen || !selectedPatient?.id) return;
 
@@ -49,7 +49,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
         };
     }, [isOpen, selectedPatient?.id]);
 
-    // تحديث اسم المريض عند تغيير المريض المحدد
+
     useEffect(() => {
         setFormData(prev => ({ ...prev, patientName: selectedPatient?.fullName || '' }));
     }, [selectedPatient]);
@@ -61,7 +61,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
     }, [formData.selectedMeds]);
 
 
-    // إضافة دواء جديد
+
     const addMedication = useCallback(() => {
 
         if (isMedAlreadyAdded(formData.currentMed)) {
@@ -83,7 +83,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
         toast.success('تم إضافة الدواء');
     }, [formData.currentMed, formData.dosage, formData.duration]);
 
-    // إزالة دواء
+
     const removeMedication = useCallback((index) => {
         setFormData(prev => {
             const updated = [...prev.selectedMeds];
@@ -93,7 +93,8 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
         toast.info('تم إزالة الدواء');
     }, []);
 
-    // حفظ الوصفة الطبية
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.patientName || formData.selectedMeds.length === 0) {
@@ -103,9 +104,10 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
         setIsSubmitting(true);
         try {
-            const currentDoctorId = 1; // استبدال برقم الطبيب الفعلي
+            const currentDoctorId = 1; 
+            
 
-            // 1. البحث عن المريض أو إنشائه
+
             let patientId;
             const { data: existingPatient, error: patientError } = await supabase
                 .from('patients')
@@ -137,7 +139,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                 patientId = existingPatient.id;
             }
 
-            // 2. إنشاء الزيارة
+
             const { data: visit, error: visitError } = await supabase
                 .from('visits')
                 .insert([{
@@ -152,7 +154,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
             if (visitError) throw visitError;
 
-            // 3. إنشاء السجل الطبي
+
             const { data: medicalRecord, error: recordError } = await supabase
                 .from('medical_records')
                 .insert([{
@@ -167,13 +169,13 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
             if (recordError) throw recordError;
 
-            // 4. حفظ الروشتة
+
             await prescriptionStore.savePrescription(patientId, visit.id, {
                 notes: formData.notes,
                 medications: formData.selectedMeds
             });
 
-            // 5. تحديث حالة الموعد إذا كان موجودًا
+
             if (selectedPatient?.appointment_id) {
                 await supabase
                     .from('appointments')
@@ -181,7 +183,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                     .eq('id', selectedPatient.appointment_id);
             }
 
-            // 6. إرسال إشعار بالتحديث
+
             window.dispatchEvent(new CustomEvent('prescriptionSaved', {
                 detail: {
                     patientId: patientId,
@@ -224,7 +226,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
 
     return (
         <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center z-50">
-            {/* نافذة الجرعة */}
+
             {showDosageModal && (
                 <div className="fixed inset-0 bg-gray-500/60 flex justify-center items-center z-50 overflow-auto">
                     <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-md border border-gray-400">
@@ -301,7 +303,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                 </div>
             )}
 
-            {/* النافذة الرئيسية */}
+
             <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-5xl relative overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4">نظام صرف الأدوية</h2>
 
@@ -314,7 +316,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                 </button>
 
                 <div className="flex flex-col lg:flex-row gap-6 mt-6 h-[80vh]">
-                    {/* جانب الأدوية */}
+
                     <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4 border border-gray-200">
                         <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>تصنيفات الأدوية</h2>
 
@@ -376,7 +378,7 @@ export default function PrescriptionModel({ isOpen, onClose, selectedPatient }) 
                         </div>
                     </div>
 
-                    {/* جانب الوصفة الطبية */}
+
                     <div className="w-full lg:w-3/5 bg-white rounded-lg shadow-md p-4 border border-gray-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold" style={{ color: "var(--color-primary)" }}>روشتة العلاج</h2>

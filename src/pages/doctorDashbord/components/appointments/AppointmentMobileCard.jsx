@@ -4,7 +4,7 @@ import StatusBadge from "./StatusBadge";
 const AppointmentMobileCard = ({ appointment, onViewDetails }) => {
   return (
     <div className="rounded-2xl p-4 shadow-sm bg-white mb-4">
-      {/* الاسم + الحالة */}
+
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="bg-cyan-100 text-cyan-600 rounded-full h-10 w-10 flex items-center justify-center">
@@ -18,7 +18,7 @@ const AppointmentMobileCard = ({ appointment, onViewDetails }) => {
         <StatusBadge status={appointment.status} />
       </div>
 
-      {/* التفاصيل */}
+
       <div className="space-y-2 text-sm text-gray-700">
         <div className="flex items-center gap-2">
           <CalendarClock size={16} className="text-gray-400" />
@@ -38,7 +38,7 @@ const AppointmentMobileCard = ({ appointment, onViewDetails }) => {
         )}
       </div>
 
-      {/* زر التفاصيل */}
+
       <div className="mt-4 flex justify-end">
         <button
           onClick={() => onViewDetails?.(appointment)}

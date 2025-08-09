@@ -3,7 +3,7 @@ const MedicationsList = ({
     onCategoryChange, 
     onMedClick, 
     medicationsData,
-    isMedAlreadyAdded // أضف هذا الـ prop الجديد
+    isMedAlreadyAdded 
 }) => {
     const medicationsList = medicationsData?.find(cat => cat.name === activeCategory)?.medications || [];
 

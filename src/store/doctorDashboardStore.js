@@ -70,8 +70,6 @@ const useDoctorDashboardStore = create((set, get) => ({
       ] = await Promise.all([
         supabase.from('appointments').select('*'),
         supabase.from('doctors').select('*'),
-
-        // ✅ FIX: تصحيح استعلام المرضى مع التحاليل
         supabase.from('patients').select(`
           *,
           visits (
@@ -118,8 +116,6 @@ const useDoctorDashboardStore = create((set, get) => ({
         `),
         supabase.from('prescription_medications').select('*'),
         supabase.from('tests').select('*').order('created_at', { ascending: false }),
-
-        // ✅ FIX: تصحيح استعلام test_requests
         supabase.from('test_requests').select(`
             id,
             patient_id,
@@ -150,13 +146,10 @@ const useDoctorDashboardStore = create((set, get) => ({
         supabase.from('duration_options').select('*'),
       ]);
 
-      // ✅ معالجة وترتيب البيانات
       const processedPatientsData =
         patientsData?.map(patient => ({
           ...patient,
-          // ترتيب الزيارات
           visits: patient.visits?.sort((a, b) => new Date(b.time) - new Date(a.time)) || [],
-          // ترتيب التحاليل
           test_requests: patient.test_requests?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [],
         })) || [];
 
@@ -179,27 +172,25 @@ const useDoctorDashboardStore = create((set, get) => ({
       const currentVisit = appointmentsData?.find(a => a.status === 'قيد الكشف');
       set({ currentVisit: currentVisit || null });
 
-      console.log('✅ All data fetched successfully');
+      console.log(' All data fetched successfully');
       console.log(
-        '📊 Patients with test_requests:',
+        ' Patients with test_requests:',
         processedPatientsData.filter(p => p.test_requests?.length > 0).length
       );
-      console.log('📊 Total test_requests:', test_requestsData?.length || 0);
+      console.log(' Total test_requests:', test_requestsData?.length || 0);
     } catch (error) {
       set({
         error: error.message,
         loading: false,
       });
-      console.error('❌ Error fetching data:', error);
+      console.error(' Error fetching data:', error);
     }
   },
-
-  // ✅ دالة محسنة لجلب بيانات مريض محدد مع جميع العلاقات
   fetchSelectedPatient: async patientId => {
     if (!patientId) return null;
 
     try {
-      console.log('🔄 Fetching patient data:', patientId);
+      console.log(' Fetching patient data:', patientId);
 
       const { data, error } = await supabase
         .from('patients')
@@ -244,38 +235,33 @@ const useDoctorDashboardStore = create((set, get) => ({
 
       if (error) throw error;
 
-      // ترتيب الزيارات حسب التاريخ (الأحدث أولاً)
       if (data.visits) {
         data.visits.sort((a, b) => new Date(b.time) - new Date(a.time));
       }
 
-      // ترتيب التحاليل حسب تاريخ الإنشاء (الأحدث أولاً)
       if (data.test_requests) {
         data.test_requests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       }
 
-      // تحديث المريض في قائمة المرضى
       const currentPatients = get().patients;
       const updatedPatients = currentPatients.map(p => (p.id === patientId ? data : p));
       set({ patients: updatedPatients });
 
-      console.log('✅ Patient data fetched successfully');
-      console.log('📊 Test requests found:', data.test_requests?.length || 0);
-      console.log('📊 Visits found:', data.visits?.length || 0);
+      console.log(' Patient data fetched successfully');
+      console.log(' Test requests found:', data.test_requests?.length || 0);
+      console.log(' Visits found:', data.visits?.length || 0);
 
-      // ✅ Debug: طباعة أول تحليل لفحص البنية
       if (data.test_requests?.length > 0) {
         console.log('🔍 First test request structure:', data.test_requests[0]);
       }
 
       return data;
     } catch (error) {
-      console.error('❌ Error fetching patient:', error);
+      console.error(' Error fetching patient:', error);
       throw error;
     }
   },
 
-  // دالة للحصول على إحصائيات سريعة
   refreshSelectedPatient: async () => {
     const selectedPatient = get().selectedPatient;
     if (selectedPatient?.id) {

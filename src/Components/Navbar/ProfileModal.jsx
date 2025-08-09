@@ -1,4 +1,3 @@
-// src/components/ProfileModal.jsx
 import React, { useEffect, useState } from 'react';
 import useAuthStore from '../../store/auth';
 

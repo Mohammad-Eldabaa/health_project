@@ -98,7 +98,7 @@ const DoctorProfile = ({ isDoctorView = false }) => {
 
   return (
     <motion.div
-      className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen bg-[#E0F7FA]"
+      className="w-full mx-auto px-8 sm:px-10 lg:px-25 py-8 min-h-screen bg-[#E0F7FA]"
       style={{
         direction: 'rtl',
         fontFamily: "'Tajawal', sans-serif",

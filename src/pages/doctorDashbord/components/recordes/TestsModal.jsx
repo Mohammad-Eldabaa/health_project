@@ -1,4 +1,3 @@
-// components/TestsModal.jsx - FIXED VERSION
 import { useState } from 'react';
 import { 
     Dialog, 
@@ -47,14 +46,14 @@ export default function TestsModal({ isOpen, onClose, patient, testRequests }) {
                 .update({
                     status: editForm.status,
                     result: editForm.result,
-                    // ✅ إضافة updated_at إذا كان موجود في الجدول
+
                     ...(editForm.result && { result: editForm.result })
                 })
                 .eq('id', selectedTest.id);
 
             if (error) throw error;
 
-            // إرسال إشارة للتحديث
+
             window.dispatchEvent(new CustomEvent('testRequestUpdated', {
                 detail: { testRequestId: selectedTest.id, patientId: patient.id }
             }));
@@ -62,7 +61,7 @@ export default function TestsModal({ isOpen, onClose, patient, testRequests }) {
             setIsEditing(false);
             setSelectedTest(null);
             
-            // إغلاق الموديل وإعادة تحميل البيانات
+
             setTimeout(() => {
                 onClose();
             }, 500);
@@ -87,12 +86,12 @@ export default function TestsModal({ isOpen, onClose, patient, testRequests }) {
 
             if (error) throw error;
 
-            // إرسال إشارة للتحديث
+
             window.dispatchEvent(new CustomEvent('testRequestDeleted', {
                 detail: { testRequestId: testId, patientId: patient.id }
             }));
 
-            // إغلاق الموديل وإعادة تحميل البيانات
+
             setTimeout(() => {
                 onClose();
             }, 500);
@@ -230,7 +229,8 @@ export default function TestsModal({ isOpen, onClose, patient, testRequests }) {
                     )}
                 </div>
 
-                {/* موديل التعديل */}
+
+
                 {isEditing && selectedTest && (
                     <div className="fixed inset-0 bg-gray-500/50 flex items-center justify-center z-50 ">
                         <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 border-2 border-cyan-600">

@@ -39,7 +39,7 @@ export default function Prescription({ onClose }) {
     useEffect(() => {
         if (!selectedPatient?.id) return;
 
-        // Initialize real-time updates for selected patient prescriptions
+
         const initRealtime = async () => {
             try {
                 realtimeChannel.current = setupRealtimePatients(selectedPatient.id);
@@ -52,7 +52,7 @@ export default function Prescription({ onClose }) {
 
         initRealtime();
 
-        // Cleanup realtime subscription on component unmount or patient change
+
         return () => {
             if (realtimeChannel.current) {
                 removeRealtimeChannel(realtimeChannel.current);
@@ -60,12 +60,12 @@ export default function Prescription({ onClose }) {
         };
     }, [selectedPatient?.id]);
 
-    // Function to check if medication is already added to the prescription list
+
     const isMedAlreadyAdded = useCallback((medName) => {
         return formData.selectedMeds.some(med => med.name === medName);
     }, [formData.selectedMeds]);
 
-    // Handler for clicking on a medication item
+
     const handleMedClick = useCallback((med) => {
         if (isMedAlreadyAdded(med)) {
             toast.info('هذا الدواء مضاف مسبقاً للروشتة', {
@@ -78,7 +78,7 @@ export default function Prescription({ onClose }) {
         setShowDosageModal(true);
     }, [isMedAlreadyAdded]);
 
-    // Add medication to the selected medications list
+
     const addMedication = useCallback(() => {
         const newMed = {
             name: formData.currentMed,
@@ -95,7 +95,7 @@ export default function Prescription({ onClose }) {
         toast.success('تم إضافة الدواء');
     }, [formData.currentMed, formData.dosage, formData.duration]);
 
-    // Remove medication from the selected medications list by index
+
     const removeMedication = useCallback((index) => {
         setFormData(prev => {
             const updated = [...prev.selectedMeds];
@@ -105,7 +105,7 @@ export default function Prescription({ onClose }) {
         toast.info('تم إزالة الدواء');
     }, []);
 
-    // Handle form submission to save prescription and related data
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedPatient || formData.selectedMeds.length === 0) {
@@ -117,7 +117,7 @@ export default function Prescription({ onClose }) {
         try {
             const currentDoctorId = 1;
 
-            // 1. Insert a new visit
+
             const { data: visit, error: visitError } = await supabase
                 .from('visits')
                 .insert([{
@@ -132,7 +132,7 @@ export default function Prescription({ onClose }) {
 
             if (visitError) throw visitError;
 
-            // 2. Insert medical record with diagnosis and notes
+
             const { data: medicalRecord, error: recordError } = await supabase
                 .from('medical_records')
                 .insert([{
@@ -147,7 +147,7 @@ export default function Prescription({ onClose }) {
 
             if (recordError) throw recordError;
 
-            // 3. Save the prescription
+
             const savedPrescription = await prescriptionStore.savePrescription(selectedPatient.id, visit.id, {
                 notes: formData.notes,
                 medications: formData.selectedMeds

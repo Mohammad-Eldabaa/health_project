@@ -20,7 +20,7 @@ import {
   MedicalArticles,
   NursingAppointments,
   NursingPatientsList,
-  PatientMedicalRecord,
+  PatientRecordContainer ,
 } from './lazy';
 import NursingLayout from '../pages/Nursing/NursingLayout';
 
@@ -34,8 +34,8 @@ export const RoutesArray = [
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <PatientView />, path: '/profile' },
-  { id: v4(), element: <PatientMedicalRecord />, path: '/patient-record' },
-  { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
+  {id: v4(), element: <PatientRecordContainer />, path: '/patient-record/:patientId?'
+  }, { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
   {
     id: v4(),
     element: <NursingLayout />,

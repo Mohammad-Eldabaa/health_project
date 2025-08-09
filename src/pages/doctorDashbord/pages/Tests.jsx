@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../supaBase/booking";
-import PrintPreview from "../components/printTestpdf";
 
 
 import {
@@ -78,7 +77,7 @@ const Tests = () => {
     const [testsData, setTestsData] = useState([]);
 
     useEffect(() => {
-        // تحميل التصنيفات
+
         const fetchCategories = async () => {
             const { data } = await supabase.from("test_cat").select("*");
             if (data) setCategories([{ name: 'الكل' }, ...data.map(cat => ({
@@ -88,7 +87,7 @@ const Tests = () => {
             }))]);
         };
 
-        // تحميل التحاليل
+
         const fetchTests = async () => {
             const { data } = await supabase.from("tests").select("*, test_cat(name, color)");
             if (data) {
@@ -129,7 +128,7 @@ const Tests = () => {
             return;
         }
 
-        // نجيب ID التصنيف من test_cat
+
         const selectedCat = categories.find(c => c.name === newTest.category);
         if (!selectedCat) {
             alert("تصنيف غير صالح");
@@ -156,7 +155,7 @@ const Tests = () => {
             alert("تم إضافة التحليل بنجاح");
             setOpenAddTest(false);
             setNewTest({ name: '', duration: '', category: '', urgent: false });
-            // إعادة تحميل التحاليل
+
             const { data } = await supabase.from("tests").select("*, test_cat(name, color)");
             if (data) {
                 const formatted = data.map(test => ({
@@ -193,7 +192,7 @@ const Tests = () => {
     const handleDeleteTest = async () => {
         if (!testToDelete) return;
 
-        // التحقق من وجود طلبات مرتبطة بهذا التحليل
+
         const { data: relatedRequests, error: checkError } = await supabase
             .from('test_requests')
             .select('id')
@@ -213,7 +212,7 @@ const Tests = () => {
             return;
         }
 
-        // إذا لم يكن هناك طلبات مرتبطة، تابع الحذف
+
         const { error } = await supabase.from("tests").delete().eq("id", testToDelete.id);
 
         if (error) {
@@ -328,7 +327,6 @@ const Tests = () => {
                 </div>
 
 
-                {/* Button */}
             </div>
             <div className="flex flex-wrap gap-1 md:gap-3 mb-5 justify-between">
                 {categories.map((cat, idx) => (
