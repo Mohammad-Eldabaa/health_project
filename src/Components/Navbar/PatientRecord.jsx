@@ -107,8 +107,8 @@ function PatientRecordContainer() {
     return (
         <div className="min-h-screen bg-gray-50 py-4">
             {/* Header Info */}
-            <div className="max-w-6xl mx-auto px-4 mb-6">
-                <div className="bg-cyan-600  text-white rounded-xl shadow-lg p-6">
+            <div className="w-full mx-auto px-4 mb-6">
+                <div className="bg-[var(--color-primary)]  text-white rounded-xl shadow-lg p-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold mb-2"> سجلك الطبي</h1>
