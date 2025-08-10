@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Delete } from '@mui/icons-material';
+import Swal from 'sweetalert2';
 
 export const PatientCards = ({ filteredPatients, isTablet, openEditModal, deletePatient }) => (
   <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -30,7 +31,28 @@ export const PatientCards = ({ filteredPatients, isTablet, openEditModal, delete
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="p-2 rounded-full text-red-600 hover:bg-red-50 transition-colors"
-              onClick={() => deletePatient(patient.id)}
+              onClick={async () => {
+                const result = await Swal.fire({
+                  title: 'تأكيد الحذف',
+                  text: 'هل أنت متأكد من حذف هذا المريض؟',
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonText: 'نعم، احذف',
+                  cancelButtonText: 'إلغاء',
+                  confirmButtonColor: '#d33',
+                  cancelButtonColor: '#3085d6',
+                });
+                if (result.isConfirmed) {
+                  await deletePatient(patient.id);
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'تم الحذف',
+                    text: 'تم حذف المريض بنجاح!',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#3085d6',
+                  });
+                }
+              }}
             >
               <Delete />
             </motion.button>
