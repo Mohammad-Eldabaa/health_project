@@ -4,9 +4,10 @@ import logo from '../../assets/img/logo.png';
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/auth';
 import ProfileModal from './ProfileModal';
+import PatientMedicalRecord from './PatientMedicalRecord';
 
 export default function Navbar() {
-  const { CUname, logout } = useAuthStore();
+  const { CUname, logout, CUrole } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -14,8 +15,6 @@ export default function Navbar() {
   const [authDropdown, setAuthDropdown] = useState(false);
   const authDropdownRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-
 
   const handleNavClick = () => {
     setMenuOpen(false);
@@ -46,7 +45,6 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
 
   return (
     <>
@@ -87,8 +85,9 @@ export default function Navbar() {
             </h3>
 
             <button
-              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
-                } hover:scale-105`}
+              className={`lg:hidden flex items-center py-2 text-white transition-all duration-700 transform ${
+                menuOpen ? 'rotate-180 scale-110' : 'rotate-0 scale-100'
+              } hover:scale-105`}
               onClick={() => setMenuOpen(prev => !prev)}
               aria-label="Toggle menu"
               style={{ fontSize: 28 }}
@@ -98,8 +97,8 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:justify-between w-full lg:w-auto">
-            <div className="flex flex-col lg:flex-row items-center gap-0 lg:gap-10">
+          <div className="hidden lg:flex lg:items-center lg:justify-between flex-1 lg:w-auto">
+            <div className="flex flex-col lg:flex-row items-center m-auto gap-0 lg:gap-10">
               <ul className="flex flex-col lg:flex-row items-center pe-12 mb-0">
                 <li>
                   <NavLink
@@ -155,8 +154,9 @@ export default function Navbar() {
                     </NavLink>
                     <button onClick={toggleServicesDropdown} className="text-white text-sm focus:outline-none ml-1">
                       <i
-                        className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
-                          } transition-transform duration-300`}
+                        className={`fa-solid fa-chevron-${
+                          servicesDropdown ? 'up' : 'down'
+                        } transition-transform duration-300`}
                       ></i>
                     </button>
                   </div>
@@ -201,36 +201,62 @@ export default function Navbar() {
                   </NavLink>
                 </li>
               </ul>
+              <div></div>
             </div>
             <div>
               <ul className="flex flex-col lg:flex-row items-center mb-0">
                 <li className="relative" ref={authDropdownRef}>
                   <button
+                    style={{
+                      backgroundColor: 'var(--color-primary)',
+                      padding: '8px',
+                      borderRadius: '5px',
+                    }}
                     onClick={() => setAuthDropdown(prev => !prev)}
                     className="mx-3 text-lg text-white flex items-center gap-1"
                     aria-label="Account"
                   >
-                    <i className="fa-solid fa-user"></i>
+                    <i className="fa-solid fa-gear"></i>
                     {/* <i className={`fa-solid fa-chevron-${authDropdown ? 'up' : 'down'} ml-1`}></i> */}
                   </button>
-
 
                   {authDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-100">
                       <div className="py-1">
                         {CUname() ? (
                           <div>
-                            <NavLink
-                              to="/login"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setIsModalOpen(true);
-                              }}
-                              className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                            >
-                              <i className="fa-solid fa-user me-2"></i>
-                              الملف الشخصي
-                            </NavLink>
+                            {CUrole() != 'doctor' && (
+                              <NavLink
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setIsModalOpen(true);
+                                }}
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                              >
+                                <i className="fa-solid fa-user me-2"></i>
+                                الملف الشخصي
+                              </NavLink>
+                            )}
+
+                            {CUrole() == 'doctor' ? (
+                              <NavLink
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                                to="/DoctorDashboard"
+                                onClick={handleNavClick}
+                              >
+                                <i className="fa-solid fa-file-medical ml-3"></i>
+                                صفحة الدكتور
+                              </NavLink>
+                            ) : (
+                              <NavLink
+                                className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                                to="/patient-record"
+                                onClick={handleNavClick}
+                              >
+                                <i className="fa-solid fa-file-medical ml-3"></i>
+                                السجل المرضي
+                              </NavLink>
+                            )}
 
                             <NavLink
                               to="/login"
@@ -245,9 +271,7 @@ export default function Navbar() {
                             </NavLink>
 
                             <ProfileModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
                           </div>
-
                         ) : (
                           <NavLink
                             to="/login"
@@ -337,8 +361,9 @@ export default function Navbar() {
 
                   <button onClick={() => setServicesDropdown(!servicesDropdown)} className="text-white px-3">
                     <i
-                      className={`fa-solid fa-chevron-${servicesDropdown ? 'up' : 'down'
-                        } transition-transform duration-300`}
+                      className={`fa-solid fa-chevron-${
+                        servicesDropdown ? 'up' : 'down'
+                      } transition-transform duration-300`}
                     ></i>
                   </button>
                 </div>
@@ -381,7 +406,6 @@ export default function Navbar() {
             <div className="mt-auto">
               <ul className="flex flex-col space-y-4">
                 <li>
-
                   {CUname() ? (
                     <div>
                       <div>
@@ -399,7 +423,7 @@ export default function Navbar() {
                         <NavLink
                           className="block text-lg text-white py-3 px-2 rounded hover:bg-cyan-400 transition-colors"
                           to="/login"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.preventDefault();
                             setIsModalOpen(true);
                           }}

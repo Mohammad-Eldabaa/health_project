@@ -1,4 +1,3 @@
-// src/components/AppointmentSummary.jsx
 const statuses = [
     { label: "تم", color: "bg-green-500" },
     { label: "في الإنتظار", color: "bg-yellow-500" },

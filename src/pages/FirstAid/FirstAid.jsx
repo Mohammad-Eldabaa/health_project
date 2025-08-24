@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Card from './components/Card';
 import useFirstAidStore from '../../store/firstaid';
-import Navbar from '../../components/Navbar/Navbar';
+import Navbar from '../../Components/Navbar/Navbar';
 
 export default function FirstAid() {
   const { getAllStatusNames } = useFirstAidStore();

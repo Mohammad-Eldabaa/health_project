@@ -10,7 +10,7 @@ const removeDuplicates = (data, key = 'id') => {
   });
 };
 
-const useDoctorDashboardStore = create(set => ({
+const useDoctorDashboardStore = create((set, get) => ({
   appointments: [],
   patients: [],
   currentVisit: null,
@@ -43,9 +43,17 @@ const useDoctorDashboardStore = create(set => ({
   setRecords: records => set({ records: removeDuplicates(records) }),
 
   fetchData: async () => {
+    const state = get();
+    if (state.patients.length && state.doctors.length && !state.loading) {
+      console.log('📊 Data already loaded, skipping fetch');
+      return;
+    }
+
     set({ loading: true, error: null });
 
     try {
+      console.log('📊 Fetching all data...');
+
       const [
         { data: appointmentsData },
         { data: doctorsData },
@@ -66,6 +74,11 @@ const useDoctorDashboardStore = create(set => ({
           *,
           visits (
             *,
+            medical_records (
+              id,
+              diagnosis,
+              notes
+            ),
             prescriptions (
               *,
               prescription_medications (
@@ -73,8 +86,25 @@ const useDoctorDashboardStore = create(set => ({
                 medication:medications (*)
               )
             )
+          ),
+          test_requests (
+            id,
+            patient_id,
+            test_id,
+            result,
+            status,
+            created_at,
+            tests!test_requests_test_id_fkey (
+              id,
+              name,
+              duration,
+              urgent,
+              category_id,
+              created_at
+            )
           )
         `),
+
         supabase.from('visits').select('*'),
         supabase.from('medical_records').select('*'),
         supabase.from('prescriptions').select(`
@@ -87,15 +117,26 @@ const useDoctorDashboardStore = create(set => ({
         supabase.from('prescription_medications').select('*'),
         supabase.from('tests').select('*').order('created_at', { ascending: false }),
         supabase.from('test_requests').select(`
-          *,
-          tests (id, name, description),
-          visits (patient_id),
-            test:tests (*),
-        visit:visits (
-          *,
-          patient:patients (*)
-        )
-        `),
+            id,
+            patient_id,
+            test_id,
+            result,
+            status,
+            created_at,
+            tests!test_requests_test_id_fkey (
+              id,
+              name,
+              duration,
+              urgent,
+              category_id,
+              created_at
+            ),
+            patients!test_requests_patient_id_fkey (
+              id,
+              fullName
+            )
+          `),
+
         supabase.from('drug_categories').select(`
           name,
           id,
@@ -105,9 +146,16 @@ const useDoctorDashboardStore = create(set => ({
         supabase.from('duration_options').select('*'),
       ]);
 
+      const processedPatientsData =
+        patientsData?.map(patient => ({
+          ...patient,
+          visits: patient.visits?.sort((a, b) => new Date(b.time) - new Date(a.time)) || [],
+          test_requests: patient.test_requests?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [],
+        })) || [];
+
       set({
         appointments: removeDuplicates(appointmentsData || []),
-        patients: removeDuplicates(patientsData || []),
+        patients: removeDuplicates(processedPatientsData),
         visits: removeDuplicates(visitsData || []),
         records: removeDuplicates(recordsData || []),
         prescriptions: removeDuplicates(prescriptionsData || []),
@@ -118,18 +166,109 @@ const useDoctorDashboardStore = create(set => ({
         drug_categories: removeDuplicates(drug_categoriesData || []),
         dosage_options: removeDuplicates(dosage_optionsData || []),
         duration_options: removeDuplicates(duration_optionsData || []),
-
         loading: false,
       });
 
       const currentVisit = appointmentsData?.find(a => a.status === 'قيد الكشف');
       set({ currentVisit: currentVisit || null });
+
+      console.log(' All data fetched successfully');
+      console.log(
+        ' Patients with test_requests:',
+        processedPatientsData.filter(p => p.test_requests?.length > 0).length
+      );
+      console.log(' Total test_requests:', test_requestsData?.length || 0);
     } catch (error) {
       set({
         error: error.message,
         loading: false,
       });
-      console.error('Error fetching data:', error);
+      console.error(' Error fetching data:', error);
+    }
+  },
+  fetchSelectedPatient: async patientId => {
+    if (!patientId) return null;
+
+    try {
+      console.log(' Fetching patient data:', patientId);
+
+      const { data, error } = await supabase
+        .from('patients')
+        .select(
+          `
+          *,
+          visits (
+            *,
+            medical_records (
+              id,
+              diagnosis,
+              notes
+            ),
+            prescriptions (
+              *,
+              prescription_medications (
+                *,
+                medication:medications (*)
+              )
+            )
+          ),
+          test_requests (
+            id,
+            patient_id,
+            test_id,
+            result,
+            status,
+            created_at,
+            tests!test_requests_test_id_fkey (
+              id,
+              name,
+              duration,
+              urgent,
+              category_id,
+              created_at
+            )
+          )
+        `
+        )
+        .eq('id', patientId)
+        .single();
+
+      if (error) throw error;
+
+      if (data.visits) {
+        data.visits.sort((a, b) => new Date(b.time) - new Date(a.time));
+      }
+
+      if (data.test_requests) {
+        data.test_requests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      const currentPatients = get().patients;
+      const updatedPatients = currentPatients.map(p => (p.id === patientId ? data : p));
+      set({ patients: updatedPatients });
+
+      console.log(' Patient data fetched successfully');
+      console.log(' Test requests found:', data.test_requests?.length || 0);
+      console.log(' Visits found:', data.visits?.length || 0);
+
+      if (data.test_requests?.length > 0) {
+        console.log('🔍 First test request structure:', data.test_requests[0]);
+      }
+
+      return data;
+    } catch (error) {
+      console.error(' Error fetching patient:', error);
+      throw error;
+    }
+  },
+
+  refreshSelectedPatient: async () => {
+    const selectedPatient = get().selectedPatient;
+    if (selectedPatient?.id) {
+      const updated = await get().fetchSelectedPatient(selectedPatient.id);
+      if (updated) {
+        set({ selectedPatient: updated });
+      }
     }
   },
 
@@ -193,34 +332,28 @@ const useDoctorDashboardStore = create(set => ({
     }
   },
 
+  fetchDrugCategories: async () => {
+    try {
+      const { data, error } = await supabase.from('drug_categories').select(`
+          *,
+          medications:medications (*)
+        `);
 
-// أضف هذه الدوال داخل create في doctorDashboardStore.js
-fetchDrugCategories: async () => {
-  try {
-    const { data, error } = await supabase
-      .from('drug_categories')
-      .select(`
-        *,
-        medications:medications (*)
-      `);
-    
-    if (!error) set({ drug_categories: data });
-  } catch (error) {
-    console.error('Error fetching drug categories:', error);
-  }
-},
+      if (!error) set({ drug_categories: data });
+    } catch (error) {
+      console.error('Error fetching drug categories:', error);
+    }
+  },
 
-fetchMedications: async () => {
-  try {
-    const { data, error } = await supabase
-      .from('medications')
-      .select('*');
-    
-    if (!error) set({ medications: data });
-  } catch (error) {
-    console.error('Error fetching medications:', error);
-  }
-},
+  fetchMedications: async () => {
+    try {
+      const { data, error } = await supabase.from('medications').select('*');
+
+      if (!error) set({ medications: data });
+    } catch (error) {
+      console.error('Error fetching medications:', error);
+    }
+  },
 
   exetVisit: async appointmentId => {
     try {
@@ -252,6 +385,21 @@ fetchMedications: async () => {
           : state.currentVisit,
     }));
   },
+
+  statistics: {
+    monthlyPatients: [],
+    visitTypes: [],
+    revenue: [],
+    topMedications: [],
+    quickStats: [],
+  },
+  setStatistics: newStats =>
+    set(state => ({
+      statistics: {
+        ...state.statistics,
+        ...newStats,
+      },
+    })),
 }));
 
 export default useDoctorDashboardStore;

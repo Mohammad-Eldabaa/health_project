@@ -5,7 +5,6 @@ import usePatientStore from "../../../store/patientStore";
 
 export function AppointmentList({ appointmentss }) {
     const { startVisit, endVisit, exetVisit } = useDoctorDashboardStore();
-    console.log(appointmentss);
 
     const navigate = useNavigate();
     const setSelectedPatientName = usePatientStore((state) => state.setSelectedPatientName);
@@ -14,10 +13,21 @@ export function AppointmentList({ appointmentss }) {
         <div className="space-y-4 max-h-[50vh] overflow-y-auto">
             {appointmentss
                 .sort((a, b) => {
-                    if (a.status === "قيد الكشف") return -1;
-                    if (b.status === "قيد الكشف") return 1;
+                    const order = {
+                        "قيد الكشف": 1,
+                        "في الإنتظار": 2,
+                        "تم": 3,
+                        "ملغي": 4
+                    };
+
+                    if (order[a.status] !== order[b.status]) {
+                        return order[a.status] - order[b.status];
+                    }
+
+                    // لو نفس الحالة → رتب بالوقت
                     return a.time.localeCompare(b.time);
                 })
+
                 .map((appointment) => (
                     <div
                         key={appointment.id}
@@ -34,17 +44,16 @@ export function AppointmentList({ appointmentss }) {
                                 </div>
                             </div>
                             <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    appointment.status === "في الإنتظار"
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${appointment.status === "في الإنتظار"
                                         ? "bg-orange-100 text-yellow-800"
                                         : appointment.status === "ملغي"
-                                        ? "bg-red-100 text-red-800"
-                                        : appointment.status === "قيد الكشف"
-                                        ? "bg-yellow-200 text-yellow-900"
-                                        : appointment.status === "تم"
-                                        ? "bg-green-200 text-green-800"
-                                        : "bg-gray-100 text-yellow-800"
-                                }`}
+                                            ? "bg-red-100 text-red-800"
+                                            : appointment.status === "قيد الكشف"
+                                                ? "bg-yellow-200 text-yellow-900"
+                                                : appointment.status === "تم"
+                                                    ? "bg-green-200 text-green-800"
+                                                    : "bg-gray-100 text-yellow-800"
+                                    }`}
                             >
                                 {appointment.status}
                             </span>

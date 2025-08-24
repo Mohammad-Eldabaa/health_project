@@ -1,8 +1,8 @@
-
 import React from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import MedicationIcon from '@mui/icons-material/Medication';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
+import PrintIcon from '@mui/icons-material/Print';
 
 export default function PrescriptionSheet({
     isOpen,
@@ -12,6 +12,11 @@ export default function PrescriptionSheet({
     Patient = {}
 }) {
     if (!isOpen || !prescription) return null;
+    
+    const handlePrint = () => {
+        window.print();
+    };
+
     const doctor = {
         name: data.doctors?.[0]?.name || "غير معروف",
         specialty: data.doctors?.[0]?.specialty || "غير معروف"
@@ -22,6 +27,7 @@ export default function PrescriptionSheet({
         gender: Patient?.gender || "غير معروف",
         phone: Patient?.phoneNumber || "غير معروف"
     };
+    
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/50">
             <div className="bg-white w-full max-w-md mx-4 rounded-lg shadow-lg p-6 relative overflow-auto max-h-[90vh] border-2 border-cyan-600">
@@ -89,8 +95,18 @@ export default function PrescriptionSheet({
                 </div>
                 <div className="mt-6 pt-3 border-t border-dashed border-gray-300 text-xs text-gray-500 text-center">
                     <div className="mb-2">شكراً لثقتكم بنا - نتمنى لكم الشفاء العاجل</div>
-                </div>             
                 </div>
+                
+                <div className="mt-4 flex justify-center">
+                    <button 
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        <PrintIcon fontSize="small" />
+                        <span>طباعة الروشتة</span>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

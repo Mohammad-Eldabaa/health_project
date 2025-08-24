@@ -17,11 +17,10 @@ import {
   Forget,
   Reset,
   PatientView,
-  // DoctorProfile,
-  // PatientProfile,
   MedicalArticles,
   NursingAppointments,
   NursingPatientsList,
+  PatientRecordContainer ,
 } from './lazy';
 import NursingLayout from '../pages/Nursing/NursingLayout';
 
@@ -35,11 +34,8 @@ export const RoutesArray = [
   { id: v4(), element: <FirstAidDetails />, path: '/firstaid/FirstAidDetails' },
   { id: v4(), element: <DoctorDashboard />, path: '/DoctorDashboard/*' },
   { id: v4(), element: <PatientView />, path: '/profile' },
-  // { id: v4(), element: <PatientProfile />, path: '/patientProfile' },
-  { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
-
-  // Zezo Route
-  // { id: v4(), element: <DoctorProfile />, path: '/profile' },
+  {id: v4(), element: <PatientRecordContainer />, path: '/patient-record/:patientId?'
+  }, { id: v4(), element: <MedicalArticles />, path: '/MedicalArticles' },
   {
     id: v4(),
     element: <NursingLayout />,
@@ -49,7 +45,6 @@ export const RoutesArray = [
       { id: v4(), element: <NursingPatientsList />, path: 'patients' },
     ],
   },
-  // ZEZO
   {
     id: v4(),
     element: <Layout />,

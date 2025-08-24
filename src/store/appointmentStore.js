@@ -15,7 +15,6 @@ const useAppointmentStore = create((set, get) => ({
           id,
           created_at,
           date,
-          time,
           status,
           reason,
           payment,
@@ -25,7 +24,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .order('created_at', { ascending: true });
@@ -44,7 +43,6 @@ const useAppointmentStore = create((set, get) => ({
       const formattedAppointments = data.map(appt => ({
         id: appt.id,
         date: appt.date,
-        time: appt.time,
         status: appt.status,
         reason: appt.reason || '',
         payment: appt.payment,
@@ -54,7 +52,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: appt.patients?.fullName || 'غير محدد',
         doctor_id: appt.doctor_id,
         doctorName: appt.doctors?.name || 'غير محدد',
-        type: appt.type || 'غير محدد',
+        visitType: appt.visitType || 'غير محدد',
       }));
 
       set({ appointments: formattedAppointments || [], error: null });
@@ -70,17 +68,17 @@ const useAppointmentStore = create((set, get) => ({
 
   addAppointment: async appointment => {
     try {
+      console.log('Inserting appointment:', appointment);
       const newAppointment = {
         date: appointment.date,
-        time: appointment.time,
-        status: appointment.status,
-        reason: appointment.reason || null,
+        status: appointment.status || 'في الإنتظار',
+        reason: appointment.notes || null,
         amount: appointment.amount || null,
-        payment: false,
+        payment: appointment.payment || false,
         cancelled: false,
-        patient_id: appointment.patient_id || null,
-        doctor_id: appointment.doctor_id || null,
-        type: appointment.type || null,
+        patient_id: appointment.patient_id,
+        doctor_id: appointment.doctor_id,
+        visitType: appointment.visitType,
       };
 
       const { data, error } = await supabase
@@ -91,7 +89,6 @@ const useAppointmentStore = create((set, get) => ({
           id,
           created_at,
           date,
-          time,
           status,
           reason,
           payment,
@@ -101,7 +98,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -113,20 +110,12 @@ const useAppointmentStore = create((set, get) => ({
           hint: error.hint,
           code: error.code,
         });
-        Swal.fire({
-          icon: 'error',
-          title: 'خطأ',
-          text: `فشل في إضافة الموعد: ${error.message}`,
-          confirmButtonText: 'حسناً',
-          confirmButtonColor: '#d33',
-        });
-        return;
+        throw new Error(`فشل في إضافة الموعد: ${error.message}`);
       }
 
       const formattedNewAppointment = {
         id: data.id,
         date: data.date,
-        time: data.time,
         status: data.status,
         reason: data.reason || '',
         payment: data.payment,
@@ -136,7 +125,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -144,26 +133,14 @@ const useAppointmentStore = create((set, get) => ({
         error: null,
       }));
 
-      Swal.fire({
-        icon: 'success',
-        title: 'تمت الإضافة',
-        text: 'تم إضافة الموعد بنجاح!',
-        confirmButtonText: 'حسناً',
-        confirmButtonColor: '#3085d6',
-      });
+      console.log('Appointment added successfully:', formattedNewAppointment);
     } catch (err) {
       console.error('Unexpected error adding appointment:', {
         error: err,
         message: err?.message || 'No message provided',
         stack: err?.stack || 'No stack trace available',
       });
-      Swal.fire({
-        icon: 'error',
-        title: 'خطأ',
-        text: 'حدث خطأ غير متوقع أثناء إضافة الموعد.',
-        confirmButtonText: 'حسناً',
-        confirmButtonColor: '#d33',
-      });
+      throw err;
     }
   },
 
@@ -182,7 +159,6 @@ const useAppointmentStore = create((set, get) => ({
           id,
           created_at,
           date,
-          time,
           status,
           reason,
           payment,
@@ -192,7 +168,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -221,7 +197,6 @@ const useAppointmentStore = create((set, get) => ({
       const formattedUpdatedAppointment = {
         id: data.id,
         date: data.date,
-        time: data.time,
         status: data.status,
         reason: data.reason || '',
         payment: data.payment,
@@ -231,7 +206,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -276,7 +251,6 @@ const useAppointmentStore = create((set, get) => ({
           id,
           created_at,
           date,
-          time,
           status,
           reason,
           payment,
@@ -286,7 +260,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -311,7 +285,6 @@ const useAppointmentStore = create((set, get) => ({
       const formattedUpdatedAppointment = {
         id: data.id,
         date: data.date,
-        time: data.time,
         status: data.status,
         reason: data.reason || '',
         payment: data.payment,
@@ -321,7 +294,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -366,7 +339,6 @@ const useAppointmentStore = create((set, get) => ({
           id,
           created_at,
           date,
-          time,
           status,
           reason,
           payment,
@@ -376,7 +348,7 @@ const useAppointmentStore = create((set, get) => ({
           patients (id, fullName),
           doctor_id,
           doctors (id, name),
-          type
+          visitType
         `
         )
         .single();
@@ -401,7 +373,6 @@ const useAppointmentStore = create((set, get) => ({
       const formattedUpdatedAppointment = {
         id: data.id,
         date: data.date,
-        time: data.time,
         status: data.status,
         reason: data.reason || '',
         payment: data.payment,
@@ -411,7 +382,7 @@ const useAppointmentStore = create((set, get) => ({
         patientName: data.patients?.fullName || 'غير محدد',
         doctor_id: data.doctor_id,
         doctorName: data.doctors?.name || 'غير محدد',
-        type: data.type || 'غير محدد',
+        visitType: data.visitType || 'غير محدد',
       };
 
       set(state => ({
@@ -502,7 +473,6 @@ const useAppointmentStore = create((set, get) => ({
         id: appt.id,
         created_at: new Date(Date.now() + index * 1000).toISOString(),
         date: appt.date,
-        time: appt.time,
         status: appt.status,
         reason: appt.reason || null,
         payment: appt.payment,
@@ -510,7 +480,7 @@ const useAppointmentStore = create((set, get) => ({
         amount: appt.amount,
         patient_id: appt.patient_id,
         doctor_id: appt.doctor_id,
-        type: appt.type,
+        visitType: appt.visitType,
       }));
 
       const { error } = await supabase.from('appointments').upsert(updates, {

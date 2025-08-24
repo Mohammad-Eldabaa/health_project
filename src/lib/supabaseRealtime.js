@@ -1,4 +1,3 @@
-
 import { supabase } from '../supaBase/booking';
 import useDoctorDashboardStore from '../store/doctorDashboardStore';
 import { usePrescriptionStore } from '../store/prescriptionStore';
@@ -7,50 +6,58 @@ const activeChannels = new Map();
 
 const handleTableUpdate = (tableName, currentData, payload, setter) => {
     const { eventType, new: newItem, old: oldItem } = payload;
+    const { selectedPatient, refreshSelectedPatient } = useDoctorDashboardStore.getState();
+
     console.log(`🔁 Realtime [${tableName}]:`, payload);
+
+    let updatedData = [...(currentData || [])];
 
     switch (eventType) {
         case 'INSERT':
-            setter([...currentData, newItem]);
+
+        if (!updatedData.find(item => item.id === newItem.id)) {
+                updatedData.push(newItem);
+            }
             break;
         case 'UPDATE':
-            setter(currentData.map(item => (item.id === newItem.id ? newItem : item)));
+            updatedData = updatedData.map(item => 
+                item.id === newItem.id ? { ...item, ...newItem } : item
+            );
             break;
         case 'DELETE':
-            setter(currentData.filter(item => item.id !== oldItem.id));
+            updatedData = updatedData.filter(item => item.id !== oldItem.id);
             break;
         default:
             break;
     }
+
+    setter(updatedData);
 };
 
+
 export const setupRealtimePatients = (patientId = null) => {
-    // إذا كان هناك قناة نشطة لنفس المريض، نعيدها
-    if (patientId && activeChannels.has(`patient-${patientId}`)) {
-        return activeChannels.get(`patient-${patientId}`);
+    const channelName = patientId 
+        ? `clinic-patient-${patientId}`
+        : `clinic-global-${Math.random().toString(36).substr(2, 9)}`;
+
+
+        if (activeChannels.has(channelName)) {
+        return activeChannels.get(channelName);
     }
 
     const {
         setPatients,
         setAppointments,
         setVisits,
+        setPrescriptions,
         setPrescriptionMedications,
         setTests,
         setTestRequests,
         setDrugCategories,
-        setTestCategories
+        fetchData
     } = useDoctorDashboardStore.getState();
 
     const { fetchPatientPrescriptions } = usePrescriptionStore.getState();
-
-    const channelName = patientId 
-        ? `clinic-patient-${patientId}`
-        : `clinic-global-${Math.random().toString(36).substr(2, 9)}`;
-
-    // إذا كانت القناة موجودة بالفعل، نعيدها
-    if (activeChannels.has(channelName)) {
-        return activeChannels.get(channelName);
-    }
 
     const channel = supabase.channel(channelName);
 
@@ -63,24 +70,16 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'patients',
             ...(patientId && { filter: `id=eq.${patientId}` }),
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().patients || [];
-            handleTableUpdate('patients', current, payload, setPatients);
-        }
-    );
+        async (payload) => {
+            console.log('🔁 Patients update:', payload);
+            
 
-    // --- appointments ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'appointments',
-            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().appointments || [];
-            handleTableUpdate('appointments', current, payload, setAppointments);
+            await fetchData();
+            
+
+            if (window.onPatientsUpdate) {
+                window.onPatientsUpdate(payload);
+            }
         }
     );
 
@@ -93,9 +92,17 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'visits',
             ...(patientId && { filter: `patient_id=eq.${patientId}` }),
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().visits || [];
-            handleTableUpdate('visits', current, payload, setVisits);
+        async (payload) => {
+            console.log(' Visits update:', payload);
+            
+
+            if (selectedPatient?.id === payload.new?.patient_id) {
+      await refreshSelectedPatient();
+    }
+
+    if (window.onVisitsUpdate) {
+                window.onVisitsUpdate(payload);
+            }
         }
     );
 
@@ -108,11 +115,21 @@ export const setupRealtimePatients = (patientId = null) => {
             table: 'prescriptions',
             ...(patientId && { filter: `patient_id=eq.${patientId}` }),
         },
-        async payload => {
-            console.log('🔁 Realtime [prescriptions]:', payload);
+        async (payload) => {
+            console.log('🔁 Prescriptions update:', payload);
+            
+
+            await fetchData();
+            
+
             const { new: newPrescription } = payload;
             if (newPrescription?.patient_id) {
                 await fetchPatientPrescriptions(newPrescription.patient_id);
+            }
+            
+
+            if (window.onPrescriptionsUpdate) {
+                window.onPrescriptionsUpdate(payload);
             }
         }
     );
@@ -125,9 +142,55 @@ export const setupRealtimePatients = (patientId = null) => {
             schema: 'public',
             table: 'prescription_medications',
         },
-        payload => {
-            const current = useDoctorDashboardStore.getState().prescription_medications || [];
-            handleTableUpdate('prescription_medications', current, payload, setPrescriptionMedications);
+        async (payload) => {
+            console.log('🔁 Prescription medications update:', payload);
+            
+
+            await fetchData();
+            
+
+            if (window.onPrescriptionMedicationsUpdate) {
+                window.onPrescriptionMedicationsUpdate(payload);
+            }
+        }
+    );
+
+    // --- test_requests ---
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'test_requests',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        async (payload) => {
+            console.log('🔁 Test requests update:', payload);
+            
+
+            await fetchData();
+            
+
+            if (window.onTestRequestsUpdate) {
+                window.onTestRequestsUpdate(payload);
+            }
+        }
+    );
+
+    // --- appointments ---
+    channel.on(
+        'postgres_changes',
+        {
+            event: '*',
+            schema: 'public',
+            table: 'appointments',
+            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
+        },
+        async (payload) => {
+            console.log('🔁 Appointments update:', payload);
+            
+            const current = useDoctorDashboardStore.getState().appointments || [];
+            handleTableUpdate('appointments', current, payload, setAppointments);
         }
     );
 
@@ -145,35 +208,6 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // --- test_requests ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'test_requests',
-            ...(patientId && { filter: `patient_id=eq.${patientId}` }),
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().test_requests || [];
-            handleTableUpdate('test_requests', current, payload, setTestRequests);
-        }
-    );
-
-    // --- test_cat ---
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'test_cat',
-        },
-        payload => {
-            const current = useDoctorDashboardStore.getState().test_categories || [];
-            handleTableUpdate('test_categories', current, payload, setTestCategories);
-        }
-    );
-
     // --- drug_categories ---
     channel.on(
         'postgres_changes',
@@ -188,21 +222,20 @@ export const setupRealtimePatients = (patientId = null) => {
         }
     );
 
-    // الاشتراك مع معالجة الأخطاء
     channel.subscribe((status, err) => {
         if (err) {
             console.error('Realtime subscription error:', err);
             activeChannels.delete(channelName);
         } else {
             activeChannels.set(channelName, channel);
-            console.log(`Realtime channel [${channelName}] status:`, status);
+            console.log(`✅ Realtime channel [${channelName}] status:`, status);
         }
     });
 
     return channel;
 };
 
-export const removeRealtimeChannel = async channel => {
+export const removeRealtimeChannel = async (channel) => {
     if (!channel) return;
 
     try {
@@ -211,11 +244,27 @@ export const removeRealtimeChannel = async channel => {
         
         if (error) {
             console.error('Error removing channel:', error);
-        } else {
+        } else {  
             activeChannels.delete(channelName);
-            console.log('Channel removed successfully');
+            console.log('✅ Channel removed successfully:', channelName);
         }
     } catch (err) {
         console.error('Exception while removing channel:', err);
     }
 };
+
+export const getActiveChannels = () => {
+    return Array.from(activeChannels.keys());
+};
+
+export const cleanupAllChannels = async () => {
+    const channels = Array.from(activeChannels.values());
+    
+    for (const channel of channels) {
+        await removeRealtimeChannel(channel);
+    }
+    
+    activeChannels.clear();
+    console.log('✅ All channels cleaned up');
+};
+

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../supaBase/booking";
-import PrintPreview from "../components/printTestpdf";
 
 
 import {
@@ -55,11 +54,6 @@ const Tests = () => {
         p.fullName.toLowerCase().includes(searchTermpatient.toLowerCase())
     );
 
-
-
-
-
-
     const [newTest, setNewTest] = useState({
         name: "",
         durationValue: "",
@@ -67,9 +61,6 @@ const Tests = () => {
         urgent: false,
         category: ""
     });
-
-
-
 
 
     useEffect(() => {
@@ -86,7 +77,7 @@ const Tests = () => {
     const [testsData, setTestsData] = useState([]);
 
     useEffect(() => {
-        // تحميل التصنيفات
+
         const fetchCategories = async () => {
             const { data } = await supabase.from("test_cat").select("*");
             if (data) setCategories([{ name: 'الكل' }, ...data.map(cat => ({
@@ -96,7 +87,7 @@ const Tests = () => {
             }))]);
         };
 
-        // تحميل التحاليل
+
         const fetchTests = async () => {
             const { data } = await supabase.from("tests").select("*, test_cat(name, color)");
             if (data) {
@@ -137,7 +128,7 @@ const Tests = () => {
             return;
         }
 
-        // نجيب ID التصنيف من test_cat
+
         const selectedCat = categories.find(c => c.name === newTest.category);
         if (!selectedCat) {
             alert("تصنيف غير صالح");
@@ -164,7 +155,7 @@ const Tests = () => {
             alert("تم إضافة التحليل بنجاح");
             setOpenAddTest(false);
             setNewTest({ name: '', duration: '', category: '', urgent: false });
-            // إعادة تحميل التحاليل
+
             const { data } = await supabase.from("tests").select("*, test_cat(name, color)");
             if (data) {
                 const formatted = data.map(test => ({
@@ -200,6 +191,28 @@ const Tests = () => {
 
     const handleDeleteTest = async () => {
         if (!testToDelete) return;
+
+
+        const { data: relatedRequests, error: checkError } = await supabase
+            .from('test_requests')
+            .select('id')
+            .eq('test_id', testToDelete.id)
+            .limit(1);
+
+        if (checkError) {
+            alert("حدث خطأ أثناء التحقق من الطلبات المرتبطة");
+            console.error(checkError);
+            return;
+        }
+
+        if (relatedRequests && relatedRequests.length > 0) {
+            alert("لا يمكن حذف هذا التحليل لأنه مرتبط بطلب تحليل لمريض");
+            setDeleteDialogOpen(false);
+            setTestToDelete(null);
+            return;
+        }
+
+
         const { error } = await supabase.from("tests").delete().eq("id", testToDelete.id);
 
         if (error) {
@@ -314,7 +327,6 @@ const Tests = () => {
                 </div>
 
 
-                {/* Button */}
             </div>
             <div className="flex flex-wrap gap-1 md:gap-3 mb-5 justify-between">
                 {categories.map((cat, idx) => (
@@ -503,6 +515,9 @@ const Tests = () => {
                 <DialogTitle>تأكيد الحذف</DialogTitle>
                 <DialogContent>
                     هل أنت متأكد أنك تريد حذف التحليل: <strong>{testToDelete?.name}</strong>؟
+                    <div className="mt-2 text-sm text-gray-600">
+                        ملاحظة: لا يمكن حذف التحاليل المرتبطة بطلبات تحاليل للمرضى
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDeleteDialogOpen(false)}>إلغاء</Button>

@@ -1,21 +1,13 @@
 
 
-
 import { create } from 'zustand';
 import { supabase } from '../supaBase/booking';
+import useDoctorDashboardStore from "../store/doctorDashboardStore";
 
 export const usePrescriptionStore = create((set, get) => ({
   medications: [],
   medicationCategories: [],
-  dosageOptions: [
-    'مرة يومياً',
-    'مرتين يومياً',
-    'كل 8 ساعات',
-    'كل 12 ساعة',
-    'حسب الحاجة',
-    'قبل الأكل',
-    'بعد الأكل'
-  ],
+  dosageOptions: ['مرة يومياً', 'مرتين يومياً', 'كل 8 ساعات', 'كل 12 ساعة', 'حسب الحاجة', 'قبل الأكل', 'بعد الأكل'],
   durationOptions: [
     'لمدة يوم واحد',
     'لمدة 3 أيام',
@@ -23,7 +15,7 @@ export const usePrescriptionStore = create((set, get) => ({
     'لمدة 10 أيام',
     'لمدة أسبوعين',
     'لمدة شهر',
-    'حسب التعليمات'
+    'حسب التعليمات',
   ],
   selectedMedications: [],
   currentPrescription: null,
@@ -32,32 +24,21 @@ export const usePrescriptionStore = create((set, get) => ({
   error: null,
   realtimeChannel: null,
 
-  // Initialize real-time subscriptions
-  initRealtime: (patientId) => {
-    // Clean up any existing channel
+  initRealtime: patientId => {
     if (get().realtimeChannel) {
       supabase.removeChannel(get().realtimeChannel);
     }
 
-    // Get visits filter for the patient
     const getVisitsFilter = async () => {
-      const { data } = await supabase
-        .from('visits')
-        .select('id')
-        .eq('patient_id', patientId);
+      const { data } = await supabase.from('visits').select('id').eq('patient_id', patientId);
       return data?.map(v => v.id).join(',') || '';
     };
 
-    // Get prescriptions filter for the patient
     const getPrescriptionsFilter = async () => {
-      const { data } = await supabase
-        .from('visits')
-        .select('prescriptions(id)')
-        .eq('patient_id', patientId);
+      const { data } = await supabase.from('visits').select('prescriptions(id)').eq('patient_id', patientId);
       return data?.flatMap(v => v.prescriptions?.map(p => p.id)).join(',') || '';
     };
 
-    // Setup real-time subscriptions
     const channel = supabase
       .channel('realtime_prescriptions')
       .on(
@@ -66,7 +47,7 @@ export const usePrescriptionStore = create((set, get) => ({
           event: '*',
           schema: 'public',
           table: 'prescriptions',
-          filter: `visit_id=in.(${getVisitsFilter()})`
+          filter: `visit_id=in.(${getVisitsFilter()})`,
         },
         async () => {
           await get().fetchPatientPrescriptions(patientId);
@@ -78,7 +59,7 @@ export const usePrescriptionStore = create((set, get) => ({
           event: '*',
           schema: 'public',
           table: 'prescription_medications',
-          filter: `prescription_id=in.(${getPrescriptionsFilter()})`
+          filter: `prescription_id=in.(${getPrescriptionsFilter()})`,
         },
         async () => {
           await get().fetchPatientPrescriptions(patientId);
@@ -89,7 +70,6 @@ export const usePrescriptionStore = create((set, get) => ({
     set({ realtimeChannel: channel });
   },
 
-  // Clean up real-time subscriptions
   cleanupRealtime: () => {
     if (get().realtimeChannel) {
       supabase.removeChannel(get().realtimeChannel);
@@ -102,31 +82,34 @@ export const usePrescriptionStore = create((set, get) => ({
     try {
       const [medsResult, catsResult] = await Promise.all([
         supabase.from('medications').select('*'),
-        supabase.from('drug_categories').select('*')
+        supabase.from('drug_categories').select('*'),
       ]);
 
       set({
         medications: medsResult.data || [],
         medicationCategories: catsResult.data || [],
-        loading: false
+        loading: false,
       });
     } catch (error) {
       set({ error: error.message, loading: false });
     }
   },
 
-  addMedication: (medication) => {
+  addMedication: medication => {
     set(state => ({
-      selectedMedications: [...state.selectedMedications, {
-        ...medication,
-        id: Date.now() + Math.random()
-      }]
+      selectedMedications: [
+        ...state.selectedMedications,
+        {
+          ...medication,
+          id: Date.now() + Math.random(),
+        },
+      ],
     }));
   },
 
-  removeMedication: (id) => {
+  removeMedication: id => {
     set(state => ({
-      selectedMedications: state.selectedMedications.filter(med => med.id !== id)
+      selectedMedications: state.selectedMedications.filter(med => med.id !== id),
     }));
   },
 
@@ -138,34 +121,39 @@ export const usePrescriptionStore = create((set, get) => ({
         .insert({
           visit_id: visitId,
           date: new Date().toISOString(),
-          notes: prescriptionData.notes,
-          diagnosis: prescriptionData.diagnosis
+          notes: prescriptionData.notes
         })
         .select()
         .single();
-
+        
       if (presError) throw presError;
 
       const medicationIds = await Promise.all(
         prescriptionData.medications.map(async med => {
-          const { data, error } = await supabase
-            .from('medications')
-            .select('id')
-            .eq('name', med.name)
-            .single();
+          const { data, error } = await supabase.from('medications').select('id').eq('name', med.name).single();
+          if (error) {
+            console.warn(`Medication not found: ${med.name}`);
+            return null;
+          }
           return data?.id;
         })
       );
 
-      const medicationsToInsert = prescriptionData.medications
-        .filter((_, index) => medicationIds[index])
-        .map((med, index) => ({
-          prescription_id: prescription.id,
-          medication_id: medicationIds[index],
-          dosage: med.dosage,
-          duration: med.duration,
-          instructions: med.instructions || ''
-        }));
+      const validMedications = prescriptionData.medications
+        .map((med, index) => ({ med, medicationId: medicationIds[index] }))
+        .filter(item => item.medicationId !== null);
+
+      if (validMedications.length === 0) {
+        throw new Error('لم يتم العثور على أي أدوية صحيحة');
+      }
+
+      const medicationsToInsert = validMedications.map(({ med, medicationId }) => ({
+        prescription_id: prescription.id,
+        medication_id: medicationId,
+        dosage: med.dosage,
+        duration: med.duration,
+        instructions: med.instructions || '',
+      }));
 
       const { data: savedMeds, error: medsError } = await supabase
         .from('prescription_medications')
@@ -174,40 +162,51 @@ export const usePrescriptionStore = create((set, get) => ({
 
       if (medsError) throw medsError;
 
+      const finalPrescription = {
+        ...prescription,
+        medications: savedMeds,
+      };
+
       set({
-        currentPrescription: {
-          ...prescription,
-          medications: savedMeds
-        },
+        currentPrescription: finalPrescription,
         selectedMedications: [],
-        loading: false
+        loading: false,
       });
 
-      return { ...prescription, medications: savedMeds };
+      await useDoctorDashboardStore.getState().fetchSelectedPatient(patientId);
+
+      return finalPrescription;
     } catch (error) {
       set({ error: error.message, loading: false });
       throw error;
     }
   },
 
-  fetchPatientPrescriptions: async (patientId) => {
+  fetchPatientPrescriptions: async patientId => {
     set({ loading: true });
     try {
       const { data, error } = await supabase
         .from('visits')
-        .select(`
+        .select(
+          `
           id,
           date,
+          notes,
           prescriptions:prescriptions(
             *,
             prescription_medications(
               *,
               medication:medications(
-                id, name, dosage_form, strength
+                id, name
               )
             )
+          ),
+          medical_records:medical_records(
+            diagnosis,
+            notes
           )
-        `)
+        `
+        )
         .eq('patient_id', patientId)
         .order('date', { ascending: false });
 
@@ -217,10 +216,13 @@ export const usePrescriptionStore = create((set, get) => ({
         (visit.prescriptions || []).map(pres => ({
           ...pres,
           visit_date: visit.date,
-          medications: pres.prescription_medications?.map(pm => ({
-            ...pm,
-            ...pm.medication
-          })) || []
+          visit_notes: visit.notes,
+          diagnosis: visit.medical_records?.[0]?.diagnosis || 'لا يوجد تشخيص',
+          medications:
+            pres.prescription_medications?.map(pm => ({
+              ...pm,
+              ...pm.medication,
+            })) || [],
         }))
       );
 
@@ -232,5 +234,5 @@ export const usePrescriptionStore = create((set, get) => ({
       set({ error: error.message, loading: false });
       throw error;
     }
-  }
+  },
 }));
