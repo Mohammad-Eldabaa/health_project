@@ -15,19 +15,9 @@ export const ExpandedView = ({
   doctors,
   isMobile,
 }) => {
-  const handleEditSubmit = async e => {
+  const handleEditSubmit = async (e, updatedData) => {
     e.preventDefault();
     try {
-      const [date, time] = editFormData.appointmentDateTime.split('T');
-      const updatedData = {
-        date,
-        time,
-        status: editFormData.status,
-        visitType: editFormData.visitType || null,
-        payment: editFormData.payment,
-        amount: editFormData.amount ? parseFloat(editFormData.amount) : null,
-        doctor_id: editFormData.doctor_id || null,
-      };
       await updateAppointment(appt.id, updatedData);
       setIsEditing(false);
       Swal.fire({

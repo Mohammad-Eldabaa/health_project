@@ -7,7 +7,6 @@ const useFirstAidStore = create(
     (set, get) => ({
       lastId: 0,
 
-      // Async action to get data by ID
       getStateById: async () => {
         const { data, error } = await supabase.from('FirstAid').select('*').eq('key', get().lastId).single();
 

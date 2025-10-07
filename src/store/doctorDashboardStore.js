@@ -1,5 +1,3 @@
-
-
 import { create } from 'zustand';
 import { supabase } from '../supaBase/booking';
 
@@ -46,7 +44,6 @@ const useDoctorDashboardStore = create((set, get) => ({
 
   fetchData: async () => {
     const state = get();
-
     if (state.patients.length && state.doctors.length && !state.loading) {
       console.log('📊 Data already loaded, skipping fetch');
       return;
@@ -107,7 +104,7 @@ const useDoctorDashboardStore = create((set, get) => ({
             )
           )
         `),
-        
+
         supabase.from('visits').select('*'),
         supabase.from('medical_records').select('*'),
         supabase.from('prescriptions').select(`
@@ -119,9 +116,7 @@ const useDoctorDashboardStore = create((set, get) => ({
         `),
         supabase.from('prescription_medications').select('*'),
         supabase.from('tests').select('*').order('created_at', { ascending: false }),
-        supabase
-          .from('test_requests')
-          .select(`
+        supabase.from('test_requests').select(`
             id,
             patient_id,
             test_id,
@@ -151,11 +146,12 @@ const useDoctorDashboardStore = create((set, get) => ({
         supabase.from('duration_options').select('*'),
       ]);
 
-      const processedPatientsData = patientsData?.map(patient => ({
-        ...patient,
-        visits: patient.visits?.sort((a, b) => new Date(b.time) - new Date(a.time)) || [],
-        test_requests: patient.test_requests?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || []
-      })) || [];
+      const processedPatientsData =
+        patientsData?.map(patient => ({
+          ...patient,
+          visits: patient.visits?.sort((a, b) => new Date(b.time) - new Date(a.time)) || [],
+          test_requests: patient.test_requests?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [],
+        })) || [];
 
       set({
         appointments: removeDuplicates(appointmentsData || []),
@@ -177,9 +173,11 @@ const useDoctorDashboardStore = create((set, get) => ({
       set({ currentVisit: currentVisit || null });
 
       console.log(' All data fetched successfully');
-      console.log(' Patients with test_requests:', processedPatientsData.filter(p => p.test_requests?.length > 0).length);
+      console.log(
+        ' Patients with test_requests:',
+        processedPatientsData.filter(p => p.test_requests?.length > 0).length
+      );
       console.log(' Total test_requests:', test_requestsData?.length || 0);
-      
     } catch (error) {
       set({
         error: error.message,
@@ -196,7 +194,8 @@ const useDoctorDashboardStore = create((set, get) => ({
 
       const { data, error } = await supabase
         .from('patients')
-        .select(`
+        .select(
+          `
           *,
           visits (
             *,
@@ -229,7 +228,8 @@ const useDoctorDashboardStore = create((set, get) => ({
               created_at
             )
           )
-        `)
+        `
+        )
         .eq('id', patientId)
         .single();
 
@@ -250,11 +250,11 @@ const useDoctorDashboardStore = create((set, get) => ({
       console.log(' Patient data fetched successfully');
       console.log(' Test requests found:', data.test_requests?.length || 0);
       console.log(' Visits found:', data.visits?.length || 0);
-      
+
       if (data.test_requests?.length > 0) {
         console.log('🔍 First test request structure:', data.test_requests[0]);
       }
-      
+
       return data;
     } catch (error) {
       console.error(' Error fetching patient:', error);

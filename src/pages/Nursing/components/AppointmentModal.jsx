@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
@@ -17,6 +17,66 @@ export const AppointmentModal = ({
   doctors,
 }) => {
   const { addAppointment } = useAppointmentStore();
+  const [isPhoneValidating, setIsPhoneValidating] = useState(false);
+
+  // Handler to fetch patient data based on phone number
+  const handlePhoneChange = async e => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormErrors(prev => ({ ...prev, [name]: '' }));
+
+    if (value && value.match(/^01[0125][0-9]{8}$/)) {
+      setIsPhoneValidating(true);
+      try {
+        const { data: existingPatient, error } = await supabase
+          .from('patients')
+          .select('id, fullName, address, age')
+          .eq('phoneNumber', value)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching patient by phone:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+          });
+          Swal.fire({
+            icon: 'error',
+            title: 'خطأ',
+            text: 'فشل في التحقق من رقم الهاتف. حاول مرة أخرى.',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#d33',
+          });
+          return;
+        }
+
+        if (existingPatient) {
+          setFormData(prev => ({
+            ...prev,
+            fullName: existingPatient.fullName || '',
+            address: existingPatient.address || '',
+            age: existingPatient.age ? String(existingPatient.age) : '',
+            phoneNumber: value,
+          }));
+          setFormErrors({});
+        }
+      } catch (err) {
+        console.error('Unexpected error fetching patient:', err);
+      } finally {
+        setIsPhoneValidating(false);
+      }
+    } else {
+      // Reset form fields if phone number is cleared or invalid
+      setFormData(prev => ({
+        ...prev,
+        fullName: '',
+        address: '',
+        age: '',
+        phoneNumber: value,
+      }));
+    }
+  };
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
@@ -35,49 +95,69 @@ export const AppointmentModal = ({
     try {
       await Schema.validate(formData, { abortEarly: false });
 
-      const [date, time] = formData.appointmentDateTime.split('T');
+      const date = formData.appointmentDateTime;
       const patientData = {
         fullName: formData.fullName,
         address: formData.address,
         age: parseInt(formData.age),
         phoneNumber: formData.phoneNumber,
+        bookingDate: date,
+        visitType: formData.visitType,
       };
 
-      const { data: existingPatient, error: patientError } = await supabase
-        .from('patients')
-        .select('id')
-        .eq('phoneNumber', formData.phoneNumber)
-        .single();
-
       let patientId;
-      if (existingPatient) {
-        patientId = existingPatient.id;
-      } else {
-        const { data: newPatient, error: insertError } = await supabase
+      try {
+        console.log('Checking for existing patient with phone:', formData.phoneNumber);
+        const { data: existingPatient, error: patientError } = await supabase
           .from('patients')
-          .insert([patientData])
           .select('id')
+          .eq('phoneNumber', formData.phoneNumber)
           .single();
 
-        if (insertError) {
-          console.error('Error inserting patient:', insertError);
-          Swal.fire({
-            icon: 'error',
-            title: 'خطأ',
-            text: `فشل في إضافة المريض: ${insertError.message}`,
-            confirmButtonText: 'حسناً',
-            confirmButtonColor: '#d33',
+        if (patientError) {
+          console.error('Error checking existing patient:', {
+            message: patientError.message,
+            details: patientError.details,
+            hint: patientError.hint,
+            code: patientError.code,
           });
-          return;
+          if (patientError.code === 'PGRST116') {
+            // No rows returned, proceed to insert new patient
+          } else {
+            throw new Error(`فشل في التحقق من المريض: ${patientError.message}`);
+          }
         }
-        patientId = newPatient.id;
+
+        if (existingPatient) {
+          patientId = existingPatient.id;
+        } else {
+          console.log('Inserting new patient:', patientData);
+          const { data: newPatient, error: insertError } = await supabase
+            .from('patients')
+            .insert([patientData])
+            .select('id')
+            .single();
+
+          if (insertError) {
+            console.error('Error inserting patient:', {
+              message: insertError.message,
+              details: insertError.details,
+              hint: insertError.hint,
+              code: insertError.code,
+            });
+            throw new Error(`فشل في إضافة المريض: ${insertError.message}`);
+          }
+          patientId = newPatient.id;
+        }
+      } catch (err) {
+        console.error('Patient query error:', err);
+        throw err;
       }
 
       const appointmentData = {
         patient_id: patientId,
         doctor_id: parseInt(formData.doctor_id),
         date,
-        time,
         visitType: formData.visitType,
         status: formData.status,
         payment: formData.payment,
@@ -85,7 +165,9 @@ export const AppointmentModal = ({
         notes: formData.notes || null,
       };
 
+      console.log('Adding appointment with data:', appointmentData);
       await addAppointment(appointmentData);
+
       setShowModal(false);
       setFormData({
         fullName: '',
@@ -109,6 +191,7 @@ export const AppointmentModal = ({
         confirmButtonColor: '#3085d6',
       });
     } catch (err) {
+      console.error('Error in handleSubmit:', err);
       if (err instanceof Yup.ValidationError) {
         const errors = {};
         err.inner.forEach(error => {
@@ -116,11 +199,10 @@ export const AppointmentModal = ({
         });
         setFormErrors(errors);
       } else {
-        console.error('Unexpected error:', err);
         Swal.fire({
           icon: 'error',
           title: 'خطأ',
-          text: 'حدث خطأ غير متوقع أثناء إضافة الموعد.',
+          text: err.message || 'حدث خطأ غير متوقع أثناء إضافة الموعد.',
           confirmButtonText: 'حسناً',
           confirmButtonColor: '#d33',
         });
@@ -160,8 +242,28 @@ export const AppointmentModal = ({
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-4">
                 <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+                  <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+                    رقم الهاتف
+                  </label>
+                  <input
+                    type="text"
+                    className={`w-full p-3 border ${
+                      formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handlePhoneChange}
+                    placeholder="01XXXXXXXXX"
+                    required
+                    disabled={isPhoneValidating}
+                  />
+                  {formErrors.phoneNumber && <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>}
+                  {isPhoneValidating && <p className="text-gray-600 text-sm mt-1">جاري التحقق من رقم الهاتف...</p>}
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
                   <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    اسم المريض
+                    الاسم الكامل
                   </label>
                   <input
                     type="text"
@@ -172,45 +274,12 @@ export const AppointmentModal = ({
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
+                    placeholder="أدخل الاسم الكامل"
                     required
                   />
                   {formErrors.fullName && <p className="text-red-600 text-sm mt-1">{formErrors.fullName}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-                  <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
-                    رقم الهاتف
-                  </label>
-                  <input
-                    type="tel"
-                    className={`w-full p-3 border ${
-                      formErrors.phoneNumber ? 'border-red-300' : 'border-gray-300'
-                    } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    required
-                  />
-                  {formErrors.phoneNumber && <p className="text-red-600 text-sm mt-1">{formErrors.phoneNumber}</p>}
-                </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                  <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
-                    العمر
-                  </label>
-                  <input
-                    type="number"
-                    className={`w-full p-3 border ${
-                      formErrors.age ? 'border-red-300' : 'border-gray-300'
-                    } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
-                    id="age"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    required
-                  />
-                  {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
-                </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
                   <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
                     العنوان
                   </label>
@@ -223,16 +292,35 @@ export const AppointmentModal = ({
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
+                    placeholder="أدخل العنوان"
                     required
                   />
                   {formErrors.address && <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-                  <label htmlFor="appointmentDateTime" className="block text-sm font-semibold text-gray-700 mb-2">
-                    تاريخ ووقت الموعد
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+                  <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
+                    العمر
                   </label>
                   <input
-                    type="datetime-local"
+                    type="number"
+                    className={`w-full p-3 border ${
+                      formErrors.age ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
+                    id="age"
+                    name="age"
+                    value={formData.age}
+                    onChange={handleChange}
+                    placeholder="أدخل العمر"
+                    required
+                  />
+                  {formErrors.age && <p className="text-red-600 text-sm mt-1">{formErrors.age}</p>}
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}>
+                  <label htmlFor="appointmentDateTime" className="block text-sm font-semibold text-gray-700 mb-2">
+                    تاريخ الموعد
+                  </label>
+                  <input
+                    type="date"
                     className={`w-full p-3 border ${
                       formErrors.appointmentDateTime ? 'border-red-300' : 'border-gray-300'
                     } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200`}
@@ -246,7 +334,7 @@ export const AppointmentModal = ({
                     <p className="text-red-600 text-sm mt-1">{formErrors.appointmentDateTime}</p>
                   )}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
                   <label htmlFor="visitType" className="block text-sm font-semibold text-gray-700 mb-2">
                     نوع الزيارة
                   </label>
@@ -267,7 +355,7 @@ export const AppointmentModal = ({
                   </select>
                   {formErrors.visitType && <p className="text-red-600 text-sm mt-1">{formErrors.visitType}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 }}>
                   <label htmlFor="doctor_id" className="block text-sm font-semibold text-gray-700 mb-2">
                     الطبيب
                   </label>
@@ -290,7 +378,7 @@ export const AppointmentModal = ({
                   </select>
                   {formErrors.doctor_id && <p className="text-red-600 text-sm mt-1">{formErrors.doctor_id}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}>
                   <label htmlFor="amount" className="block text-sm font-semibold text-gray-700 mb-2">
                     المبلغ (جنيه مصري)
                   </label>
@@ -306,7 +394,7 @@ export const AppointmentModal = ({
                   />
                   {formErrors.amount && <p className="text-red-600 text-sm mt-1">{formErrors.amount}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.65 }}>
                   <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
                     الملاحظات
                   </label>
@@ -323,7 +411,7 @@ export const AppointmentModal = ({
                   ></textarea>
                   {formErrors.notes && <p className="text-red-600 text-sm mt-1">{formErrors.notes}</p>}
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 }}>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }}>
                   <label htmlFor="payment" className="block text-sm font-semibold text-gray-700 mb-2">
                     حالة الدفع
                   </label>
@@ -340,7 +428,7 @@ export const AppointmentModal = ({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: 0.75 }}
                   className="flex justify-end gap-3 pt-4"
                 >
                   <motion.button

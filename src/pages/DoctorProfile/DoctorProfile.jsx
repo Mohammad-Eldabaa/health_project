@@ -67,8 +67,6 @@ const DoctorProfile = ({ isDoctorView = false }) => {
     },
   };
 
-  // ... (الكود السابق يبقى كما هو)
-
   const cardVariants = {
     hidden: {
       opacity: 0,
@@ -84,10 +82,7 @@ const DoctorProfile = ({ isDoctorView = false }) => {
         duration: 0.5,
       },
     },
-    // تم إزالة hover من هنا
   };
-
-  // ... (الكود التالي يبقى كما هو)
 
   const itemVariants = {
     hidden: { opacity: 0, x: 30 },

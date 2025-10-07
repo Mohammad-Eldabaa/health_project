@@ -8,7 +8,7 @@ export const Schema = Yup.object({
   phoneNumber: Yup.string()
     .required('رقم الهاتف مطلوب')
     .matches(/^01[0125][0-9]{8}$/, 'برجاء إدخال رقم هاتف صحيح'),
-  appointmentDateTime: Yup.string().required('تاريخ ووقت الموعد مطلوب'),
+  appointmentDateTime: Yup.date().required('تاريخ الموعد مطلوب').typeError('تاريخ الموعد غير صالح'),
   visitType: Yup.string().required('نوع الزيارة مطلوب'),
   notes: Yup.string().max(700, 'الملاحظات لا يجب أن تتجاوز 700 حرف').nullable(),
   amount: Yup.number()
@@ -20,7 +20,12 @@ export const Schema = Yup.object({
     .nullable()
     .transform((value, originalValue) => {
       if (typeof originalValue === 'string') {
-        return originalValue ? originalValue.split(',').map(item => item.trim()).filter(item => item) : null;
+        return originalValue
+          ? originalValue
+              .split(',')
+              .map(item => item.trim())
+              .filter(item => item)
+          : null;
       }
       return value;
     }),
@@ -39,7 +44,7 @@ export const formData = {
   appointmentDateTime: '',
   visitType: '',
   notes: '',
-  amount: '',
+  amount: null,
   chronic_diseases: [],
   gender: '',
   email: '',
@@ -48,7 +53,7 @@ export const formData = {
 
 export const handleSubmit = (values, { resetForm }) => {
   console.log('Booking submitted:', values);
-  const [date, time] = values.appointmentDateTime.split('T');
+  const date = values.appointmentDateTime;
   const patientData = {
     ...values,
     bookingDate: date,
